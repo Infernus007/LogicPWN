@@ -1,0 +1,103 @@
+version: 2
+updates:
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "logicpwn/security-team"
+    assignees:
+      - "logicpwn/maintainers"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    ignore:
+      # Ignore major version updates for critical dependencies
+      - dependency-name: "requests"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "aiohttp"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "pydantic"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "logicpwn/security-team"
+    assignees:
+      - "logicpwn/maintainers"
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # Pre-commit hooks
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "09:00"
+    target-branch: "develop"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "logicpwn/security-team"
+    assignees:
+      - "logicpwn/maintainers"
+    labels:
+      - "dependencies"
+      - "pre-commit"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+  # Docker (if we add Docker support)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "logicpwn/security-team"
+    assignees:
+      - "logicpwn/maintainers"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # Security updates (high priority)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "logicpwn/security-team"
+    assignees:
+      - "logicpwn/maintainers"
+    labels:
+      - "dependencies"
+      - "security"
+      - "high-priority"
+    commit-message:
+      prefix: "security"
+      include: "scope"
+    # Only security updates
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"] 
