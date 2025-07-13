@@ -559,7 +559,7 @@ def extract_from_response(
         ValidationError: If regex pattern is invalid
         ResponseError: If response cannot be processed
         
-    Example::
+    Example:
         # Extract user ID
         user_ids = extract_from_response(response, r"user_id:\s*(\d+)")
         
@@ -808,7 +808,7 @@ def chain_validations(
     Returns:
         List[ValidationResult]: Results for each validation step
         
-    Example::
+    Example:
         chain = [
             {"success_criteria": ["welcome"], "return_structured": True},
             {"regex_patterns": [r"user_id:\s*(\d+)"], "return_structured": True},

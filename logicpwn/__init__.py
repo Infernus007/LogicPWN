@@ -42,70 +42,71 @@ Example Usage:
 """
 
 from .core import (
+    # Authentication
     authenticate_session,
     validate_session,
     logout_session,
     AuthConfig,
+    
+    # Request Execution
     send_request,
     send_request_advanced,
-    # Async functionality
+    RequestConfig,
+    
+    # Response Validation
+    validate_response,
+    extract_from_response,
+    validate_json_response,
+    validate_html_response,
+    chain_validations,
+    ValidationResult,
+    ValidationConfig,
+    ValidationType,
+    VulnerabilityPatterns,
+    validate_validation_config,
+    MAX_RESPONSE_TEXT_LENGTH,
+    DEFAULT_CONFIDENCE_THRESHOLD,
+    
+    # Async Execution
     AsyncRequestRunner,
     AsyncSessionManager,
     send_request_async,
     send_requests_batch_async,
     async_session_manager,
-    AsyncRequestContext,
-    # Configuration
+    
+    # Performance & Caching
+    PerformanceMonitor,
+    PerformanceBenchmark,
+    MemoryProfiler,
+    monitor_performance,
+    performance_context,
+    get_performance_summary,
+    response_cache,
+    session_cache,
+    config_cache,
+    get_cache_stats,
+    clear_all_caches,
+    
+    # Stress Testing
+    StressTester,
+    StressTestConfig,
+    StressTestMetrics,
+    run_quick_stress_test,
+    run_exploit_chain_stress_test,
+    
+    # Utilities
+    check_indicators,
+    prepare_request_kwargs,
+    validate_config,
     config,
     get_timeout,
     get_max_retries,
-    get_sensitive_headers,
-    get_sensitive_params,
-    get_redaction_string,
-    get_max_log_body_size,
-    get_log_level,
-    get_logging_defaults,
-    is_request_logging_enabled,
-    is_response_logging_enabled,
-    is_error_logging_enabled,
-    get_session_timeout,
-    get_max_sessions,
-    HTTPMethod,
-    BodyType,
-    RequestDefaults,
-    SecurityDefaults,
-    LoggingDefaults,
-    AuthDefaults,
-    # Logging
-    logger,
-    log_request,
-    log_response,
-    log_error,
     log_info,
-    log_debug,
     log_warning,
-    LogicPwnLogger,
-    SensitiveDataRedactor,
-    # Middleware
-    middleware_manager,
-    add_middleware,
-    remove_middleware,
-    enable_middleware,
-    disable_middleware,
-    get_middleware,
-    list_middleware,
-    BaseMiddleware,
-    AuthenticationMiddleware,
-    LoggingMiddleware,
-    RetryMiddleware,
-    SecurityMiddleware,
-    SessionMiddleware,
-    MiddlewareContext,
-    RetryException,
-    # Utils
-    check_indicators,
-    prepare_request_kwargs,
-    validate_config
+    log_error,
+    log_debug,
+    log_request,
+    log_response
 )
 
 from .models import (
@@ -128,88 +129,69 @@ __version__ = "0.1.0"
 __author__ = "LogicPwn Team"
 
 __all__ = [
-    # Core functionality
+    # Authentication
     "authenticate_session",
     "validate_session",
     "logout_session",
     "AuthConfig",
+    
+    # Request Execution
     "send_request",
     "send_request_advanced",
+    "RequestConfig",
     
-    # Async functionality
+    # Response Validation
+    "validate_response",
+    "extract_from_response",
+    "validate_json_response",
+    "validate_html_response",
+    "chain_validations",
+    "ValidationResult",
+    "ValidationConfig",
+    "ValidationType",
+    "VulnerabilityPatterns",
+    "validate_validation_config",
+    "MAX_RESPONSE_TEXT_LENGTH",
+    "DEFAULT_CONFIDENCE_THRESHOLD",
+    
+    # Async Execution
     "AsyncRequestRunner",
     "AsyncSessionManager",
     "send_request_async",
     "send_requests_batch_async",
     "async_session_manager",
-    "AsyncRequestContext",
     
-    # Configuration
-    "config",
-    "get_timeout",
-    "get_max_retries",
-    "get_sensitive_headers",
-    "get_sensitive_params",
-    "get_redaction_string",
-    "get_max_log_body_size",
-    "get_log_level",
-    "get_logging_defaults",
-    "is_request_logging_enabled",
-    "is_response_logging_enabled",
-    "is_error_logging_enabled",
-    "get_session_timeout",
-    "get_max_sessions",
-    "HTTPMethod",
-    "BodyType",
-    "RequestDefaults",
-    "SecurityDefaults",
-    "LoggingDefaults",
-    "AuthDefaults",
+    # Performance & Caching
+    "PerformanceMonitor",
+    "PerformanceBenchmark",
+    "MemoryProfiler",
+    "monitor_performance",
+    "performance_context",
+    "get_performance_summary",
+    "response_cache",
+    "session_cache",
+    "config_cache",
+    "get_cache_stats",
+    "clear_all_caches",
     
-    # Logging
-    "logger",
-    "log_request",
-    "log_response",
-    "log_error",
-    "log_info",
-    "log_debug",
-    "log_warning",
-    "LogicPwnLogger",
-    "SensitiveDataRedactor",
+    # Stress Testing
+    "StressTester",
+    "StressTestConfig",
+    "StressTestMetrics",
+    "run_quick_stress_test",
+    "run_exploit_chain_stress_test",
     
-    # Middleware
-    "middleware_manager",
-    "add_middleware",
-    "remove_middleware",
-    "enable_middleware",
-    "disable_middleware",
-    "get_middleware",
-    "list_middleware",
-    "BaseMiddleware",
-    "AuthenticationMiddleware",
-    "LoggingMiddleware",
-    "RetryMiddleware",
-    "SecurityMiddleware",
-    "SessionMiddleware",
-    "MiddlewareContext",
-    "RetryException",
-    
-    # Utils
+    # Utilities
     "check_indicators",
     "prepare_request_kwargs",
     "validate_config",
-    
-    # Models
-    "RequestConfig",
-    "RequestResult",
-    "RequestMetadata",
-    "SecurityAnalysis",
-    
-    # Exceptions
-    "AuthenticationError",
-    "LoginFailedException",
-    "NetworkError", 
-    "ValidationError",
-    "SessionError",
-    "TimeoutError"
+    "config",
+    "get_timeout",
+    "get_max_retries",
+    "log_info",
+    "log_warning",
+    "log_error",
+    "log_debug",
+    "log_request",
+    "log_response"
 ] 

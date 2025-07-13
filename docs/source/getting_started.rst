@@ -1,33 +1,18 @@
-Getting Started
-==============
+Getting Started with LogicPwn
+============================
 
 This guide will help you get started with LogicPwn, from installation to your first exploit chain.
 
 Installation
 -----------
 
-Prerequisites
-------------
-
-Basic Installation
------------------
-
-Install LogicPwn using pip:
-
-.. code-block:: bash
-
-   pip install logicpwn
-
-For async functionality (recommended):
+LogicPwn requires Python 3.9+ and can be installed via pip:
 
 .. code-block:: bash
 
    pip install logicpwn[async]
 
-Development Installation
-----------------------
-
-Clone the repository and install in development mode:
+For development installation:
 
 .. code-block:: bash
 
@@ -35,354 +20,240 @@ Clone the repository and install in development mode:
    cd logicpwn
    poetry install
 
-Verify Installation
------------------
-
-Test that LogicPwn is installed correctly:
-
-.. code-block:: python
-
-   import logicpwn
-   print(logicpwn.__version__)
-
-Basic Usage
+Quick Start
 ----------
 
-Simple Request
--------------
-
-Send a basic HTTP request:
+Basic Authentication and Request
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
-   from logicpwn.core import send_request
-   from logicpwn.models import RequestResult
-   
-   # Send a GET request
-   result = send_request(
-       url="https://httpbin.org/get",
-       method="GET",
-       headers={"User-Agent": "LogicPwn/1.0"}
-   )
-   
-   print(f"Status: {result.status_code}")
-   print(f"Response: {result.body}")
-
-POST Request with Data
---------------------
-
-Send a POST request with form data:
-
-.. code-block:: python
-
-   result = send_request(
-       url="https://httpbin.org/post",
-       method="POST",
-       data={"username": "admin", "password": "secret123"},
-       headers={"Content-Type": "application/x-www-form-urlencoded"}
-   )
-
-JSON Request
------------
-
-Send a request with JSON data:
-
-.. code-block:: python
-
-   result = send_request(
-       url="https://httpbin.org/post",
-       method="POST",
-       json_data={"action": "login", "credentials": {"user": "admin"}},
-       headers={"Content-Type": "application/json"}
-   )
-
-Authentication
--------------
-
-Basic Authentication
-------------------
-
-Authenticate with a target system:
-
-.. code-block:: python
-
-   from logicpwn.core import authenticate_session, AuthConfig
+   from logicpwn.core import authenticate_session, send_request
    
    # Configure authentication
-   auth_config = AuthConfig(
-       login_url="https://target.com/login",
-       credentials={"username": "admin", "password": "secret123"},
-       method="POST"
-   )
+   auth_config = {
+       "url": "https://target.com/login",
+       "credentials": {"username": "admin", "password": "secret"},
+       "success_indicators": ["dashboard", "welcome"]
+   }
    
    # Authenticate and get session
    session = authenticate_session(auth_config)
    
-   # Use authenticated session
-   response = session.get("https://target.com/admin/panel")
-   print(f"Admin panel status: {response.status_code}")
-
-Session Management
------------------
-
-Work with persistent sessions:
-
-.. code-block:: python
-
-   # Validate session is still active
-   if validate_session(session):
-       print("Session is valid")
-   else:
-       print("Session expired, re-authenticating")
-       session = authenticate_session(auth_config)
-
-Async Requests
--------------
-
-Single Async Request
-------------------
-
-Send async requests for better performance:
-
-.. code-block:: python
-
-   import asyncio
-   from logicpwn.core import send_request_async
+   # Send authenticated request
+   response = send_request(session, {
+       "url": "https://target.com/admin/panel",
+       "method": "GET"
+   })
    
-   async def main():
-       result = await send_request_async(
-           url="https://httpbin.org/get",
-           method="GET"
+   print(f"Status: {response.status_code}")
+   print(f"Content: {response.text[:200]}...")
+
+Advanced Exploit Chaining
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   from logicpwn.core import (
+       authenticate_session, 
+       send_request, 
+       validate_response,
+       extract_from_response
+   )
+   
+   # Step 1: Authenticate
+   session = authenticate_session(auth_config)
+   
+   # Step 2: Access admin panel
+   admin_response = send_request(session, {
+       "url": "https://target.com/admin/panel",
+       "method": "GET"
+   })
+   
+   # Step 3: Validate response
+   is_admin = validate_response(
+       admin_response,
+       success_criteria=["admin", "privileged"],
+       regex_patterns=[r"user_id:\s*(\d+)"]
+   )
+   
+   if is_admin:
+       # Step 4: Extract user ID for next exploit
+       user_ids = extract_from_response(
+           admin_response, 
+           r"user_id:\s*(\d+)"
        )
-       print(f"Async result: {result.status_code}")
-   
-   asyncio.run(main())
-
-Batch Async Requests
--------------------
-
-Send multiple requests concurrently:
-
-.. code-block:: python
-
-   import asyncio
-   from logicpwn.core import send_requests_batch_async
-   
-   async def main():
-       request_configs = [
-           {"url": "https://httpbin.org/get", "method": "GET"},
-           {"url": "https://httpbin.org/post", "method": "POST", "json_data": {"test": "data"}},
-           {"url": "https://httpbin.org/put", "method": "PUT", "json_data": {"update": "value"}}
-       ]
        
-       results = await send_requests_batch_async(request_configs, max_concurrent=5)
-       
-       for i, result in enumerate(results):
-           print(f"Request {i+1}: {result.status_code}")
-   
-   asyncio.run(main())
+       # Step 5: Exploit user ID
+       for user_id in user_ids:
+           exploit_response = send_request(session, {
+               "url": f"https://target.com/api/users/{user_id}/delete",
+               "method": "POST"
+           })
+           print(f"Exploited user {user_id}")
 
-Async Session Management
-----------------------
-
-Use async sessions for high-performance exploit chaining:
+Async/Parallel Execution
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
    import asyncio
    from logicpwn.core import AsyncSessionManager
    
-   async def main():
-       auth_config = {
-           "url": "https://target.com/login",
-           "method": "POST",
-           "credentials": {"username": "admin", "password": "secret123"}
-       }
-       
-       async with AsyncSessionManager(auth_config=auth_config) as session:
-           # Authenticated requests
-           result1 = await session.get("https://target.com/api/users")
-           result2 = await session.post("https://target.com/api/admin", json_data={"action": "exploit"})
+   async def exploit_chain():
+       async with AsyncSessionManager() as manager:
+           # Authenticate
+           await manager.authenticate(auth_config)
            
-           print(f"Users API: {result1.status_code}")
-           print(f"Admin API: {result2.status_code}")
+           # Send multiple requests in parallel
+           request_configs = [
+               {"url": "https://target.com/api/users", "method": "GET"},
+               {"url": "https://target.com/api/admin", "method": "GET"},
+               {"url": "https://target.com/api/settings", "method": "GET"}
+           ]
+           
+           results = await manager.send_requests_batch(request_configs)
+           
+           for i, result in enumerate(results):
+               print(f"Request {i+1}: {result.status_code}")
    
-   asyncio.run(main())
+   # Run the exploit chain
+   asyncio.run(exploit_chain())
+
+Performance Monitoring
+~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   from logicpwn.core import (
+       authenticate_session, 
+       send_request,
+       get_performance_summary,
+       get_cache_stats
+   )
+   
+   # Your exploit chain here...
+   session = authenticate_session(auth_config)
+   response = send_request(session, {"url": "https://target.com/api/data"})
+   
+   # Get performance metrics
+   performance = get_performance_summary()
+   cache_stats = get_cache_stats()
+   
+   print(f"Total operations: {performance.get('total_operations', 0)}")
+   print(f"Average duration: {performance.get('average_duration', 0):.3f}s")
+   print(f"Cache hit rate: {cache_stats['response_cache']['hit_rate']:.1f}%")
 
 Configuration
 ------------
 
 Environment Variables
--------------------
+~~~~~~~~~~~~~~~~~~~~
 
-LogicPwn can be configured via environment variables:
+LogicPwn supports configuration via environment variables:
 
 .. code-block:: bash
 
-   export LOGICPWN_TIMEOUT=30
-   export LOGICPWN_MAX_RETRIES=3
-   export LOGICPWN_LOG_LEVEL=INFO
-   export LOGICPWN_ENABLE_SESSION_PERSISTENCE=true
+   export LOGICPWN_TIMEOUT=60
+   export LOGICPWN_MAX_RETRIES=5
+   export LOGICPWN_LOG_LEVEL=DEBUG
+   export LOGICPWN_ENABLE_REQUEST_LOGGING=true
 
 Configuration File
------------------
+~~~~~~~~~~~~~~~~~
 
-Create a configuration file for persistent settings:
+Create a configuration file for your project:
 
 .. code-block:: python
 
+   # config.py
    from logicpwn.core.config import config
    
-   # Set configuration values
-   config.set_timeout(30)
-   config.set_max_retries(5)
-   config.set_log_level("DEBUG")
-   
-   # Save configuration
-   config.save()
-
-Logging
--------
-
-Basic Logging
-------------
-
-LogicPwn provides comprehensive logging:
-
-.. code-block:: python
-
-   from logicpwn.core import log_info, log_error, log_debug
-   
-   log_info("Starting exploit chain", {"target": "https://target.com"})
-   log_debug("Sending request", {"url": "https://target.com/api/data"})
-   log_error("Request failed", {"status_code": 500})
-
-Secure Logging
--------------
-
-Sensitive data is automatically redacted:
-
-.. code-block:: python
-
-   # Password will be redacted in logs
-   result = send_request(
-       url="https://target.com/login",
-       method="POST",
-       data={"username": "admin", "password": "secret123"}
+   # Update default settings
+   config.update_config(
+       TIMEOUT=60,
+       MAX_RETRIES=5,
+       VERIFY_SSL=False  # For testing environments
    )
 
-Middleware
----------
-
-Using Middleware
---------------
-
-LogicPwn includes a middleware system for extensibility:
-
-.. code-block:: python
-
-   from logicpwn.core import add_middleware, AuthenticationMiddleware, RetryMiddleware
-   
-   # Add authentication middleware
-   auth_middleware = AuthenticationMiddleware()
-   add_middleware(auth_middleware)
-   
-   # Add retry middleware
-   retry_middleware = RetryMiddleware(max_retries=3)
-   add_middleware(retry_middleware)
-
-Custom Middleware
-----------------
-
-Create custom middleware for specific needs:
-
-.. code-block:: python
-
-   from logicpwn.core import BaseMiddleware, MiddlewareContext
-   
-   class CustomMiddleware(BaseMiddleware):
-       def __init__(self, name="CustomMiddleware"):
-           super().__init__(name)
-       
-       def process_request(self, context: MiddlewareContext) -> MiddlewareContext:
-           # Add custom headers
-           context.headers["X-Custom-Header"] = "LogicPwn"
-           return context
-       
-       def process_response(self, context: MiddlewareContext, response: Any) -> Any:
-           # Process response
-           return response
-
-Error Handling
+Best Practices
 -------------
 
-Exception Handling
------------------
+Security Considerations
+~~~~~~~~~~~~~~~~~~~~~
 
-Handle different types of errors:
+1. **Always get authorization** before testing any systems
+2. **Use test environments** for development and testing
+3. **Secure credential storage** - never hardcode credentials
+4. **Monitor rate limits** to avoid being blocked
+5. **Log responsibly** - avoid logging sensitive data
+
+Performance Tips
+~~~~~~~~~~~~~~~
+
+1. **Use caching** for repeated requests
+2. **Implement rate limiting** for large-scale testing
+3. **Use async execution** for parallel operations
+4. **Monitor memory usage** for long-running chains
+5. **Clean up sessions** after use
+
+Error Handling
+~~~~~~~~~~~~~
 
 .. code-block:: python
 
-   from logicpwn.exceptions import NetworkError, ValidationError, TimeoutError
+   from logicpwn.exceptions import (
+       AuthenticationError,
+       NetworkError,
+       ValidationError
+   )
    
    try:
-       result = send_request(url="https://target.com/api/data")
+       session = authenticate_session(auth_config)
+       response = send_request(session, request_config)
+   except AuthenticationError as e:
+       print(f"Authentication failed: {e}")
    except NetworkError as e:
        print(f"Network error: {e}")
    except ValidationError as e:
-       print(f"Validation error: {e}")
-   except TimeoutError as e:
-       print(f"Timeout error: {e}")
-
-Response Analysis
-----------------
-
-Analyze responses for security issues:
-
-.. code-block:: python
-
-   result = send_request(url="https://target.com/api/data")
-   
-   if result.has_vulnerabilities:
-       print("Security vulnerabilities detected!")
-       print(f"Sensitive data: {result.security_analysis.has_sensitive_data}")
-       print(f"Error messages: {result.security_analysis.error_messages}")
-
-Next Steps
-----------
-
-* Explore :doc:`async_runner` for high-performance async functionality
-* Review the :doc:`api_reference` for complete API documentation
+       print(f"Configuration error: {e}")
 
 Troubleshooting
 --------------
 
 Common Issues
-------------
+~~~~~~~~~~~~
 
-**Import Error**: Make sure LogicPwn is installed correctly:
+**Authentication Fails**
+- Check credentials and success indicators
+- Verify URL format and accessibility
+- Check for rate limiting or IP blocking
 
-.. code-block:: bash
+**Network Errors**
+- Verify target is accessible
+- Check SSL certificate issues
+- Ensure proper proxy configuration
 
-   pip install --upgrade logicpwn
+**Performance Issues**
+- Enable caching for repeated requests
+- Use async execution for parallel operations
+- Monitor memory usage
 
-**Async Import Error**: Install async dependencies:
-
-.. code-block:: bash
-
-   pip install aiohttp
-
-**Configuration Error**: Check environment variables and configuration:
-
-.. code-block:: python
-
-   from logicpwn.core.config import config
-   print(config.get_timeout())
-   print(config.get_log_level())
+**Validation Errors**
+- Check configuration format
+- Verify required fields are present
+- Ensure proper data types
 
 Getting Help
 -----------
 
-* Check the :doc:`api_reference` for detailed API documentation
-* Open an issue on GitHub for bugs or feature requests
-* Join the community discussions for support 
+* **Documentation**: https://logicpwn.readthedocs.io/
+* **GitHub Issues**: https://github.com/logicpwn/logicpwn/issues
+* **Security**: security@logicpwn.org
+
+Next Steps
+----------
+
+* Read the :doc:`async_runner` guide for high-performance execution
+* Check the :doc:`api_reference` for complete API documentation
+* Explore the examples directory for more use cases 

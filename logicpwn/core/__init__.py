@@ -1,9 +1,17 @@
 """
-Core functionality for LogicPwn Business Logic Exploitation Framework.
+LogicPwn Core Module
 
-This package contains the core modules for authentication, request execution,
-configuration management, logging, middleware, and response analysis.
-It provides the foundation for exploit chaining workflows.
+This module provides the core functionality for business logic exploitation
+and multi-step attack automation. It includes authentication, request execution,
+response validation, and advanced async capabilities.
+
+Key Components:
+- Authentication and session management
+- Request execution with advanced features
+- Response validation and analysis
+- Async/parallel execution
+- Performance monitoring and caching
+- Stress testing and load testing
 """
 
 from .auth import (
@@ -13,15 +21,10 @@ from .auth import (
     AuthConfig
 )
 
-from .runner import send_request, send_request_advanced
-
-from .async_runner import (
-    AsyncRequestRunner,
-    AsyncSessionManager,
-    send_request_async,
-    send_requests_batch_async,
-    async_session_manager,
-    AsyncRequestContext
+from .runner import (
+    send_request,
+    send_request_advanced,
+    RequestConfig
 )
 
 from .validator import (
@@ -33,7 +36,43 @@ from .validator import (
     ValidationResult,
     ValidationConfig,
     ValidationType,
-    VulnerabilityPatterns
+    VulnerabilityPatterns,
+    validate_validation_config,
+    MAX_RESPONSE_TEXT_LENGTH,
+    DEFAULT_CONFIDENCE_THRESHOLD
+)
+
+from .async_runner import (
+    AsyncRequestRunner,
+    AsyncSessionManager,
+    send_request_async,
+    send_requests_batch_async,
+    async_session_manager
+)
+
+from .performance import (
+    PerformanceMonitor,
+    PerformanceBenchmark,
+    MemoryProfiler,
+    monitor_performance,
+    performance_context,
+    get_performance_summary
+)
+
+from .cache import (
+    response_cache,
+    session_cache,
+    config_cache,
+    get_cache_stats,
+    clear_all_caches
+)
+
+from .stress_tester import (
+    StressTester,
+    StressTestConfig,
+    StressTestMetrics,
+    run_quick_stress_test,
+    run_exploit_chain_stress_test
 )
 
 from .utils import (
@@ -45,175 +84,82 @@ from .utils import (
 from .config import (
     config,
     get_timeout,
-    get_max_retries,
-    get_sensitive_headers,
-    get_sensitive_params,
-    get_redaction_string,
-    get_max_log_body_size,
-    get_log_level,
-    get_logging_defaults,
-    is_request_logging_enabled,
-    is_response_logging_enabled,
-    is_error_logging_enabled,
-    get_session_timeout,
-    get_max_sessions,
-    HTTPMethod,
-    BodyType,
-    RequestDefaults,
-    SecurityDefaults,
-    LoggingDefaults,
-    AuthDefaults
+    get_max_retries
 )
 
 from .logging_utils import (
-    logger,
-    log_request,
-    log_response,
-    log_error,
     log_info,
-    log_debug,
     log_warning,
-    LogicPwnLogger,
-    SensitiveDataRedactor
-)
-
-from .middleware import (
-    middleware_manager,
-    add_middleware,
-    remove_middleware,
-    enable_middleware,
-    disable_middleware,
-    get_middleware,
-    list_middleware,
-    BaseMiddleware,
-    AuthenticationMiddleware,
-    LoggingMiddleware,
-    RetryMiddleware,
-    SecurityMiddleware,
-    SessionMiddleware,
-    MiddlewareContext,
-    RetryException
-)
-
-from .cache import (
-    CacheManager,
-    ResponseCache,
-    SessionCache,
-    cached,
-    response_cache,
-    session_cache,
-    config_cache,
-    get_cache_stats,
-    clear_all_caches
-)
-
-from .performance import (
-    PerformanceMonitor,
-    PerformanceBenchmark,
-    MemoryProfiler,
-    PerformanceMetrics,
-    monitor_performance,
-    performance_context,
-    get_performance_summary,
-    run_performance_benchmark,
-    performance_monitor
+    log_error,
+    log_debug,
+    log_request,
+    log_response
 )
 
 __all__ = [
-    # Authentication functions
-    'authenticate_session',
-    'validate_session', 
-    'logout_session',
-    'AuthConfig',
-    # Request execution functions
-    'send_request',
-    'send_request_advanced',
-    # Async request execution functions
-    'AsyncRequestRunner',
-    'AsyncSessionManager',
-    'send_request_async',
-    'send_requests_batch_async',
-    'async_session_manager',
-    'AsyncRequestContext',
-    # Response validation functions
-    'validate_response',
-    'extract_from_response',
-    'validate_json_response',
-    'validate_html_response',
-    'chain_validations',
-    'ValidationResult',
-    'ValidationConfig',
-    'ValidationType',
-    'VulnerabilityPatterns',
-    # Utils functions
-    'check_indicators',
-    'prepare_request_kwargs',
-    'validate_config',
-    # Configuration
-    'config',
-    'get_timeout',
-    'get_max_retries',
-    'get_sensitive_headers',
-    'get_sensitive_params',
-    'get_redaction_string',
-    'get_max_log_body_size',
-    'get_log_level',
-    'get_logging_defaults',
-    'is_request_logging_enabled',
-    'is_response_logging_enabled',
-    'is_error_logging_enabled',
-    'get_session_timeout',
-    'get_max_sessions',
-    'HTTPMethod',
-    'BodyType',
-    'RequestDefaults',
-    'SecurityDefaults',
-    'LoggingDefaults',
-    'AuthDefaults',
-    # Logging
-    'logger',
-    'log_request',
-    'log_response',
-    'log_error',
-    'log_info',
-    'log_debug',
-    'log_warning',
-    'LogicPwnLogger',
-    'SensitiveDataRedactor',
-    # Middleware
-    'middleware_manager',
-    'add_middleware',
-    'remove_middleware',
-    'enable_middleware',
-    'disable_middleware',
-    'get_middleware',
-    'list_middleware',
-    'BaseMiddleware',
-    'AuthenticationMiddleware',
-    'LoggingMiddleware',
-    'RetryMiddleware',
-    'SecurityMiddleware',
-    'SessionMiddleware',
-    'MiddlewareContext',
-    'RetryException',
-    # Cache
-    'CacheManager',
-    'ResponseCache',
-    'SessionCache',
-    'cached',
-    'response_cache',
-    'session_cache',
-    'config_cache',
-    'get_cache_stats',
-    'clear_all_caches',
-    # Performance
-    'PerformanceMonitor',
-    'PerformanceBenchmark',
-    'MemoryProfiler',
-    'PerformanceMetrics',
-    'monitor_performance',
-    'performance_context',
-    'get_performance_summary',
-    'run_performance_benchmark',
-    'performance_monitor'
+    # Authentication
+    "authenticate_session",
+    "validate_session", 
+    "logout_session",
+    "AuthConfig",
+    
+    # Request Execution
+    "send_request",
+    "send_request_advanced",
+    "RequestConfig",
+    
+    # Response Validation
+    "validate_response",
+    "extract_from_response",
+    "validate_json_response",
+    "validate_html_response",
+    "chain_validations",
+    "ValidationResult",
+    "ValidationConfig",
+    "ValidationType",
+    "VulnerabilityPatterns",
+    "validate_validation_config",
+    "MAX_RESPONSE_TEXT_LENGTH",
+    "DEFAULT_CONFIDENCE_THRESHOLD",
+    
+    # Async Execution
+    "AsyncRequestRunner",
+    "AsyncSessionManager",
+    "send_request_async",
+    "send_requests_batch_async",
+    "async_session_manager",
+    
+    # Performance & Caching
+    "PerformanceMonitor",
+    "PerformanceBenchmark",
+    "MemoryProfiler",
+    "monitor_performance",
+    "performance_context",
+    "get_performance_summary",
+    "response_cache",
+    "session_cache",
+    "config_cache",
+    "get_cache_stats",
+    "clear_all_caches",
+    
+    # Stress Testing
+    "StressTester",
+    "StressTestConfig",
+    "StressTestMetrics",
+    "run_quick_stress_test",
+    "run_exploit_chain_stress_test",
+    
+    # Utilities
+    "check_indicators",
+    "prepare_request_kwargs",
+    "validate_config",
+    "config",
+    "get_timeout",
+    "get_max_retries",
+    "log_info",
+    "log_warning",
+    "log_error",
+    "log_debug",
+    "log_request",
+    "log_response"
 ] 
