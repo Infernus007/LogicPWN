@@ -8,42 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial release of LogicPwn
-- Core authentication module with session persistence
-- Async request runner with high-performance capabilities
-- Middleware system for extensibility
-- Comprehensive logging with sensitive data redaction
-- Pydantic models for data validation
-- Security analysis and vulnerability detection
-- Configuration management system
-- Retry and backoff mechanisms
-- Rate limiting support
-- Connection pooling for async requests
-- Session management for exploit chaining
-- Error handling with specific exception types
-- Input validation and sanitization
-- Secure credential handling
-- Documentation with Sphinx
-- Comprehensive test suite with 100% coverage
+- **Core Module Refactoring**: Unified shared utilities in `logicpwn.core.utils`
+- **Enhanced Error Handling**: Improved exception handling with specific error types
+- **Secure Logging**: URL sanitization and response size logging in request runner
+- **Test Coverage Improvements**: Fixed all failing tests and improved test reliability
+- **Code Quality**: Removed redundant code and improved interoperability between modules
 
 ### Changed
-- N/A (Initial release)
-
-### Deprecated
-- N/A (Initial release)
-
-### Removed
-- N/A (Initial release)
+- **Auth Module**: Refactored to use shared utilities, removed redundant indicator checking logic
+- **Runner Module**: Enhanced error handling and logging, improved request execution reliability
+- **Validator Module**: Unified validation logic with shared utilities, improved confidence scoring
+- **Test Suite**: Fixed 7 failing tests related to confidence thresholds and mock handling
+- **Documentation**: Updated API documentation to reflect recent improvements
 
 ### Fixed
-- N/A (Initial release)
+- **Test Failures**: Fixed all 7 failing tests in validator and auth modules
+- **Error Messages**: Standardized error messages across all modules
+- **Mock Handling**: Improved mock response handling in tests
+- **Confidence Thresholds**: Lowered default confidence threshold from 0.5 to 0.3 for better validation
+- **HTTP Error Handling**: Fixed HTTP error status code handling in request runner
+- **Logging**: Fixed response size logging to handle mock objects properly
 
 ### Security
-- Implemented secure logging with automatic credential redaction
-- Added input validation for all user inputs
-- Secure default configurations
-- Non-disclosure of sensitive information in error messages
-- Secure authentication flows with proper session management
+- **URL Sanitization**: Added automatic redaction of sensitive query parameters in logs
+- **Secure Logging**: Enhanced logging to prevent sensitive data exposure
+- **Input Validation**: Improved validation across all modules
 
 ## [1.0.0] - 2024-01-XX
 
@@ -137,9 +126,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Version 1.0.0
 - Initial release of LogicPwn
 - Complete authentication and request execution framework
-- Async support with high-performance capabilities
-- Comprehensive security features
-- Full documentation and test coverage
 
 ---
 

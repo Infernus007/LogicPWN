@@ -24,6 +24,24 @@ from .async_runner import (
     AsyncRequestContext
 )
 
+from .validator import (
+    validate_response,
+    extract_from_response,
+    validate_json_response,
+    validate_html_response,
+    chain_validations,
+    ValidationResult,
+    ValidationConfig,
+    ValidationType,
+    VulnerabilityPatterns
+)
+
+from .utils import (
+    check_indicators,
+    prepare_request_kwargs,
+    validate_config
+)
+
 from .config import (
     config,
     get_timeout,
@@ -77,6 +95,30 @@ from .middleware import (
     RetryException
 )
 
+from .cache import (
+    CacheManager,
+    ResponseCache,
+    SessionCache,
+    cached,
+    response_cache,
+    session_cache,
+    config_cache,
+    get_cache_stats,
+    clear_all_caches
+)
+
+from .performance import (
+    PerformanceMonitor,
+    PerformanceBenchmark,
+    MemoryProfiler,
+    PerformanceMetrics,
+    monitor_performance,
+    performance_context,
+    get_performance_summary,
+    run_performance_benchmark,
+    performance_monitor
+)
+
 __all__ = [
     # Authentication functions
     'authenticate_session',
@@ -93,6 +135,20 @@ __all__ = [
     'send_requests_batch_async',
     'async_session_manager',
     'AsyncRequestContext',
+    # Response validation functions
+    'validate_response',
+    'extract_from_response',
+    'validate_json_response',
+    'validate_html_response',
+    'chain_validations',
+    'ValidationResult',
+    'ValidationConfig',
+    'ValidationType',
+    'VulnerabilityPatterns',
+    # Utils functions
+    'check_indicators',
+    'prepare_request_kwargs',
+    'validate_config',
     # Configuration
     'config',
     'get_timeout',
@@ -139,5 +195,25 @@ __all__ = [
     'SecurityMiddleware',
     'SessionMiddleware',
     'MiddlewareContext',
-    'RetryException'
+    'RetryException',
+    # Cache
+    'CacheManager',
+    'ResponseCache',
+    'SessionCache',
+    'cached',
+    'response_cache',
+    'session_cache',
+    'config_cache',
+    'get_cache_stats',
+    'clear_all_caches',
+    # Performance
+    'PerformanceMonitor',
+    'PerformanceBenchmark',
+    'MemoryProfiler',
+    'PerformanceMetrics',
+    'monitor_performance',
+    'performance_context',
+    'get_performance_summary',
+    'run_performance_benchmark',
+    'performance_monitor'
 ] 

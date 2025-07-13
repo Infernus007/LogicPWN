@@ -37,6 +37,9 @@ from ..exceptions import (
     SessionError,
     TimeoutError
 )
+from .utils import check_indicators, prepare_request_kwargs, validate_config
+from .performance import monitor_performance, performance_context
+from .cache import session_cache
 
 # Module constants for maintainability and configuration
 HTTP_METHODS = {"GET", "POST"}
@@ -98,107 +101,50 @@ def _sanitize_credentials(credentials: Dict[str, str]) -> Dict[str, str]:
     return {key: '*' * len(value) if value else '***' for key, value in credentials.items()}
 
 
-def _check_response_indicators(response_text: str, indicators: List[str], indicator_type: str) -> bool:
-    """Check if response contains specified indicators for authentication validation.
-    
-    This function performs case-insensitive text matching to determine
-    if authentication was successful or failed based on response content.
-    
-    Args:
-        response_text: Response text to check
-        indicators: List of indicators to search for
-        indicator_type: Type of indicators ('success' or 'failure')
-        
-    Returns:
-        True if any indicator is found, False otherwise
-    """
-    if not indicators:
-        return False
-    
-    response_lower = response_text.lower()
-    for indicator in indicators:
-        if indicator.lower() in response_lower:
-            logger.debug(f"Found {indicator_type} indicator: {indicator}")
-            return True
-    
-    return False
-
-
 def _create_session(config: AuthConfig) -> requests.Session:
-    """Create and configure session with authentication settings.
-    
+    """
+    Create and configure session with authentication settings.
     This function sets up a requests session with proper configuration
     for authentication, including SSL verification, timeouts, and headers.
-    
     Args:
         config: Authentication configuration
-        
     Returns:
         Configured requests session ready for authentication
     """
     session = requests.Session()
     session.verify = config.verify_ssl
     session.timeout = config.timeout
-    
     if config.headers:
         session.headers.update(config.headers)
-    
     return session
 
 
-def _prepare_request_kwargs(config: AuthConfig) -> Dict[str, Any]:
-    """Prepare request parameters for authentication.
-    
-    This function prepares the request parameters based on the HTTP method,
-    setting up data for POST requests or params for GET requests.
-    
-    Args:
-        config: Authentication configuration
-        
-    Returns:
-        Dictionary of request parameters ready for session.request()
-    """
-    request_kwargs = {
-        'timeout': config.timeout,
-        'verify': config.verify_ssl
-    }
-    
-    if config.method == "POST":
-        request_kwargs['data'] = config.credentials
-    else:  # GET
-        request_kwargs['params'] = config.credentials
-    
-    return request_kwargs
-
-
 def _handle_response_indicators(response: requests.Response, config: AuthConfig) -> None:
-    """Handle response indicator checking and raise appropriate exceptions.
-    
+    """
+    Handle response indicator checking and raise appropriate exceptions.
     This function validates the authentication response by checking for
     success and failure indicators in the response text. It raises
     LoginFailedException if authentication appears to have failed.
-    
     Args:
         response: HTTP response object from authentication request
         config: Authentication configuration
-        
     Raises:
         LoginFailedException: If authentication fails based on indicators
     """
     response_text = response.text
-    
     # Check for failure indicators first
-    if _check_response_indicators(response_text, config.failure_indicators, "failure"):
+    failure_match, _ = check_indicators(response_text, config.failure_indicators, "failure")
+    if failure_match:
         logger.error("Authentication failed - failure indicators found in response")
         raise LoginFailedException(
             message="Authentication failed - failure indicators detected",
             response_code=response.status_code,
             response_text=response_text[:MAX_RESPONSE_TEXT_LENGTH]
         )
-    
     # Check for success indicators
     if config.success_indicators:
-        if not _check_response_indicators(response_text, config.success_indicators, "success"):
+        success_match, _ = check_indicators(response_text, config.success_indicators, "success")
+        if not success_match:
             logger.error("Authentication failed - no success indicators found")
             raise LoginFailedException(
                 message="Authentication failed - no success indicators detected",
@@ -207,26 +153,7 @@ def _handle_response_indicators(response: requests.Response, config: AuthConfig)
             )
 
 
-def _validate_config(auth_config: Union[AuthConfig, Dict[str, Any]]) -> AuthConfig:
-    """Validate and convert authentication configuration.
-    
-    This function ensures the authentication configuration is valid and
-    converts dictionary inputs to AuthConfig objects for consistent handling.
-    
-    Args:
-        auth_config: Authentication configuration (dict or AuthConfig object)
-        
-    Returns:
-        Validated AuthConfig object
-        
-    Raises:
-        ValidationError: If configuration is invalid
-    """
-    if isinstance(auth_config, dict):
-        return AuthConfig(**auth_config)
-    return auth_config
-
-
+@monitor_performance("authentication")
 def authenticate_session(auth_config: Union[AuthConfig, Dict[str, Any]]) -> requests.Session:
     """
     Authenticate and return a session with persistent cookies for exploit chaining.
@@ -264,7 +191,16 @@ def authenticate_session(auth_config: Union[AuthConfig, Dict[str, Any]]) -> requ
     """
     try:
         # Validate configuration
-        config = _validate_config(auth_config)
+        config = validate_config(auth_config, AuthConfig)
+        
+        # Generate session ID for caching
+        session_id = f"{config.url}_{config.method}_{hash(str(config.credentials))}"
+        
+        # Check cache for existing session
+        cached_session = session_cache.get_session(session_id)
+        if cached_session:
+            logger.debug(f"Using cached session for {config.url}")
+            return cached_session
         
         # Log authentication attempt (without sensitive data)
         sanitized_creds = _sanitize_credentials(config.credentials)
@@ -275,7 +211,14 @@ def authenticate_session(auth_config: Union[AuthConfig, Dict[str, Any]]) -> requ
         session = _create_session(config)
         
         # Prepare request parameters
-        request_kwargs = _prepare_request_kwargs(config)
+        request_kwargs = prepare_request_kwargs(
+            method=config.method,
+            url=config.url,
+            credentials=config.credentials,
+            headers=config.headers,
+            timeout=config.timeout,
+            verify_ssl=config.verify_ssl
+        )
         
         # Perform authentication request
         logger.debug(f"Sending {config.method} request to {config.url}")
@@ -290,6 +233,9 @@ def authenticate_session(auth_config: Union[AuthConfig, Dict[str, Any]]) -> requ
         # Verify session has cookies (optional check)
         if not session.cookies:
             logger.warning("No cookies received during authentication")
+        
+        # Cache the session
+        session_cache.set_session(session_id, session)
         
         logger.info("Authentication successful - session created with persistent cookies")
         return session

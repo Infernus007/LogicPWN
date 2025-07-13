@@ -101,7 +101,11 @@ from .core import (
     SecurityMiddleware,
     SessionMiddleware,
     MiddlewareContext,
-    RetryException
+    RetryException,
+    # Utils
+    check_indicators,
+    prepare_request_kwargs,
+    validate_config
 )
 
 from .models import (
@@ -189,6 +193,11 @@ __all__ = [
     "SessionMiddleware",
     "MiddlewareContext",
     "RetryException",
+    
+    # Utils
+    "check_indicators",
+    "prepare_request_kwargs",
+    "validate_config",
     
     # Models
     "RequestConfig",

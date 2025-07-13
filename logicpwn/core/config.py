@@ -11,6 +11,7 @@ from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 import os
+from .cache import config_cache
 
 
 class HTTPMethod(Enum):
@@ -206,63 +207,135 @@ config = Config()
 
 # Convenience functions for accessing configuration
 def get_timeout() -> int:
-    """Get default request timeout."""
-    return config.get_request_defaults().TIMEOUT
+    """Get request timeout from configuration."""
+    cached_timeout = config_cache.get("timeout")
+    if cached_timeout is not None:
+        return cached_timeout
+    
+    timeout = config.get_request_defaults().TIMEOUT
+    config_cache.set("timeout", timeout, ttl=600)  # Cache for 10 minutes
+    return timeout
 
 
 def get_max_retries() -> int:
-    """Get default maximum retries."""
-    return config.get_request_defaults().MAX_RETRIES
+    """Get maximum retries from configuration."""
+    cached_retries = config_cache.get("max_retries")
+    if cached_retries is not None:
+        return cached_retries
+    
+    retries = config.get_request_defaults().MAX_RETRIES
+    config_cache.set("max_retries", retries, ttl=600)  # Cache for 10 minutes
+    return retries
 
 
 def get_sensitive_headers() -> set:
-    """Get set of sensitive headers to redact."""
-    return config.get_security_defaults().SENSITIVE_HEADERS
+    """Get sensitive headers from configuration."""
+    cached_headers = config_cache.get("sensitive_headers")
+    if cached_headers is not None:
+        return cached_headers
+    
+    headers = config.get_security_defaults().SENSITIVE_HEADERS
+    config_cache.set("sensitive_headers", headers, ttl=600)  # Cache for 10 minutes
+    return headers
 
 
 def get_sensitive_params() -> set:
-    """Get set of sensitive parameters to redact."""
-    return config.get_security_defaults().SENSITIVE_PARAMS
+    """Get sensitive parameters from configuration."""
+    cached_params = config_cache.get("sensitive_params")
+    if cached_params is not None:
+        return cached_params
+    
+    params = config.get_security_defaults().SENSITIVE_PARAMS
+    config_cache.set("sensitive_params", params, ttl=600)  # Cache for 10 minutes
+    return params
 
 
 def get_redaction_string() -> str:
-    """Get string used for redacting sensitive data."""
-    return config.get_security_defaults().REDACTION_STRING
+    """Get redaction string from configuration."""
+    cached_string = config_cache.get("redaction_string")
+    if cached_string is not None:
+        return cached_string
+    
+    redaction = config.get_security_defaults().REDACTION_STRING
+    config_cache.set("redaction_string", redaction, ttl=600)  # Cache for 10 minutes
+    return redaction
 
 
 def get_max_log_body_size() -> int:
-    """Get maximum body size for logging."""
-    return config.get_security_defaults().MAX_LOG_BODY_SIZE
+    """Get maximum log body size from configuration."""
+    cached_size = config_cache.get("max_log_body_size")
+    if cached_size is not None:
+        return cached_size
+    
+    size = config.get_security_defaults().MAX_LOG_BODY_SIZE
+    config_cache.set("max_log_body_size", size, ttl=600)  # Cache for 10 minutes
+    return size
 
 
 def get_log_level() -> str:
-    """Get default log level."""
-    return config.get_logging_defaults().LOG_LEVEL
+    """Get log level from configuration."""
+    cached_level = config_cache.get("log_level")
+    if cached_level is not None:
+        return cached_level
+    
+    level = config.get_logging_defaults().LOG_LEVEL
+    config_cache.set("log_level", level, ttl=600)  # Cache for 10 minutes
+    return level
 
 
 def is_request_logging_enabled() -> bool:
     """Check if request logging is enabled."""
-    return config.get_logging_defaults().ENABLE_REQUEST_LOGGING
+    cached_enabled = config_cache.get("request_logging_enabled")
+    if cached_enabled is not None:
+        return cached_enabled
+    
+    enabled = config.get_logging_defaults().ENABLE_REQUEST_LOGGING
+    config_cache.set("request_logging_enabled", enabled, ttl=600)  # Cache for 10 minutes
+    return enabled
 
 
 def is_response_logging_enabled() -> bool:
     """Check if response logging is enabled."""
-    return config.get_logging_defaults().ENABLE_RESPONSE_LOGGING
+    cached_enabled = config_cache.get("response_logging_enabled")
+    if cached_enabled is not None:
+        return cached_enabled
+    
+    enabled = config.get_logging_defaults().ENABLE_RESPONSE_LOGGING
+    config_cache.set("response_logging_enabled", enabled, ttl=600)  # Cache for 10 minutes
+    return enabled
 
 
 def is_error_logging_enabled() -> bool:
     """Check if error logging is enabled."""
-    return config.get_logging_defaults().ENABLE_ERROR_LOGGING
+    cached_enabled = config_cache.get("error_logging_enabled")
+    if cached_enabled is not None:
+        return cached_enabled
+    
+    enabled = config.get_logging_defaults().ENABLE_ERROR_LOGGING
+    config_cache.set("error_logging_enabled", enabled, ttl=600)  # Cache for 10 minutes
+    return enabled
 
 
 def get_session_timeout() -> int:
-    """Get default session timeout."""
-    return config.get_auth_defaults().SESSION_TIMEOUT
+    """Get session timeout from configuration."""
+    cached_timeout = config_cache.get("session_timeout")
+    if cached_timeout is not None:
+        return cached_timeout
+    
+    timeout = config.get_auth_defaults().SESSION_TIMEOUT
+    config_cache.set("session_timeout", timeout, ttl=600)  # Cache for 10 minutes
+    return timeout
 
 
 def get_max_sessions() -> int:
-    """Get maximum number of sessions."""
-    return config.get_auth_defaults().MAX_SESSIONS 
+    """Get maximum sessions from configuration."""
+    cached_sessions = config_cache.get("max_sessions")
+    if cached_sessions is not None:
+        return cached_sessions
+    
+    sessions = config.get_auth_defaults().MAX_SESSIONS
+    config_cache.set("max_sessions", sessions, ttl=600)  # Cache for 10 minutes
+    return sessions
 
 
 def get_logging_defaults() -> LoggingDefaults:

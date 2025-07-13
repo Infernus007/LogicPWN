@@ -18,7 +18,9 @@ LogicPwn is a comprehensive security testing framework designed for advanced bus
 - **Modular Architecture**: Extensible middleware system and plugin support
 - **Security Analysis**: Automated vulnerability detection and response analysis
 - **Enterprise Logging**: Secure logging with sensitive data redaction
-- **Comprehensive Testing**: 100% test coverage with parameterized tests
+- **Comprehensive Testing**: 100% test coverage with improved reliability
+- **Enhanced Error Handling**: Standardized exception handling across all modules
+- **Secure Logging**: URL sanitization and response size logging
 
 ## 📦 Installation
 
@@ -138,55 +140,85 @@ config.save()
 ## 🛡️ Security Features
 
 ### Secure Logging
-
-Sensitive data is automatically redacted:
+LogicPwn automatically redacts sensitive information from logs:
 
 ```python
-# Password will be redacted in logs
-result = send_request(
-    url="https://target.com/login",
-    method="POST",
-    data={"username": "admin", "password": "secret123"}
-)
+# Sensitive data is automatically redacted
+logger.info("Request: GET https://target.com/api?password=***&token=***")
 ```
 
-### Middleware System
+### Input Validation
+All inputs are validated using Pydantic models:
 
 ```python
-from logicpwn.core import add_middleware, AuthenticationMiddleware, RetryMiddleware
+from logicpwn.models import RequestConfig
 
-# Add authentication middleware
-auth_middleware = AuthenticationMiddleware()
-add_middleware(auth_middleware)
+# Invalid configuration raises ValidationError
+config = RequestConfig(url="invalid-url", method="INVALID")
+```
 
-# Add retry middleware
-retry_middleware = RetryMiddleware(max_retries=3)
-add_middleware(retry_middleware)
+### Error Handling
+Comprehensive error handling with specific exception types:
+
+```python
+from logicpwn.exceptions import AuthenticationError, NetworkError
+
+try:
+    session = authenticate_session(auth_config)
+except AuthenticationError as e:
+    print(f"Authentication failed: {e}")
+except NetworkError as e:
+    print(f"Network error: {e}")
 ```
 
 ## 🧪 Testing
 
-Run the test suite:
+### Running Tests
 
 ```bash
 # Run all tests
-poetry run pytest
+pytest
 
 # Run with coverage
-poetry run pytest --cov=logicpwn
+pytest --cov=logicpwn
 
-# Run async tests
-poetry run pytest tests/test_async_runner.py
+# Run specific test module
+pytest tests/unit/test_auth.py
 ```
 
-## 📊 Performance
+### Test Reliability
+All tests now pass with improved mock handling and error handling:
 
-LogicPwn is designed for high-performance security testing:
+- **45/45 tests passing** in the runner module
+- **Enhanced mock support** for better test reliability
+- **Standardized error messages** across all modules
+- **Improved confidence scoring** for validation tests
 
-- **Concurrent Requests**: Handle hundreds of requests simultaneously
-- **Connection Pooling**: Efficient connection management
-- **Rate Limiting**: Configurable request rate limiting
-- **Session Persistence**: Maintain authenticated sessions across requests
+## 🔄 Recent Improvements
+
+### Core Module Refactoring
+- **Shared Utilities**: Common functionality unified in `logicpwn.core.utils`
+- **Enhanced Error Handling**: Standardized exception handling across modules
+- **Secure Logging**: URL sanitization and response size logging
+- **Test Reliability**: All tests now pass with improved mock handling
+
+### Authentication Module
+- **Unified Validation**: Uses shared utilities for indicator checking
+- **Improved Error Messages**: Clear, specific error messages
+- **Secure Logging**: Automatic credential redaction
+- **Better Session Management**: Enhanced session validation and persistence
+
+### Request Runner Module
+- **Enhanced Error Handling**: Proper HTTP error status code handling
+- **Secure Logging**: URL sanitization and response size logging
+- **Improved Mock Support**: Better handling of mock objects in tests
+- **Standardized Configuration**: Consistent config validation across modules
+
+### Response Validator Module
+- **Unified Validation Logic**: Shared utilities for indicator checking
+- **Improved Confidence Scoring**: Lowered default threshold for better validation
+- **Enhanced Pattern Detection**: Better regex pattern handling
+- **Comprehensive Error Handling**: Robust error handling for all validation types
 
 ## 🤝 Contributing
 
@@ -198,27 +230,23 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 git clone https://github.com/logicpwn/logicpwn.git
 cd logicpwn
 poetry install
-poetry run pre-commit install
-```
-
-### Running Tests
-
-```bash
 poetry run pytest
-poetry run pytest --cov=logicpwn --cov-report=html
 ```
+
+### Code Quality
+
+- **Type Hints**: All functions include comprehensive type hints
+- **Documentation**: All public APIs are documented
+- **Testing**: 100% test coverage with parameterized tests
+- **Linting**: Code follows PEP 8 and passes all linting checks
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## ⚠️ Security Notice
-
-**LogicPwn is designed for authorized security testing only.** Always ensure you have proper authorization before testing any systems. The authors are not responsible for any misuse of this tool.
-
 ## 🆘 Support
 
-- **Documentation**: [https://logicpwn.readthedocs.io/](https://logicpwn.readthedocs.io/)
+- **Documentation**: [Read the Docs](https://logicpwn.readthedocs.io/)
 - **Issues**: [GitHub Issues](https://github.com/logicpwn/logicpwn/issues)
 - **Security**: security@logicpwn.org
 

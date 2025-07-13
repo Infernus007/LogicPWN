@@ -38,6 +38,7 @@ import time
 import uuid
 from typing import Dict, Optional, Any, Union
 from loguru import logger
+import re
 
 from ..models.request_config import RequestConfig
 from ..models.request_result import RequestResult
@@ -53,97 +54,35 @@ from .logging_utils import log_request, log_response, log_error
 from .middleware import (
     middleware_manager, MiddlewareContext, RetryException
 )
+from .utils import prepare_request_kwargs, validate_config
+from .performance import monitor_performance, performance_context
+from .cache import response_cache
 
 # Module constants for maintainability and configuration
 MAX_RESPONSE_TEXT_LENGTH = 500
 
 
-def _validate_config(request_config: Union[RequestConfig, Dict[str, Any]]) -> RequestConfig:
-    """Validate and convert request configuration to RequestConfig object.
-    
-    This function ensures the request configuration is valid and converts
-    dictionary configurations to RequestConfig objects for consistent processing.
-    
-    Args:
-        request_config: Request configuration (dict or RequestConfig object)
-        
-    Returns:
-        Validated RequestConfig object
-        
-    Raises:
-        ValidationError: If configuration is invalid
+def _sanitize_url(url: str) -> str:
     """
-    try:
-        if isinstance(request_config, dict):
-            config = RequestConfig(**request_config)
-        elif isinstance(request_config, RequestConfig):
-            config = request_config
-        else:
-            raise ValidationError(
-                message="Request configuration must be dict or RequestConfig object",
-                field="request_config",
-                value=str(type(request_config))
-            )
-        
-        logger.debug(f"Request configuration validated: {config.method} {config.url}")
-        return config
-        
-    except Exception as e:
-        if isinstance(e, ValidationError):
-            raise
-        raise ValidationError(
-            message=f"Invalid request configuration: {str(e)}",
-            field="request_config",
-            value=str(request_config)
-        )
-
-
-def _prepare_request_kwargs(config: RequestConfig) -> Dict[str, Any]:
-    """Prepare kwargs for requests.Session.request() method.
-    
-    This function prepares the request parameters based on the configuration,
-    setting up headers, body content, and other request parameters.
-    
-    Args:
-        config: Validated RequestConfig object
-        
-    Returns:
-        Dictionary of request parameters ready for session.request()
+    Redact sensitive query parameters in URLs for safe logging.
+    Replaces values of keys like password, token, key, secret with ***.
     """
-    request_kwargs = {
-        'method': config.method,
-        'url': config.url,
-        'timeout': config.timeout,
-        'verify': config.verify_ssl
-    }
-    
-    # Add headers if specified
-    if config.headers:
-        request_kwargs['headers'] = config.headers
-    
-    # Add query parameters if specified
-    if config.params:
-        request_kwargs['params'] = config.params
-    
-    # Add body content (only one type allowed)
-    if config.data is not None:
-        request_kwargs['data'] = config.data
-    elif config.json_data is not None:
-        request_kwargs['json'] = config.json_data
-    elif config.raw_body is not None:
-        request_kwargs['data'] = config.raw_body
-    
-    return request_kwargs
+    if not url:
+        return url
+    # Redact common sensitive keys in query params
+    pattern = re.compile(r'(?i)(password|token|key|secret)=([^&]+)')
+    return pattern.sub(lambda m: f"{m.group(1)}=***", url)
 
 
 def _execute_request(session: requests.Session, config: RequestConfig, kwargs: Dict[str, Any]) -> requests.Response:
-    """Execute the HTTP request using the provided session.
+    """
+    Execute HTTP request with error handling and logging.
     
-    This function performs the actual HTTP request and handles network
-    errors, timeouts, and other execution issues.
+    This function handles the actual request execution with proper
+    error handling, timeout management, and response validation.
     
     Args:
-        session: Authenticated requests.Session from auth module
+        session: Authenticated requests.Session
         config: Request configuration
         kwargs: Request parameters
         
@@ -151,23 +90,17 @@ def _execute_request(session: requests.Session, config: RequestConfig, kwargs: D
         requests.Response object
         
     Raises:
+        RequestExecutionError: If request fails to execute
         NetworkError: If network issues occur
         TimeoutError: If request times out
         ResponseError: If response indicates an error
     """
     try:
-        logger.debug(f"Executing {config.method} request to {config.url}")
+        # Execute request
         response = session.request(**kwargs)
         
-        # Check for HTTP error status codes
-        if response.status_code >= 400:
-            logger.warning(f"Request returned error status: {response.status_code}")
-            response_text = response.text[:MAX_RESPONSE_TEXT_LENGTH] if response.text else None
-            raise ResponseError(
-                message=f"Request failed with status {response.status_code}",
-                status_code=response.status_code,
-                response_text=response_text
-            )
+        # Check for HTTP errors
+        response.raise_for_status()
         
         return response
         
@@ -176,49 +109,49 @@ def _execute_request(session: requests.Session, config: RequestConfig, kwargs: D
         raise TimeoutError(
             message=f"Request timed out after {config.timeout} seconds",
             timeout_seconds=config.timeout
-        )
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Network error during request execution: {e}")
+        ) from e
+        
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Network connection error: {e}")
         raise NetworkError(
-            message=f"Network error during request execution: {str(e)}",
+            message="Network error during request execution",
             original_exception=e
-        )
+        ) from e
+        
+    except requests.exceptions.HTTPError as e:
+        status_code = e.response.status_code if e.response and hasattr(e.response, 'status_code') else None
+        response_text = e.response.text[:MAX_RESPONSE_TEXT_LENGTH] if e.response and hasattr(e.response, 'text') and e.response.text else None
+        logger.error(f"HTTP error {status_code}: {e}")
+        raise ResponseError(
+            message=f"HTTP error {status_code}",
+            status_code=status_code,
+            response_text=response_text
+        ) from e
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Request error: {e}")
+        raise NetworkError(
+            message="Network error during request execution",
+            original_exception=e
+        ) from e
 
 
 def _log_request_info(config: RequestConfig, response: requests.Response, duration: float) -> None:
-    """Log request/response information without sensitive data.
-    
-    This function logs request details, response status, and timing
-    information while ensuring no sensitive data is exposed.
+    """
+    Log request information for debugging and monitoring.
     
     Args:
         config: Request configuration
-        response: Response object
+        response: HTTP response
         duration: Request duration in seconds
     """
-    # Safe logging - avoid logging sensitive data
-    safe_url = config.url
-    if 'password' in safe_url or 'token' in safe_url:
-        safe_url = safe_url.split('?')[0] + '***'
-    
-    logger.info(f"Request completed: {config.method} {safe_url}")
-    logger.info(f"Response status: {response.status_code}")
-    logger.info(f"Request duration: {duration:.3f}s")
-    
-    # Add specific logging for HEAD requests
-    if config.method.upper() == "HEAD":
-        logger.info(f"HEAD request - response contains headers only, no body expected")
-        logger.debug(f"HEAD response headers: {dict(response.headers)}")
-    
-    # Log response size for debugging (handle Mock objects)
-    try:
-        content_length = len(response.content) if response.content else 0
-        logger.debug(f"Response size: {content_length} bytes")
-    except (TypeError, AttributeError):
-        # Handle Mock objects or responses without content
-        logger.debug("Response size: Unable to determine (Mock or no content)")
+    logger.debug(
+        f"Request completed: {config.method} {config.url} -> "
+        f"{response.status_code} ({duration:.3f}s)"
+    )
 
 
+@monitor_performance("request_execution")
 def send_request(
     session: requests.Session,
     request_config: Union[RequestConfig, Dict[str, Any]]
@@ -262,23 +195,55 @@ def send_request(
             "headers": {"Content-Type": "application/json"}
         })
     """
-    # Validate configuration
-    config = _validate_config(request_config)
-    
-    # Prepare request parameters
-    kwargs = _prepare_request_kwargs(config)
-    
-    # Execute request with timing
-    start_time = time.time()
-    response = _execute_request(session, config, kwargs)
-    duration = time.time() - start_time
-    
-    # Log request information
-    _log_request_info(config, response, duration)
-    
-    return response
+    try:
+        # Validate configuration
+        config = validate_config(request_config, RequestConfig)
+        
+        # Check cache first for GET requests
+        if config.method.upper() == "GET":
+            cached_response = response_cache.get_response(
+                config.url, config.method, config.params, config.headers
+            )
+            if cached_response:
+                logger.debug(f"Cache hit for {config.method} {config.url}")
+                return cached_response
+        
+        # Prepare request parameters
+        kwargs = prepare_request_kwargs(
+            method=config.method,
+            url=config.url,
+            headers=config.headers,
+            timeout=config.timeout,
+            verify_ssl=config.verify_ssl,
+            data=config.data,
+            params=config.params,
+            json_data=config.json_data,
+            raw_body=config.raw_body
+        )
+        
+        # Execute request with timing
+        start_time = time.time()
+        response = _execute_request(session, config, kwargs)
+        duration = time.time() - start_time
+        
+        # Log request information
+        _log_request_info(config, response, duration)
+        
+        # Cache successful GET responses
+        if config.method.upper() == "GET" and response.status_code == 200:
+            response_cache.set_response(
+                config.url, config.method, response, 
+                config.params, config.headers
+            )
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Request execution failed: {e}")
+        raise
 
 
+@monitor_performance("advanced_request_execution")
 def send_request_advanced(
     url: str,
     method: str = "GET",
