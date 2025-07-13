@@ -181,6 +181,7 @@ config.json
 .env.local
 .env.production
 .env.staging
+.pypirc
 
 # Test files
 test_*.py

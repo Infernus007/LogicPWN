@@ -244,6 +244,10 @@ def demonstrate_all_http_methods():
         for method in methods:
             logger.info(f"Testing {method} method...")
             
+            # Add specific logging for HEAD requests
+            if method == "HEAD":
+                logger.info(f"{method} request - will return headers only, no body expected.")
+            
             config = RequestConfig(
                 url=f"https://httpbin.org/{method.lower()}",
                 method=method,
@@ -258,6 +262,10 @@ def demonstrate_all_http_methods():
                 response = send_request(session, config)
                 responses[method] = response
                 logger.success(f"{method} request successful: {response.status_code}")
+                
+                # Add specific logging for HEAD response
+                if method == "HEAD":
+                    logger.info(f"{method} response headers: {dict(response.headers)}")
                 
             except Exception as e:
                 logger.error(f"{method} request failed: {e}")

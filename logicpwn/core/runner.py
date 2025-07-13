@@ -205,6 +205,11 @@ def _log_request_info(config: RequestConfig, response: requests.Response, durati
     logger.info(f"Response status: {response.status_code}")
     logger.info(f"Request duration: {duration:.3f}s")
     
+    # Add specific logging for HEAD requests
+    if config.method.upper() == "HEAD":
+        logger.info(f"HEAD request - response contains headers only, no body expected")
+        logger.debug(f"HEAD response headers: {dict(response.headers)}")
+    
     # Log response size for debugging (handle Mock objects)
     try:
         content_length = len(response.content) if response.content else 0
@@ -330,6 +335,25 @@ def send_request_advanced(
             print("Security issues detected!")
             print(f"Error messages: {result.security_analysis.error_messages}")
     """
+    # Validate body types - only one should be specified
+    body_fields = [data, json_data, raw_body]
+    specified_fields = [field for field in body_fields if field is not None]
+    
+    if len(specified_fields) > 1:
+        field_names = []
+        if data is not None:
+            field_names.append('data (form data)')
+        if json_data is not None:
+            field_names.append('json_data (JSON data)')
+        if raw_body is not None:
+            field_names.append('raw_body (raw body content)')
+        
+        raise ValidationError(
+            f"Multiple body types specified: {', '.join(field_names)}. "
+            f"Only one body type allowed per request. Use either form data, "
+            f"JSON data, or raw body content, but not multiple types."
+        )
+    
     # Create RequestResult for tracking
     result = RequestResult(url=url, method=method)
     

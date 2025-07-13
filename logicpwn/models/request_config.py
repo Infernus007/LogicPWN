@@ -50,11 +50,30 @@ class RequestConfig(BaseModel):
     
     @model_validator(mode='after')
     def validate_body_types(self) -> 'RequestConfig':
-        """Ensure only one body type is specified per request."""
+        """Ensure only one body type is specified per request.
+        
+        This validator prevents conflicts between different body types:
+        - data: Form data for POST requests
+        - json_data: JSON body for API requests  
+        - raw_body: Raw body content for custom formats
+        
+        Only one of these fields should be specified per request to avoid
+        ambiguity in request processing.
+        """
         body_fields = ['data', 'json_data', 'raw_body']
         specified_fields = [field for field in body_fields if getattr(self, field) is not None]
         
         if len(specified_fields) > 1:
-            raise ValueError(f"Only one body type allowed. Found: {', '.join(specified_fields)}")
+            field_descriptions = {
+                'data': 'form data',
+                'json_data': 'JSON data', 
+                'raw_body': 'raw body content'
+            }
+            descriptions = [field_descriptions[field] for field in specified_fields]
+            raise ValueError(
+                f"Multiple body types specified: {', '.join(descriptions)}. "
+                f"Only one body type allowed per request. Use either form data, "
+                f"JSON data, or raw body content, but not multiple types."
+            )
         
         return self 

@@ -132,6 +132,25 @@ class AsyncRequestRunner:
         Returns:
             RequestResult with response analysis
         """
+        # Validate body types - only one should be specified
+        body_fields = [data, json_data, raw_body]
+        specified_fields = [field for field in body_fields if field is not None]
+        
+        if len(specified_fields) > 1:
+            field_names = []
+            if data is not None:
+                field_names.append('data (form data)')
+            if json_data is not None:
+                field_names.append('json_data (JSON data)')
+            if raw_body is not None:
+                field_names.append('raw_body (raw body content)')
+            
+            raise ValidationError(
+                f"Multiple body types specified: {', '.join(field_names)}. "
+                f"Only one body type allowed per request. Use either form data, "
+                f"JSON data, or raw body content, but not multiple types."
+            )
+        
         async with self.semaphore:
             return await self._execute_request(
                 url=url,
@@ -209,6 +228,10 @@ class AsyncRequestRunner:
             # Log request
             log_request(method, url, headers, data or json_data or raw_body)
             
+            # Add specific logging for HEAD requests
+            if method.upper() == "HEAD":
+                log_info(f"HEAD request to {url} - will return headers only, no body expected")
+            
             # Execute request
             async with self.session.request(method, url, **request_kwargs) as response:
                 duration = time.time() - start_time
@@ -242,6 +265,10 @@ class AsyncRequestRunner:
                 
                 # Log response
                 log_response(response.status, dict(response.headers), body, duration)
+                
+                # Add specific logging for HEAD response
+                if method.upper() == "HEAD":
+                    log_info(f"HEAD response headers: {dict(response.headers)}")
                 
                 return result
                 
