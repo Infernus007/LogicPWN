@@ -19,7 +19,7 @@ import asyncio
 import time
 from typing import List, Dict, Any
 
-from logicpwn.core import (
+from logicpwn.core.stress import (
     StressTester,
     StressTestConfig,
     StressTestMetrics,

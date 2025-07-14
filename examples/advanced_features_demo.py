@@ -17,27 +17,12 @@ Note: This script uses httpbin.org for demonstration purposes.
 In real penetration testing scenarios, replace with actual target URLs.
 """
 
-import sys
-import os
 import time
 from typing import Dict, Any
 
-# Add the project root to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
-from logicpwn.core import (
-    # Configuration
-    config,
-    get_timeout,
-    get_max_retries,
-    get_sensitive_headers,
-    get_redaction_string,
-    # Logging
-    logger,
-    log_info,
-    log_debug,
-    log_warning,
-    # Middleware
+from logicpwn.core.config import config, get_timeout, get_max_retries, get_sensitive_headers, get_redaction_string
+from logicpwn.core.logging import logger, log_info, log_debug, log_warning
+from logicpwn.core.middleware.middleware import (
     middleware_manager,
     add_middleware,
     enable_middleware,
@@ -45,10 +30,9 @@ from logicpwn.core import (
     list_middleware,
     LoggingMiddleware,
     SecurityMiddleware,
-    RetryMiddleware,
-    # Request execution
-    send_request_advanced
+    RetryMiddleware
 )
+from logicpwn.core.runner import send_request_advanced
 from logicpwn.models import RequestResult
 from logicpwn.exceptions import RequestExecutionError
 

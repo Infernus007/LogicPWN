@@ -12,12 +12,7 @@ Note: This example uses httpbin.org for demonstration purposes.
       without requiring actual login validation.
 """
 
-import sys
 from loguru import logger
-
-# Add the project root to the path for imports
-sys.path.insert(0, '.')
-
 from logicpwn.core.auth import authenticate_session
 from logicpwn.core.runner import send_request
 from logicpwn.models.request_config import RequestConfig
