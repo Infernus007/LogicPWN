@@ -365,4 +365,4 @@ tests/unit/test_middleware.py:517
     class TestMiddleware(BaseMiddleware):
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-================== 346 passed, 2 skipped, 2 warnings in 8.30s ==================
+================== 346 passed, 2 skipped, 2 warnings in 8.05s ==================
