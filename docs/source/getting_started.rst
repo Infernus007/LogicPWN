@@ -31,7 +31,8 @@ Test that LogicPwn is installed correctly:
    print(logicpwn.__version__)
 
    # Test basic functionality
-   from logicpwn.core import authenticate_session, send_request
+   from logicpwn.core.auth import authenticate_session
+   from logicpwn.core.runner import send_request
    print("✅ LogicPwn installed successfully!")
 
 Quick Start
@@ -44,7 +45,8 @@ Start with a simple authentication and request example using httpbin.org (no rea
 
 .. code-block:: python
 
-   from logicpwn.core import authenticate_session, send_request
+   from logicpwn.core.auth import authenticate_session
+   from logicpwn.core.runner import send_request
 
    # For httpbin, credentials are not required, but the schema expects a dict
    auth_config = {
@@ -70,7 +72,8 @@ Demonstrate a POST request with JSON data using reqres.in:
 
 .. code-block:: python
 
-   from logicpwn.core import authenticate_session, send_request
+   from logicpwn.core.auth import authenticate_session
+   from logicpwn.core.runner import send_request
 
    auth_config = {
        "url": "https://reqres.in/api/login",
@@ -96,7 +99,8 @@ Build complex exploit chains with response validation and data extraction (using
 
 .. code-block:: python
 
-   from logicpwn.core import authenticate_session, send_request
+   from logicpwn.core.auth import authenticate_session
+   from logicpwn.core.runner import send_request
 
    # Step 1: Authenticate (no real auth needed for httpbin)
    auth_config = {
@@ -127,7 +131,8 @@ Scale your testing with high-performance async execution:
 .. code-block:: python
 
    import asyncio
-   from logicpwn.core import AsyncSessionManager
+   from logicpwn.core.auth import authenticate_session
+   from logicpwn.core.runner import AsyncSessionManager
 
    auth_config = {
        "url": "https://httpbin.org/get",
@@ -157,12 +162,9 @@ Monitor your testing performance and cache efficiency:
 
 .. code-block:: python
 
-   from logicpwn.core import (
-       authenticate_session, 
-       send_request,
-       get_performance_summary,
-       get_cache_stats
-   )
+   from logicpwn.core.auth import authenticate_session
+   from logicpwn.core.runner import send_request, get_performance_summary
+   from logicpwn.core.cache import get_cache_stats
 
    auth_config = {
        "url": "https://httpbin.org/get",
@@ -188,8 +190,7 @@ Detect insecure direct object references (IDOR) and access control flaws with Lo
 
 .. code-block:: python
 
-   from logicpwn.core.access.detector import detect_idor_flaws
-   from logicpwn.core.access.models import AccessDetectorConfig
+   from logicpwn.core.access import detect_idor_flaws, AccessDetectorConfig
    import requests
 
    # Simulate an authenticated session (no real auth needed for httpbin)

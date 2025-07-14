@@ -18,9 +18,9 @@ LogicPwn is a modern, extensible framework for automated business logic vulnerab
 from logicpwn.core.reporter.orchestrator import ReportGenerator, ReportConfig, VulnerabilityFinding, ReportMetadata
 from datetime import datetime
 
-# Configure the report
+# Configure the report (using a public API for demonstration)
 config = ReportConfig(
-    target_url="https://target.com",
+    target_url="https://httpbin.org/get",
     report_title="Security Assessment Report"
 )
 reporter = ReportGenerator(config)
@@ -31,8 +31,8 @@ finding = VulnerabilityFinding(
     title="IDOR in User Profile",
     severity="High",
     description="User profile accessible without auth...",
-    affected_endpoints=["/api/users/{id}"],
-    proof_of_concept="GET /api/users/123",
+    affected_endpoints=["/anything/{id}"],
+    proof_of_concept="GET /anything/123",
     impact="Sensitive data exposure",
     remediation="Add access control",
     discovered_at=datetime.now()
@@ -43,7 +43,7 @@ reporter.add_finding(finding)
 reporter.metadata = ReportMetadata(
     report_id="RPT-001",
     title="Security Assessment Report",
-    target_url="https://target.com",
+    target_url="https://httpbin.org/get",
     scan_start_time=datetime.now(),
     scan_end_time=datetime.now(),
     logicpwn_version="1.0.0",
@@ -55,6 +55,10 @@ reporter.metadata = ReportMetadata(
 reporter.export_to_file("report.md", "markdown")
 reporter.export_to_file("report.html", "html")
 ```
+
+## Real-World Usage Example
+
+For real, working examples of authentication, request chaining, and async/parallel execution, see the [Getting Started guide](docs/source/getting_started.rst). All examples use public APIs like [httpbin.org](https://httpbin.org/) and [reqres.in](https://reqres.in/) so you can copy-paste and run them immediately.
 
 ## Reporting Module Highlights
 - **Multi-format**: Markdown, HTML, JSON (PDF coming soon)
