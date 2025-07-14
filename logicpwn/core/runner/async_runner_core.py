@@ -14,7 +14,7 @@ from logicpwn.exceptions import (
     TimeoutError,
     ResponseError
 )
-from logicpwn.core.config import get_timeout
+from logicpwn.core.config.config_utils import get_timeout
 from logicpwn.core.logging import log_request, log_response, log_error, log_info, log_warning
 
 @dataclass

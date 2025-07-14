@@ -13,7 +13,7 @@ from .validator_checks import (
 from .validator_patterns import VulnerabilityPatterns
 from .validator_utils import _sanitize_response_text
 from logicpwn.core.performance import monitor_performance, performance_context
-from logicpwn.core.config import get_max_log_body_size, get_redaction_string
+from logicpwn.core.config.config_utils import get_max_log_body_size, get_redaction_string
 from logicpwn.core.utils import check_indicators, validate_config
 import re
 import json

@@ -49,7 +49,7 @@ from logicpwn.exceptions import (
     TimeoutError,
     ResponseError
 )
-from logicpwn.core.config import get_timeout, get_max_retries
+from logicpwn.core.config.config_utils import get_timeout, get_max_retries
 from logicpwn.core.logging import log_request, log_response, log_error
 from logicpwn.core.middleware import (
     middleware_manager, MiddlewareContext, RetryException

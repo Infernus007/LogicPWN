@@ -12,7 +12,7 @@ import json
 import re
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
-from logicpwn.core.config import (
+from logicpwn.core.config.config_utils import (
     config,
     get_timeout,
     get_max_retries,
@@ -155,8 +155,8 @@ class LogicPwnLogger:
         if not self.logger.handlers:
             handler = logging.StreamHandler()
             formatter = logging.Formatter(
-                config.get_logging_defaults().LOG_FORMAT,
-                datefmt=config.get_logging_defaults().LOG_DATE_FORMAT
+                config.logging_defaults.LOG_FORMAT,
+                datefmt=config.logging_defaults.LOG_DATE_FORMAT
             )
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
@@ -168,7 +168,7 @@ class LogicPwnLogger:
         """Log request details with sensitive data redaction."""
         if not self.logging_enabled:
             return
-        if not config.get_logging_defaults().ENABLE_REQUEST_LOGGING:
+        if not config.logging_defaults.ENABLE_REQUEST_LOGGING:
             return
         
         redacted_url = self.redactor.redact_url_params(url)
@@ -199,7 +199,7 @@ class LogicPwnLogger:
         """Log response details with sensitive data redaction."""
         if not self.logging_enabled:
             return
-        if not config.get_logging_defaults().ENABLE_RESPONSE_LOGGING:
+        if not config.logging_defaults.ENABLE_RESPONSE_LOGGING:
             return
         
         redacted_headers = self.redactor.redact_headers(headers or {})
@@ -224,7 +224,7 @@ class LogicPwnLogger:
         """Log error details with sensitive data redaction."""
         if not self.logging_enabled:
             return
-        if not config.get_logging_defaults().ENABLE_ERROR_LOGGING:
+        if not config.logging_defaults.ENABLE_ERROR_LOGGING:
             return
         
         log_data = {

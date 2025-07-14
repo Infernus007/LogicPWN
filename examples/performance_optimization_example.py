@@ -40,6 +40,7 @@ from logicpwn.core.cache import (
     config_cache,
     cached
 )
+from logicpwn.core.config.config_utils import get_timeout, get_max_retries
 
 
 def demonstrate_integrated_performance_monitoring():
@@ -226,8 +227,6 @@ def demonstrate_caching_features():
     # Demonstrate configuration caching
     print("\n3. Configuration Caching")
     print("-" * 20)
-    
-    from logicpwn.core.config import get_timeout, get_max_retries
     
     # First access (cache miss)
     timeout1 = get_timeout()

@@ -48,7 +48,7 @@ from logicpwn.core.cache import response_cache, session_cache, config_cache, get
 from logicpwn.core.stress import StressTester, StressTestConfig, StressTestMetrics, run_quick_stress_test, run_exploit_chain_stress_test
 from logicpwn.core.utils import check_indicators, prepare_request_kwargs, validate_config
 from logicpwn.core.logging import log_info, log_warning, log_error, log_debug, log_request, log_response
-from logicpwn.core.config import get_timeout, get_max_retries
+from logicpwn.core.config.config_utils import get_timeout, get_max_retries
 
 from .models import (
     RequestConfig,
