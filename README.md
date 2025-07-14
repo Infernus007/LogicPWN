@@ -24,7 +24,7 @@ LogicPwn is a comprehensive security testing framework designed for advanced bus
 
 ## 📦 Installation
 
-### Basic Installation
+LogicPwn is now available on [PyPI](https://pypi.org/project/logicpwn/)! You can install it directly using pip:
 
 ```bash
 pip install logicpwn
