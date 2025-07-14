@@ -17,6 +17,7 @@ LogicPwn is a comprehensive security testing framework designed for advanced bus
 - **High-Performance Async**: Concurrent request execution with aiohttp
 - **Modular Architecture**: Extensible middleware system and plugin support
 - **Security Analysis**: Automated vulnerability detection and response analysis
+- **IDOR & Access Control Detection**: Detect insecure direct object references and access control flaws with context-aware logic
 - **Enterprise Logging**: Secure logging with sensitive data redaction
 - **Comprehensive Testing**: 100% test coverage with improved reliability
 - **Enhanced Error Handling**: Standardized exception handling across all modules
@@ -104,6 +105,58 @@ async with AsyncSessionManager(auth_config=auth_config) as session:
         "https://target.com/api/admin/users",
         json_data={"action": "create", "user": {"role": "admin"}}
     )
+```
+
+### IDOR & Access Control Detection
+
+Detect insecure direct object references (IDOR) and access control flaws with LogicPwn's access detector module. This example demonstrates how to test a REST API for unauthorized access to user resources.
+
+```python
+from logicpwn.core.access.detector import detect_idor_flaws
+from logicpwn.core.access.models import AccessDetectorConfig
+import requests
+
+# Assume you have an authenticated session for user1
+session = requests.Session()
+session.cookies.set('auth_token', 'user1_token')
+
+# The endpoint template with an {id} placeholder
+endpoint_template = "https://target.com/api/users/{id}/profile"
+
+# IDs to test (e.g., user IDs)
+test_ids = ["user1", "user2", "user3"]
+
+# Indicators for access granted/denied
+success_indicators = ["profile data", "email", "username"]
+failure_indicators = ["access denied", "unauthorized", "forbidden"]
+
+# Configure the detector: user1 is the current user, only user1 should be accessible
+config = AccessDetectorConfig(
+    current_user_id="user1",
+    authorized_ids=["user1"],
+    unauthorized_ids=["user2", "user3"],
+    compare_unauthenticated=True
+)
+
+# Run the IDOR/access control test
+results = detect_idor_flaws(
+    session,
+    endpoint_template,
+    test_ids,
+    success_indicators,
+    failure_indicators,
+    config
+)
+
+for result in results:
+    print(f"Tested ID: {result.id_tested}")
+    print(f"  Access granted: {result.access_granted}")
+    print(f"  Vulnerability detected: {result.vulnerability_detected}")
+    print(f"  Status code: {result.status_code}")
+    print(f"  Error: {result.error_message}")
+    print()
+
+# Output will show which IDs are vulnerable to unauthorized access.
 ```
 
 ## 📚 Documentation

@@ -166,6 +166,59 @@ Monitor your testing performance and cache efficiency:
    print(f"Average duration: {performance.get('average_duration', 0):.3f}s")
    print(f"Cache hit rate: {cache_stats['response_cache']['hit_rate']:.1f}%")
 
+IDOR & Access Control Detection
+------------------------------
+
+Detect insecure direct object references (IDOR) and access control flaws with LogicPwn's access detector module. This example demonstrates how to test a REST API for unauthorized access to user resources.
+
+.. code-block:: python
+
+   from logicpwn.core.access.detector import detect_idor_flaws
+   from logicpwn.core.access.models import AccessDetectorConfig
+   import requests
+
+   # Assume you have an authenticated session for user1
+   session = requests.Session()
+   session.cookies.set('auth_token', 'user1_token')
+
+   # The endpoint template with an {id} placeholder
+   endpoint_template = "https://target.com/api/users/{id}/profile"
+
+   # IDs to test (e.g., user IDs)
+   test_ids = ["user1", "user2", "user3"]
+
+   # Indicators for access granted/denied
+   success_indicators = ["profile data", "email", "username"]
+   failure_indicators = ["access denied", "unauthorized", "forbidden"]
+
+   # Configure the detector: user1 is the current user, only user1 should be accessible
+   config = AccessDetectorConfig(
+       current_user_id="user1",
+       authorized_ids=["user1"],
+       unauthorized_ids=["user2", "user3"],
+       compare_unauthenticated=True
+   )
+
+   # Run the IDOR/access control test
+   results = detect_idor_flaws(
+       session,
+       endpoint_template,
+       test_ids,
+       success_indicators,
+       failure_indicators,
+       config
+   )
+
+   for result in results:
+       print(f"Tested ID: {result.id_tested}")
+       print(f"  Access granted: {result.access_granted}")
+       print(f"  Vulnerability detected: {result.vulnerability_detected}")
+       print(f"  Status code: {result.status_code}")
+       print(f"  Error: {result.error_message}")
+       print()
+
+# Output will show which IDs are vulnerable to unauthorized access.
+
 Configuration
 -------------
 

@@ -206,3 +206,18 @@ Stress Testing Module
 ~~~~~~~~~~~~~~~~~~~~~
 
 The stress testing module provides load testing capabilities.
+
+Access/IDOR Detector Module
+-------------------------
+.. automodule:: logicpwn.core.access.detector
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.access.models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.access.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
