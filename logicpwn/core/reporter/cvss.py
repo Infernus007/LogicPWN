@@ -3,7 +3,7 @@ from typing import Optional
 class CVSSCalculator:
     """
     Utility for calculating CVSS v3.1 scores based on vulnerability characteristics.
-    Extensible for custom scoring logic.
+    Extensible for custom scoring logic and integration with reporting.
     """
     @staticmethod
     def calculate_cvss_score(
@@ -19,6 +19,21 @@ class CVSSCalculator:
         authentication_required: bool = False,
         data_impact: str = "High"
     ) -> float:
+        """
+        Calculate a CVSS v3.1 score based on vulnerability characteristics.
+        :param attack_vector: Network, Adjacent, Local, or Physical
+        :param attack_complexity: Low or High
+        :param privileges_required: None, Low, or High
+        :param user_interaction: None or Required
+        :param scope: Unchanged or Changed
+        :param confidentiality: High, Medium, or Low
+        :param integrity: High, Medium, or Low
+        :param availability: High, Medium, or Low
+        :param exploit_success: Whether the exploit was successful
+        :param authentication_required: Whether authentication is required
+        :param data_impact: High, Medium, or Low
+        :return: CVSS score (float, 0-10)
+        """
         # Simple mapping for demo; replace with full CVSS logic as needed
         base_score = 0.0
         vector_weights = {

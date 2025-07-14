@@ -16,6 +16,9 @@ from logicpwn.core.reporter.models import RedactionRule
 
 # --- Data Models ---
 class VulnerabilityFinding(BaseModel):
+    """
+    Represents a single vulnerability finding for reporting.
+    """
     id: str
     title: str
     severity: str  # "Critical", "High", "Medium", "Low", "Info"
@@ -31,6 +34,9 @@ class VulnerabilityFinding(BaseModel):
     request_response_pairs: List[Any] = []     # RequestResponsePair
 
 class ReportMetadata(BaseModel):
+    """
+    Metadata for a vulnerability report, including scan details and summary stats.
+    """
     report_id: str
     title: str
     target_url: str
@@ -42,6 +48,9 @@ class ReportMetadata(BaseModel):
     findings_count: Dict[str, int]
 
 class ReportConfig(BaseModel):
+    """
+    Configuration for report generation, including output style, redaction, and branding.
+    """
     target_url: str
     report_title: str
     report_type: str = "vapt"
@@ -57,7 +66,14 @@ class ReportConfig(BaseModel):
 
 # --- Main Orchestrator ---
 class ReportGenerator:
+    """
+    Main orchestrator for generating vulnerability reports in LogicPwn.
+    Handles finding aggregation, CVSS scoring, redaction, and export in multiple formats.
+    """
     def __init__(self, config: ReportConfig):
+        """
+        Initialize the report generator with a given configuration.
+        """
         self.config = config
         self.findings: List[VulnerabilityFinding] = []
         self.metadata: Optional[ReportMetadata] = None
@@ -67,6 +83,9 @@ class ReportGenerator:
             self.redactor = AdvancedRedactor(custom_rules)
 
     def add_finding(self, finding: VulnerabilityFinding) -> None:
+        """
+        Add a vulnerability finding to the report. Automatically calculates CVSS if enabled.
+        """
         if self.config.cvss_scoring_enabled and (finding.cvss_score is None):
             finding.cvss_score = CVSSCalculator.calculate_cvss_score(
                 # These should be mapped from finding or context in a real implementation
@@ -78,6 +97,10 @@ class ReportGenerator:
 
     @monitor_performance("report_generation")
     def generate_report(self, format: str = "markdown", template_dir: str = None) -> str:
+        """
+        Generate the report in the specified format (markdown, html, json).
+        Optionally use a custom template directory.
+        """
         from logicpwn.exporters import get_exporter
         exporter = get_exporter(format)
         if hasattr(exporter, 'set_template_dir') and template_dir:
@@ -86,11 +109,17 @@ class ReportGenerator:
         return self.redact_sensitive_data(content) if self.redactor else content
 
     def export_to_file(self, filepath: str, format: str, template_dir: str = None) -> None:
+        """
+        Export the generated report to a file in the specified format.
+        """
         report = self.generate_report(format, template_dir=template_dir)
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(report)
 
     def stream_to_file(self, filepath: str, format: str, template_dir: str = None) -> None:
+        """
+        Stream the report to a file, writing findings incrementally (for large reports).
+        """
         from logicpwn.exporters import get_exporter
         exporter = get_exporter(format)
         with open(filepath, "w", encoding="utf-8") as f:
@@ -102,9 +131,14 @@ class ReportGenerator:
                 f.write(report)
 
     def redact_sensitive_data(self, content: str) -> str:
+        """
+        Redact sensitive data from the report content using configured rules.
+        """
         return self.redactor.redact_string_body(content)
 
     @cached(ttl=600)
     def collect_findings_from_modules(self, auth_results, detector_results, exploit_results) -> List[VulnerabilityFinding]:
-        # Aggregate findings from modules (stub, to be implemented)
+        """
+        Aggregate findings from all LogicPwn modules (stub for integration).
+        """
         return [] 

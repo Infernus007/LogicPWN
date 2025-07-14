@@ -5,13 +5,31 @@ from logicpwn.core.reporter.template_renderer import TemplateRenderer
 import os
 
 class HTMLExporter(BaseExporter):
+    """
+    Exports vulnerability findings and metadata to HTML format.
+    Supports template-based and streaming output for large reports.
+    """
     def __init__(self):
+        """
+        Initialize the exporter with the default template directory.
+        """
         self.template_dir = "logicpwn/templates"
 
     def set_template_dir(self, template_dir: str):
+        """
+        Set a custom template directory for rendering.
+        :param template_dir: Path to the template directory.
+        """
         self.template_dir = template_dir
 
     def export(self, findings: List[VulnerabilityFinding], metadata: ReportMetadata, template_dir: Optional[str] = None) -> str:
+        """
+        Export findings and metadata to an HTML string.
+        :param findings: List of VulnerabilityFinding objects.
+        :param metadata: ReportMetadata object.
+        :param template_dir: Optional custom template directory.
+        :return: HTML string.
+        """
         renderer = TemplateRenderer(template_dir or self.template_dir)
         context = {
             "title": metadata.title,
@@ -57,6 +75,13 @@ class HTMLExporter(BaseExporter):
             return ''.join(html)
 
     def stream_export(self, findings: List[VulnerabilityFinding], metadata: ReportMetadata, file: IO, template_dir: Optional[str] = None):
+        """
+        Stream findings and metadata to a file in HTML format (for large reports).
+        :param findings: List of VulnerabilityFinding objects.
+        :param metadata: ReportMetadata object.
+        :param file: File-like object to write to.
+        :param template_dir: Optional custom template directory (unused in streaming).
+        """
         file.write(f"<html><head><title>{metadata.title}</title></head><body>\n")
         file.write(f"<h1>{metadata.title}</h1>\n")
         file.write(f"<p><b>Target:</b> {metadata.target_url}<br>\n")
