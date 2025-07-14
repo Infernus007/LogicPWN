@@ -1,0 +1,29 @@
+<html>
+<head><title>Vulnerability Assessment Report</title></head>
+<body>
+<h1>Vulnerability Assessment Report</h1>
+<p><b>Target:</b> https://target.com<br>
+<b>Assessment Date:</b> 2025-07-14<br>
+<b>Total Findings:</b> 1<br>
+<b>Critical Issues:</b> 0</p>
+<hr>
+<h2>Vulnerability Details</h2>
+<h3>High - Insecure Direct Object Reference in User Profile</h3>
+<b>CVSS Score:</b> 7.5<br>
+<b>Affected Endpoints:</b> /api/users/{id}<br>
+<b>Description:</b><pre>Application allows unauthorized access to user profiles...</pre>
+<b>Proof of Concept:</b><pre>GET /api/users/123 HTTP/1.1
+Host: target.com
+...</pre>
+<b>Impact:</b><pre>Attackers can access sensitive user information...</pre>
+<b>Remediation:</b><pre>Implement proper authorization checks...</pre>
+<b>References:</b> N/A<br>
+<b>Discovered At:</b> 2025-07-14T10:15:32Z<hr>
+<h2>Appendix</h2>
+<ul>
+<li><b>Scan Duration:</b> 0:30:00</li>
+<li><b>LogicPwn Version:</b> 1.0.0</li>
+<li><b>Authentication:</b> test@example.com</li>
+</ul>
+</body>
+</html> 
