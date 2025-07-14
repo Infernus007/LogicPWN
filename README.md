@@ -2,6 +2,7 @@
 
 LogicPwn is a modern, extensible framework for automated business logic vulnerability assessment, exploit chaining, and professional reporting.
 
+
 ## Features
 - 🔐 **Authentication**: Flexible session management
 - 🚀 **Request Runner**: Advanced HTTP operations
@@ -14,11 +15,102 @@ LogicPwn is a modern, extensible framework for automated business logic vulnerab
 
 ## Quickstart
 
+### Synchronous Request (No Authentication)
 ```python
-from logicpwn.core.reporter.orchestrator import ReportGenerator, ReportConfig, VulnerabilityFinding, ReportMetadata
+import requests
+from logicpwn.core.runner import send_request
+
+session = requests.Session()
+request_config = {
+    "url": "https://httpbin.org/get",
+    "method": "GET"
+}
+response = send_request(session, request_config)
+print("Status:", response.status_code)
+print("Content:", response.text[:200])
+```
+
+### Synchronous Authenticated Request
+```python
+from logicpwn.core.auth import authenticate_session
+from logicpwn.core.runner import send_request
+
+auth_config = {
+    "url": "https://httpbin.org/basic-auth/user/passwd",
+    "method": "GET",
+    "credentials": {"username": "user", "password": "passwd"},
+    "success_indicators": ["authenticated"]
+}
+session = authenticate_session(auth_config)
+request_config = {
+    "url": "https://httpbin.org/basic-auth/user/passwd",
+    "method": "GET"
+}
+response = send_request(session, request_config)
+print("Status:", response.status_code)
+print("Content:", response.text[:200])
+```
+
+### Async Example (No Authentication)
+```python
+import asyncio
+from logicpwn.core.runner import AsyncSessionManager
+
+async def main():
+    async with AsyncSessionManager() as manager:
+        results = await manager.execute_exploit_chain([
+            {"url": "https://httpbin.org/get", "method": "GET"},
+            {"url": "https://httpbin.org/uuid", "method": "GET"}
+        ])
+        for i, result in enumerate(results):
+            print(f"Request {i+1}: {result.status_code} - {result.text[:100]}")
+
+asyncio.run(main())
+```
+
+### IDOR Detection Example
+```python
+import requests
+from logicpwn.core.access import detect_idor_flaws, AccessDetectorConfig
+
+session = requests.Session()
+endpoint_template = "https://httpbin.org/anything/{id}"
+test_ids = ["1", "2", "3"]
+success_indicators = ["url"]
+failure_indicators = ["error"]
+
+config = AccessDetectorConfig(
+    current_user_id="1",
+    authorized_ids=["1"],
+    unauthorized_ids=["2", "3"],
+    compare_unauthenticated=True
+)
+
+results = detect_idor_flaws(
+    session,
+    endpoint_template,
+    test_ids,
+    success_indicators,
+    failure_indicators,
+    config
+)
+for result in results:
+    print(f"Tested ID: {result.id_tested}")
+    print(f"  Access granted: {result.access_granted}")
+    print(f"  Vulnerability detected: {result.vulnerability_detected}")
+    print(f"  Status code: {result.status_code}")
+    print(f"  Error: {result.error_message}")
+    print()
+```
+
+### Reporting Example
+```python
+from logicpwn.core.reporter.orchestrator import (
+    ReportGenerator, ReportConfig, VulnerabilityFinding, ReportMetadata
+)
 from datetime import datetime
 
-# Configure the report (using a public API for demonstration)
+# Configure the report
 config = ReportConfig(
     target_url="https://httpbin.org/get",
     report_title="Security Assessment Report"
@@ -56,27 +148,42 @@ reporter.export_to_file("report.md", "markdown")
 reporter.export_to_file("report.html", "html")
 ```
 
-## Real-World Usage Example
-
-For real, working examples of authentication, request chaining, and async/parallel execution, see the [Getting Started guide](docs/source/getting_started.rst). **All examples use the correct import paths, such as:**
-
+### Exploit Engine Example
 ```python
-from logicpwn.core.auth import authenticate_session
-from logicpwn.core.runner import send_request, AsyncSessionManager, get_performance_summary
-from logicpwn.core.access import detect_idor_flaws, AccessDetectorConfig
-from logicpwn.core.cache import get_cache_stats
+import requests
+from logicpwn.core.exploit_engine.models import ExploitChain, ExploitStep
+from logicpwn.core.exploit_engine.exploit_engine import run_exploit_chain
+from logicpwn.models.request_config import RequestConfig
+
+# Define a simple exploit step
+step = ExploitStep(
+    name="Get UUID",
+    description="Fetch a UUID from httpbin",
+    request_config=RequestConfig(
+        url="https://httpbin.org/uuid",
+        method="GET"
+    ),
+    success_indicators=["uuid"]
+)
+
+# Create an exploit chain
+chain = ExploitChain(
+    name="Simple Chain",
+    description="A single-step chain for demonstration",
+    steps=[step]
+)
+
+# Use a plain session for public endpoints
+session = requests.Session()
+
+# Run the exploit chain
+results = run_exploit_chain(session, chain)
+
+for result in results:
+    print(f"Step: {result.step_name}, Status: {result.status}, Error: {result.error_message}")
+    if result.response is not None:
+        print("Response:", result.response.text[:200])
 ```
-
-All code blocks in the documentation reflect these imports and are copy-paste-ready.
-
-## Reporting Module Highlights
-- **Multi-format**: Markdown, HTML, JSON (PDF coming soon)
-- **Templates**: Customizable with Jinja2 or fallback
-- **Streaming**: Handles large reports efficiently
-- **Redaction**: Built-in and custom regex rules
-- **CVSS**: Automated, extensible scoring
-- **API Docs**: Full Sphinx documentation in `docs/`
-- **Tests**: Comprehensive pytest suite in `tests/core/reporter/`
 
 ## Documentation
 - **API Reference**: See `docs/build/index.html` (after running `poetry run sphinx-build docs/source docs/build`)
