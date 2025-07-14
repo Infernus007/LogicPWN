@@ -58,7 +58,16 @@ reporter.export_to_file("report.html", "html")
 
 ## Real-World Usage Example
 
-For real, working examples of authentication, request chaining, and async/parallel execution, see the [Getting Started guide](docs/source/getting_started.rst). All examples use public APIs like [httpbin.org](https://httpbin.org/) and [reqres.in](https://reqres.in/) so you can copy-paste and run them immediately.
+For real, working examples of authentication, request chaining, and async/parallel execution, see the [Getting Started guide](docs/source/getting_started.rst). **All examples use the correct import paths, such as:**
+
+```python
+from logicpwn.core.auth import authenticate_session
+from logicpwn.core.runner import send_request, AsyncSessionManager, get_performance_summary
+from logicpwn.core.access import detect_idor_flaws, AccessDetectorConfig
+from logicpwn.core.cache import get_cache_stats
+```
+
+All code blocks in the documentation reflect these imports and are copy-paste-ready.
 
 ## Reporting Module Highlights
 - **Multi-format**: Markdown, HTML, JSON (PDF coming soon)
