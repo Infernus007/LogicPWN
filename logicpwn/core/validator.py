@@ -55,6 +55,8 @@ from ..exceptions import ValidationError, ResponseError
 from .config import get_max_log_body_size, get_redaction_string
 from .utils import check_indicators, validate_config
 from .performance import monitor_performance, performance_context
+from .validator_patterns import VulnerabilityPatterns
+from .validator_utils import _sanitize_response_text
 
 
 # Module constants for maintainability and configuration
@@ -104,63 +106,6 @@ class ValidationResult:
 
     def __str__(self) -> str:
                                             return f"ValidationResult(valid={self.is_valid}, confidence={self.confidence_score:.2f})"
-
-
-class VulnerabilityPatterns:
-    """Pre-defined patterns for common vulnerability detection.
-    
-    This class provides a collection of regex patterns for detecting
-    common vulnerabilities in HTTP responses during security testing.
-    """
-    
-    # SQL Injection patterns
-    SQL_INJECTION = [
-                                            r"SQL syntax.*MySQL",
-                                            r"Warning.*mysql_",
-                                            r"valid MySQL result",
-                                            r"ORA-[0-9]{4,5}",
-                                            r"Microsoft.*ODBC.*SQL",
-                                            r"PostgreSQL.*ERROR",
-                                            r"SQLite.*error",
-                                            r"SQL syntax.*MariaDB"
-    ]
-    
-    # XSS patterns
-    XSS_INDICATORS = [
-                                            r"<script[^>]*>.*?</script>",
-                                            r"javascript:",
-                                            r"onerror\s*=",
-                                            r"onload\s*=",
-                                            r"onclick\s*=",
-                                            r"onmouseover\s*="
-    ]
-    
-    # Directory traversal patterns
-    DIRECTORY_TRAVERSAL = [
-                                            r"root:.*:0:0:",
-                                            r"\[boot loader\]",
-                                            r"<DIR>\s+\.\.",
-                                            r"/etc/passwd",
-                                            r"/var/www/",
-                                            r"C:\\Windows\\"
-    ]
-    
-    # Authentication bypass patterns
-    AUTH_BYPASS = [
-                                            r"admin.*panel",
-                                            r"privileged.*access",
-                                            r"unauthorized.*admin",
-                                            r"bypass.*authentication"
-    ]
-    
-    # Information disclosure patterns
-    INFO_DISCLOSURE = [
-                                            r"stack trace",
-                                            r"debug.*information",
-                                            r"internal.*error",
-                                            r"version.*information",
-                                            r"database.*error"
-    ]
 
 
 class ValidationConfig(BaseModel):
@@ -221,33 +166,6 @@ def validate_validation_config(config: Union[dict, ValidationConfig]) -> Validat
                                             if isinstance(e, PydanticValidationError):
                                                 raise ValidationError(str(e))
                                             raise ValidationError(str(e))
-
-
-def _sanitize_response_text(text: str, max_length: int = MAX_RESPONSE_TEXT_LENGTH) -> str:
-    """Sanitize response text for secure logging.
-    
-    This function ensures that sensitive response data is never logged
-    while maintaining the structure for debugging purposes.
-    """
-    if not text:
-                                            return ""
-    
-    # Truncate if too long
-    if len(text) > max_length:
-                                            text = text[:max_length] + "..."
-    
-    # Replace common sensitive patterns
-    sensitive_patterns = [
-                                            (r'password["\']?\s*[:=]\s*["\']?[^"\s]+', 'password": "[REDACTED]"'),
-                                            (r'token["\']?\s*[:=]\s*["\']?[^"\s]+', 'token": "[REDACTED]"'),
-                                            (r'key["\']?\s*[:=]\s*["\']?[^"\s]+', 'key": "[REDACTED]"'),
-                                            (r'secret["\']?\s*[:=]\s*["\']?[^"\s]+', 'secret": "[REDACTED]"'),
-    ]
-    
-    for pattern, replacement in sensitive_patterns:
-                                            text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-    
-    return text
 
 
 def _check_regex_patterns(response_text: str, patterns: List[str]) -> Tuple[bool, List[str], Dict[str, Any]]:

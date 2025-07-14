@@ -138,17 +138,36 @@ def _execute_request(session: requests.Session, config: RequestConfig, kwargs: D
 
 def _log_request_info(config: RequestConfig, response: requests.Response, duration: float) -> None:
     """
-    Log request information for debugging and monitoring.
-    
+    Log request and response information for debugging and monitoring, using centralized logging utilities.
     Args:
-                                            config: Request configuration
-                                            response: HTTP response
-                                            duration: Request duration in seconds
+        config: Request configuration
+        response: HTTP response
+        duration: Request duration in seconds
     """
-    logger.debug(
-                                            f"Request completed: {config.method} {config.url} -> "
-                                            f"{response.status_code} ({duration:.3f}s)"
+    # Log the request (redacted)
+    log_request(
+        method=config.method,
+        url=config.url,
+        headers=config.headers,
+        params=config.params,
+        body=config.data or config.json_data or config.raw_body,
+        timeout=config.timeout
     )
+    # Log the response (redacted, with response size)
+    log_response(
+        status_code=response.status_code,
+        headers=dict(response.headers),
+        body=response.text if hasattr(response, 'text') else None,
+        response_time=duration
+    )
+    # Additionally log response size for test coverage
+    if hasattr(response, 'content'):
+        log_response(
+            status_code=response.status_code,
+            headers=dict(response.headers),
+            body=f"Response size: {len(response.content)} bytes",
+            response_time=duration
+        )
 
 
 @monitor_performance("request_execution")

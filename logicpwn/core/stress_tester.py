@@ -45,7 +45,8 @@ from collections import defaultdict
 import json
 from datetime import datetime
 
-from .async_runner import AsyncSessionManager, AsyncRequestRunner
+from .async_runner_core import AsyncRequestRunner
+from .async_session_manager import AsyncSessionManager
 from .performance import PerformanceMonitor, PerformanceBenchmark
 from ..models.request_result import RequestResult
 from ..exceptions import (

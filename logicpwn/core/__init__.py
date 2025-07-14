@@ -42,13 +42,9 @@ from .validator import (
     DEFAULT_CONFIDENCE_THRESHOLD
 )
 
-from .async_runner import (
-    AsyncRequestRunner,
-    AsyncSessionManager,
-    send_request_async,
-    send_requests_batch_async,
-    async_session_manager
-)
+from .async_runner_core import AsyncRequestRunner, AsyncRequestContext
+from .async_session_manager import AsyncSessionManager
+from .async_request_helpers import send_request_async, send_requests_batch_async, async_session_manager
 
 from .performance import (
     PerformanceMonitor,
