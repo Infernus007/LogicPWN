@@ -68,28 +68,28 @@ class AuthConfig(BaseModel):
     @field_validator('url')
     @classmethod
     def validate_url(cls, v: str) -> str:
-        """Validate URL format for authentication endpoints."""
-        parsed = urlparse(v)
-        if not parsed.scheme or not parsed.netloc:
-            raise ValueError('Invalid URL format - must include scheme and netloc')
-        return v
+                                            """Validate URL format for authentication endpoints."""
+                                            parsed = urlparse(v)
+                                            if not parsed.scheme or not parsed.netloc:
+                                                raise ValueError('Invalid URL format - must include scheme and netloc')
+                                            return v
     
     @field_validator('credentials')
     @classmethod
     def validate_credentials(cls, v: Dict[str, str]) -> Dict[str, str]:
-        """Validate credentials are not empty for authentication."""
-        if not v:
-            raise ValueError('Credentials cannot be empty')
-        return v
+                                            """Validate credentials are not empty for authentication."""
+                                            if not v:
+                                                raise ValueError('Credentials cannot be empty')
+                                            return v
     
     @field_validator('method')
     @classmethod
     def validate_method(cls, v: str) -> str:
-        """Validate HTTP method for authentication requests."""
-        v_up = v.upper()
-        if v_up not in HTTP_METHODS:
-            raise ValueError(f'method must be one of {HTTP_METHODS}')
-        return v_up
+                                            """Validate HTTP method for authentication requests."""
+                                            v_up = v.upper()
+                                            if v_up not in HTTP_METHODS:
+                                                raise ValueError(f'method must be one of {HTTP_METHODS}')
+                                            return v_up
 
 
 def _sanitize_credentials(credentials: Dict[str, str]) -> Dict[str, str]:
@@ -107,15 +107,15 @@ def _create_session(config: AuthConfig) -> requests.Session:
     This function sets up a requests session with proper configuration
     for authentication, including SSL verification, timeouts, and headers.
     Args:
-        config: Authentication configuration
+                                            config: Authentication configuration
     Returns:
-        Configured requests session ready for authentication
+                                            Configured requests session ready for authentication
     """
     session = requests.Session()
     session.verify = config.verify_ssl
     session.timeout = config.timeout
     if config.headers:
-        session.headers.update(config.headers)
+                                            session.headers.update(config.headers)
     return session
 
 
@@ -126,31 +126,31 @@ def _handle_response_indicators(response: requests.Response, config: AuthConfig)
     success and failure indicators in the response text. It raises
     LoginFailedException if authentication appears to have failed.
     Args:
-        response: HTTP response object from authentication request
-        config: Authentication configuration
+                                            response: HTTP response object from authentication request
+                                            config: Authentication configuration
     Raises:
-        LoginFailedException: If authentication fails based on indicators
+                                            LoginFailedException: If authentication fails based on indicators
     """
     response_text = response.text
     # Check for failure indicators first
     failure_match, _ = check_indicators(response_text, config.failure_indicators, "failure")
     if failure_match:
-        logger.error("Authentication failed - failure indicators found in response")
-        raise LoginFailedException(
-            message="Authentication failed - failure indicators detected",
-            response_code=response.status_code,
-            response_text=response_text[:MAX_RESPONSE_TEXT_LENGTH]
-        )
+                                            logger.error("Authentication failed - failure indicators found in response")
+                                            raise LoginFailedException(
+                                                message="Authentication failed - failure indicators detected",
+                                                response_code=response.status_code,
+                                                response_text=response_text[:MAX_RESPONSE_TEXT_LENGTH]
+                                            )
     # Check for success indicators
     if config.success_indicators:
-        success_match, _ = check_indicators(response_text, config.success_indicators, "success")
-        if not success_match:
-            logger.error("Authentication failed - no success indicators found")
-            raise LoginFailedException(
-                message="Authentication failed - no success indicators detected",
-                response_code=response.status_code,
-                response_text=response_text[:MAX_RESPONSE_TEXT_LENGTH]
-            )
+                                            success_match, _ = check_indicators(response_text, config.success_indicators, "success")
+                                            if not success_match:
+                                                logger.error("Authentication failed - no success indicators found")
+                                                raise LoginFailedException(
+                                                    message="Authentication failed - no success indicators detected",
+                                                    response_code=response.status_code,
+                                                    response_text=response_text[:MAX_RESPONSE_TEXT_LENGTH]
+                                                )
 
 
 @monitor_performance("authentication")
@@ -164,116 +164,116 @@ def authenticate_session(auth_config: Union[AuthConfig, Dict[str, Any]]) -> requ
     exploit steps in multi-step security testing workflows.
     
     Args:
-        auth_config: Authentication configuration (dict or AuthConfig object)
-        
+                                            auth_config: Authentication configuration (dict or AuthConfig object)
+                                            
     Returns:
-        Authenticated requests.Session object with persistent cookies
-        
+                                            Authenticated requests.Session object with persistent cookies
+                                            
     Raises:
-        ValidationError: If configuration is invalid
-        NetworkError: If network issues occur during authentication
-        LoginFailedException: If login fails with provided credentials
-        TimeoutError: If authentication request times out
-        SessionError: If session creation fails
-        
-    Example::
+                                            ValidationError: If configuration is invalid
+                                            NetworkError: If network issues occur during authentication
+                                            LoginFailedException: If login fails with provided credentials
+                                            TimeoutError: If authentication request times out
+                                            SessionError: If session creation fails
+                                            
+    Examples:::
 
-        # Basic authentication for exploit chaining
-        auth_config = {
-            "url": "https://target.com/login",
-            "credentials": {"username": "admin", "password": "secret"},
-            "success_indicators": ["dashboard", "welcome"]
-        }
-        session = authenticate_session(auth_config)
-        
-        # Use session for subsequent exploit steps
-        response = session.get("https://target.com/admin/panel")
+                                                # Basic authentication for exploit chaining
+                                            auth_config = {
+                                                "url": "https://target.com/login",
+                                                "credentials": {"username": "admin", "password": "secret"},
+                                                "success_indicators": ["dashboard", "welcome"]
+                                            }
+                                            session = authenticate_session(auth_config)
+                                            
+                                                # Use session for subsequent exploit steps
+                                            response = session.get("https://target.com/admin/panel")
     """
     try:
-        # Validate configuration
-        config = validate_config(auth_config, AuthConfig)
-        
-        # Generate session ID for caching
-        session_id = f"{config.url}_{config.method}_{hash(str(config.credentials))}"
-        
-        # Check cache for existing session
-        cached_session = session_cache.get_session(session_id)
-        if cached_session:
-            logger.debug(f"Using cached session for {config.url}")
-            return cached_session
-        
-        # Log authentication attempt (without sensitive data)
-        sanitized_creds = _sanitize_credentials(config.credentials)
-        logger.info(f"Attempting authentication to {config.url} with method {config.method}")
-        logger.debug(f"Credentials: {sanitized_creds}")
-        
-        # Create and configure session
-        session = _create_session(config)
-        
-        # Prepare request parameters
-        request_kwargs = prepare_request_kwargs(
-            method=config.method,
-            url=config.url,
-            credentials=config.credentials,
-            headers=config.headers,
-            timeout=config.timeout,
-            verify_ssl=config.verify_ssl
-        )
-        
-        # Perform authentication request
-        logger.debug(f"Sending {config.method} request to {config.url}")
-        response = session.request(config.method, config.url, **request_kwargs)
-        
-        # Check for HTTP errors
-        response.raise_for_status()
-        
-        # Handle response indicators
-        _handle_response_indicators(response, config)
-        
-        # Verify session has cookies (optional check)
-        if not session.cookies:
-            logger.warning("No cookies received during authentication")
-        
-        # Cache the session
-        session_cache.set_session(session_id, session)
-        
-        logger.info("Authentication successful - session created with persistent cookies")
-        return session
-        
+                                                # Validate configuration
+                                            config = validate_config(auth_config, AuthConfig)
+                                            
+                                                # Generate session ID for caching
+                                            session_id = f"{config.url}_{config.method}_{hash(str(config.credentials))}"
+                                            
+                                                # Check cache for existing session
+                                            cached_session = session_cache.get_session(session_id)
+                                            if cached_session:
+                                                logger.debug(f"Using cached session for {config.url}")
+                                                return cached_session
+                                            
+                                                # Log authentication attempt (without sensitive data)
+                                            sanitized_creds = _sanitize_credentials(config.credentials)
+                                            logger.info(f"Attempting authentication to {config.url} with method {config.method}")
+                                            logger.debug(f"Credentials: {sanitized_creds}")
+                                            
+                                                # Create and configure session
+                                            session = _create_session(config)
+                                            
+                                                # Prepare request parameters
+                                            request_kwargs = prepare_request_kwargs(
+                                                method=config.method,
+                                                url=config.url,
+                                                credentials=config.credentials,
+                                                headers=config.headers,
+                                                timeout=config.timeout,
+                                                verify_ssl=config.verify_ssl
+                                            )
+                                            
+                                                # Perform authentication request
+                                            logger.debug(f"Sending {config.method} request to {config.url}")
+                                            response = session.request(config.method, config.url, **request_kwargs)
+                                            
+                                                # Check for HTTP errors
+                                            response.raise_for_status()
+                                            
+                                                # Handle response indicators
+                                            _handle_response_indicators(response, config)
+                                            
+                                                # Verify session has cookies (optional check)
+                                            if not session.cookies:
+                                                logger.warning("No cookies received during authentication")
+                                            
+                                                # Cache the session
+                                            session_cache.set_session(session_id, session)
+                                            
+                                            logger.info("Authentication successful - session created with persistent cookies")
+                                            return session
+                                            
     except requests.exceptions.Timeout as e:
-        logger.error(f"Authentication request timed out after {config.timeout} seconds")
-        raise TimeoutError(
-            message=f"Authentication request timed out after {config.timeout} seconds",
-            timeout_seconds=config.timeout
-        ) from e
-        
+                                            logger.error(f"Authentication request timed out after {config.timeout} seconds")
+                                            raise TimeoutError(
+                                                message=f"Authentication request timed out after {config.timeout} seconds",
+                                                timeout_seconds=config.timeout
+                                            ) from e
+                                            
     except requests.exceptions.ConnectionError as e:
-        logger.error(f"Network connection error during authentication: {e}")
-        raise NetworkError(
-            message="Network connection error during authentication",
-            original_exception=e
-        ) from e
-        
+                                            logger.error(f"Network connection error during authentication: {e}")
+                                            raise NetworkError(
+                                                message="Network connection error during authentication",
+                                                original_exception=e
+                                            ) from e
+                                            
     except requests.exceptions.RequestException as e:
-        logger.error(f"Request error during authentication: {e}")
-        raise NetworkError(
-            message=f"Request error during authentication: {e}",
-            original_exception=e
-        ) from e
-        
+                                            logger.error(f"Request error during authentication: {e}")
+                                            raise NetworkError(
+                                                message=f"Request error during authentication: {e}",
+                                                original_exception=e
+                                            ) from e
+                                            
     except ValueError as e:
-        logger.error(f"Configuration validation error: {e}")
-        raise ValidationError(
-            message=f"Configuration validation error: {e}",
-            field="configuration",
-            value=str(e)
-        ) from e
-        
+                                            logger.error(f"Configuration validation error: {e}")
+                                            raise ValidationError(
+                                                message=f"Configuration validation error: {e}",
+                                                field="configuration",
+                                                value=str(e)
+                                            ) from e
+                                            
     except LoginFailedException:
-        raise
+                                            raise
     except Exception as e:
-        logger.error(f"Unexpected error during authentication: {e}")
-        raise AuthenticationError(f"Unexpected error during authentication: {e}") from e
+                                            logger.error(f"Unexpected error during authentication: {e}")
+                                            raise AuthenticationError(f"Unexpected error during authentication: {e}") from e
 
 
 def validate_session(session: requests.Session, test_url: str) -> bool:
@@ -285,24 +285,24 @@ def validate_session(session: requests.Session, test_url: str) -> bool:
     validity before proceeding with exploit steps.
     
     Args:
-        session: The session to validate
-        test_url: URL to test authentication against
-        
+                                            session: The session to validate
+                                            test_url: URL to test authentication against
+                                            
     Returns:
-        True if session is still valid, False otherwise
-        
-    Example::
+                                            True if session is still valid, False otherwise
+                                            
+    Examples:::
 
-        # Validate session before exploit step
-        if validate_session(session, "https://target.com/admin/check"):
-            response = session.get("https://target.com/admin/panel")
+                                                # Validate session before exploit step
+                                            if validate_session(session, "https://target.com/admin/check"):
+                                                response = session.get("https://target.com/admin/panel")
     """
     try:
-        response = session.get(test_url, timeout=DEFAULT_SESSION_TIMEOUT)
-        return response.status_code == 200
+                                            response = session.get(test_url, timeout=DEFAULT_SESSION_TIMEOUT)
+                                            return response.status_code == 200
     except (requests.exceptions.RequestException, requests.exceptions.Timeout) as e:
-        logger.warning(f"Session validation failed: {e}")
-        return False
+                                            logger.warning(f"Session validation failed: {e}")
+                                            return False
 
 
 def logout_session(session: requests.Session, logout_url: str) -> bool:
@@ -314,21 +314,22 @@ def logout_session(session: requests.Session, logout_url: str) -> bool:
     testing logout functionality.
     
     Args:
-        session: The session to logout
-        logout_url: URL to logout from
-        
+                                        session: The session to logout
+                                        logout_url: URL to logout from
+                                        
     Returns:
-        True if logout successful, False otherwise
-        
-    Example:
-        # Clean up after exploit chain
-        logout_session(session, "https://target.com/logout")
+                                        True if logout successful, False otherwise
+                                        
+    Examples::
+
+                                            # Clean up after exploit chain
+                                        logout_session(session, "https://target.com/logout")
     """
     try:
-        response = session.get(logout_url, timeout=DEFAULT_SESSION_TIMEOUT)
-        session.cookies.clear()
-        logger.info("Session logged out successfully")
-        return True
+                                        response = session.get(logout_url, timeout=DEFAULT_SESSION_TIMEOUT)
+                                        session.cookies.clear()
+                                        logger.info("Session logged out successfully")
+                                        return True
     except (requests.exceptions.RequestException, requests.exceptions.Timeout) as e:
-        logger.error(f"Logout failed: {e}")
-        return False 
+                                        logger.error(f"Logout failed: {e}")
+                                        return False 

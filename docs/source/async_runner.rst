@@ -1,12 +1,7 @@
 Async Request Execution
-================================
-======================
-
 LogicPwn provides high-performance async request execution capabilities using aiohttp for concurrent request handling. This module is designed for large-scale security testing and exploit chaining scenarios.
 
 Overview
---------
-
 The async functionality includes:
 
 * **AsyncRequestRunner**: High-performance async HTTP request execution
@@ -16,15 +11,20 @@ The async functionality includes:
 * **Connection Pooling**: Efficient connection management
 * **Error Handling**: Comprehensive async error handling
 
+Why Use Async?
+~~~~~~~~~~~~~~
+
+* **Performance**: Execute multiple requests concurrently
+* **Scalability**: Handle hundreds of requests efficiently
+* **Resource Efficiency**: Better memory and CPU utilization
+* **Real-time Processing**: Process responses as they arrive
+* **Rate Limiting**: Control request rates to avoid detection
+
 AsyncRequestRunner
--------------------
------------------
 
 The AsyncRequestRunner provides high-performance async HTTP request execution with connection pooling and rate limiting.
 
 Basic Usage
-----------
-
 .. code-block:: python
 
    import asyncio
@@ -43,8 +43,6 @@ Basic Usage
    asyncio.run(main())
 
 Configuration
-------------
-
 Configure the AsyncRequestRunner with custom settings:
 
 .. code-block:: python
@@ -57,8 +55,18 @@ Configure the AsyncRequestRunner with custom settings:
    ) as runner:
        # Use runner...
 
+**Configuration Options:**
+
+* ``max_concurrent``: Maximum number of concurrent requests (default: 10)
+* ``rate_limit``: Requests per second (default: None, no limit)
+* ``timeout``: Request timeout in seconds (default: 30)
+* ``verify_ssl``: SSL certificate verification (default: True)
+* ``headers``: Default headers for all requests
+* ``cookies``: Default cookies for all requests
+
+
 Batch Requests
--------------
+--------------
 
 Send multiple requests concurrently:
 
@@ -77,7 +85,7 @@ Send multiple requests concurrently:
            print(f"Request {i+1}: {result.status_code}")
 
 Request Types
-------------
+-------------
 
 **GET Request**:
 
@@ -129,7 +137,7 @@ Request Types
    )
 
 Error Handling
--------------
+--------------
 
 Handle different types of async errors:
 
@@ -143,14 +151,16 @@ Handle different types of async errors:
        print("Request timed out")
    except aiohttp.ClientError as e:
        print(f"Network error: {e}")
+   except Exception as e:
+       print(f"Unexpected error: {e}")
 
 AsyncSessionManager
-------------------
+-------------------
 
 The AsyncSessionManager provides async session management with authentication and session persistence.
 
 Basic Usage
-----------
+-----------
 
 .. code-block:: python
 
@@ -172,7 +182,7 @@ Basic Usage
    asyncio.run(main())
 
 Authentication Configuration
--------------------------
+----------------------------
 
 Configure authentication with various options:
 
@@ -188,14 +198,16 @@ Configure authentication with various options:
        "headers": {
            "Content-Type": "application/x-www-form-urlencoded",
            "User-Agent": "LogicPwn/1.0"
-       }
+       },
+       "success_indicators": ["dashboard", "welcome"],
+       "failure_indicators": ["error", "invalid"]
    }
    
    async with AsyncSessionManager(auth_config=auth_config) as session:
        # Use authenticated session...
 
 Session Methods
---------------
+---------------
 
 **GET Request**:
 
@@ -232,7 +244,7 @@ Session Methods
    print(f"Delete status: {result.status_code}")
 
 Exploit Chaining
----------------
+----------------
 
 Execute complex exploit chains with session persistence:
 
@@ -268,10 +280,7 @@ Execute complex exploit chains with session persistence:
        print(f"Step {i+1}: {result.status_code}")
 
 Convenience Functions
---------------------
-
 Single Async Request
--------------------
 
 Use the convenience function for simple async requests:
 
@@ -290,7 +299,6 @@ Use the convenience function for simple async requests:
    asyncio.run(main())
 
 Batch Async Requests
--------------------
 
 Send multiple requests concurrently using the convenience function:
 
@@ -313,8 +321,6 @@ Send multiple requests concurrently using the convenience function:
    asyncio.run(main())
 
 Async Context Manager
---------------------
-
 Use the async context manager for session management:
 
 .. code-block:: python
@@ -335,10 +341,8 @@ Use the async context manager for session management:
    asyncio.run(main())
 
 Advanced Usage
--------------
 
 Rate Limiting
-------------
 
 Implement custom rate limiting:
 
@@ -378,7 +382,6 @@ Implement custom rate limiting:
    asyncio.run(main())
 
 Connection Pooling
------------------
 
 Optimize connection pooling for high-performance scenarios:
 
@@ -397,10 +400,41 @@ Optimize connection pooling for high-performance scenarios:
        results = await runner.send_requests_batch(request_configs)
        print(f"Completed {len(results)} requests")
 
-Error Recovery
--------------
+Performance Monitoring
 
-Implement robust error recovery:
+Monitor async performance:
+
+.. code-block:: python
+
+   import time
+   from logicpwn.core import get_performance_summary
+   
+   async def monitored_requests():
+       start_time = time.time()
+       
+       async with AsyncRequestRunner(max_concurrent=10) as runner:
+           request_configs = [
+               {"url": f"https://httpbin.org/get?i={i}", "method": "GET"}
+               for i in range(50)
+           ]
+           
+           results = await runner.send_requests_batch(request_configs)
+           
+           end_time = time.time()
+           duration = end_time - start_time
+           
+           print(f"Completed {len(results)} requests in {duration:.2f}s")
+           print(f"Average: {duration/len(results):.3f}s per request")
+           
+           # Get performance metrics
+           performance = get_performance_summary()
+           print(f"Performance summary: {performance}")
+   
+   asyncio.run(monitored_requests())
+
+Error Recovery
+
+Implement error recovery for robust async operations:
 
 .. code-block:: python
 
@@ -409,10 +443,15 @@ Implement robust error recovery:
            try:
                result = await runner.send_request(url=url, method="GET")
                return result
-           except Exception as e:
+           except asyncio.TimeoutError:
+               print(f"Timeout on attempt {attempt + 1}")
                if attempt == max_retries - 1:
-                   raise e
+                   raise
                await asyncio.sleep(2 ** attempt)  # Exponential backoff
+           except Exception as e:
+               print(f"Error on attempt {attempt + 1}: {e}")
+               if attempt == max_retries - 1:
+                   raise
    
    async def main():
        async with AsyncRequestRunner() as runner:
@@ -424,88 +463,44 @@ Implement robust error recovery:
    
    asyncio.run(main())
 
-Performance Monitoring
---------------------
-
-Monitor async request performance:
-
-.. code-block:: python
-
-   import time
-   import statistics
-   
-   async def benchmark_requests():
-       async with AsyncRequestRunner(max_concurrent=10) as runner:
-           start_time = time.time()
-           
-           request_configs = [
-               {"url": "https://httpbin.org/get", "method": "GET"}
-               for _ in range(50)
-           ]
-           
-           results = await runner.send_requests_batch(request_configs)
-           
-           end_time = time.time()
-           total_time = end_time - start_time
-           
-           successful = sum(1 for r in results if r.status_code == 200)
-           
-           print(f"Total requests: {len(results)}")
-           print(f"Successful: {successful}")
-           print(f"Total time: {total_time:.2f}s")
-           print(f"Requests per second: {len(results) / total_time:.2f}")
-   
-   asyncio.run(benchmark_requests())
-
 Best Practices
--------------
 
-1. **Use Context Managers**: Always use async context managers for proper resource cleanup
-2. **Handle Exceptions**: Implement proper error handling for network issues
-3. **Rate Limiting**: Use rate limiting to avoid overwhelming target systems
-4. **Connection Pooling**: Configure appropriate connection pool sizes
-5. **Session Persistence**: Use AsyncSessionManager for authenticated workflows
-6. **Monitor Performance**: Track request performance and adjust concurrency accordingly
-7. **Secure Logging**: Ensure sensitive data is properly redacted in logs
+**Performance Optimization:**
 
-Performance Tips
---------------
+1. **Use appropriate concurrency limits** - Don't overwhelm servers
+2. **Implement rate limiting** - Respect server limits
+3. **Use connection pooling** - Reuse connections efficiently
+4. **Monitor memory usage** - Clean up resources properly
+5. **Handle errors gracefully** - Implement retry logic
 
-* Use appropriate `max_concurrent` values based on target system capacity
-* Implement rate limiting for production environments
-* Monitor memory usage with large batch requests
-* Use connection pooling for repeated requests to the same hosts
-* Consider using `verify_ssl=False` for testing environments only
+**Security Considerations:**
 
-Security Considerations
----------------------
+1. **Validate URLs** - Ensure target URLs are authorized
+2. **Secure credential handling** - Use environment variables
+3. **Monitor request patterns** - Avoid detection
+4. **Log responsibly** - Don't log sensitive data
+5. **Use HTTPS** - Encrypt communications
 
-* Always use HTTPS in production environments
-* Implement proper authentication and session management
-* Monitor for sensitive data exposure in logs
-* Use secure credential storage
-* Implement proper access controls and authorization
+**Error Handling:**
+
+1. **Timeout handling** - Set appropriate timeouts
+2. **Retry logic** - Implement exponential backoff
+3. **Circuit breaker** - Stop requests on repeated failures
+4. **Graceful degradation** - Handle partial failures
+5. **Comprehensive logging** - Track all operations
 
 Troubleshooting
---------------
 
-Common Issues
-------------
+**Common Issues:**
 
-**Connection Errors**: Check network connectivity and target availability
-**Timeout Errors**: Increase timeout values for slow targets
-**Memory Issues**: Reduce `max_concurrent` for large batch requests
-**SSL Errors**: Verify SSL certificates or use `verify_ssl=False` for testing
+* **Connection errors**: Check network connectivity and SSL certificates
+* **Timeout errors**: Increase timeout values or reduce concurrency
+* **Memory issues**: Reduce max_concurrent or implement cleanup
+* **Rate limiting**: Implement proper rate limiting
+* **Authentication failures**: Verify credentials and success indicators
 
-Debugging
----------
+**Debugging Tips:**
 
-Enable debug logging for troubleshooting:
-
-.. code-block:: python
-
-   import logging
-   logging.basicConfig(level=logging.DEBUG)
-   
-   async with AsyncRequestRunner() as runner:
-       result = await runner.send_request(url="https://api.example.com/data") 
+* Enable debug logging for detailed information
+* Use performance monitoring to identify bottlenecks
+* Test with smaller batches first

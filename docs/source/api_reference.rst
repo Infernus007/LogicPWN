@@ -1,6 +1,8 @@
 API Reference
 =============
 
+This section provides comprehensive API documentation for all LogicPwn modules, classes, and functions.
+
 .. contents:: Table of Contents
    :depth: 2
    :local:
@@ -8,121 +10,181 @@ API Reference
 Core Modules
 ------------
 
+Authentication Module
+~~~~~~~~~~~~~~~~~~~~~
+
+The authentication module provides session management and authentication capabilities.
+
 .. automodule:: logicpwn.core.auth
    :members:
    :undoc-members:
    :show-inheritance:
+
+**Key Functions:**
+
+* ``authenticate_session()`` - Authenticate and return a session
+* ``validate_session()`` - Validate if a session is still active
+* ``logout_session()`` - Properly logout and clean up session
+
+**Configuration:**
+
+* ``AuthConfig`` - Configuration model for authentication
+
+Request Runner Module
+~~~~~~~~~~~~~~~~~~~~~
+
+The request runner module handles HTTP request execution with advanced features.
 
 .. automodule:: logicpwn.core.runner
    :members:
    :undoc-members:
    :show-inheritance:
 
+**Key Functions:**
+
+* ``send_request()`` - Send authenticated requests
+* ``send_request_advanced()`` - Advanced request with full configuration
+
+**Configuration:**
+
+* ``RequestConfig`` - Configuration model for requests
+
+Response Validator Module
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The validator module provides comprehensive response validation and analysis.
+
 .. automodule:: logicpwn.core.validator
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: logicpwn.core.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Key Functions:**
+
+* ``validate_response()`` - Validate responses with multiple criteria
+* ``extract_from_response()`` - Extract data using regex patterns
+* ``chain_validations()`` - Execute validation chains
+* ``validate_json_response()`` - Validate JSON responses
+* ``validate_html_response()`` - Validate HTML responses
+
+**Classes:**
+
+* ``ValidationResult`` - Structured validation results
+* ``ValidationConfig`` - Validation configuration
+* ``VulnerabilityPatterns`` - Pre-defined vulnerability patterns
+
+Async Runner Module
+~~~~~~~~~~~~~~~~~~~
+
+The async runner provides high-performance async request execution.
 
 .. automodule:: logicpwn.core.async_runner
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: logicpwn.core.config
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Key Classes:**
 
-.. automodule:: logicpwn.core.logging_utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
+* ``AsyncRequestRunner`` - High-performance async request execution
+* ``AsyncSessionManager`` - Async session management with authentication
 
-.. automodule:: logicpwn.core.middleware
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Key Functions:**
 
-.. automodule:: logicpwn.core.cache
-   :members:
-   :undoc-members:
-   :show-inheritance:
+* ``send_request_async()`` - Single async request
+* ``send_requests_batch_async()`` - Batch async requests
+* ``async_session_manager()`` - Async context manager
+
+Performance Module
+~~~~~~~~~~~~~~~~~~
+
+The performance module provides monitoring and benchmarking capabilities.
 
 .. automodule:: logicpwn.core.performance
    :members:
    :undoc-members:
    :show-inheritance:
 
-Models
-------
+**Key Classes:**
 
-.. automodule:: logicpwn.models.request_result
+* ``PerformanceMonitor`` - Real-time performance monitoring
+* ``PerformanceBenchmark`` - Performance benchmarking
+* ``MemoryProfiler`` - Memory usage profiling
+
+**Key Functions:**
+
+* ``monitor_performance()`` - Performance monitoring decorator
+* ``performance_context()`` - Performance context manager
+* ``get_performance_summary()`` - Get performance metrics
+
+Cache Module
+~~~~~~~~~~~~
+
+The cache module provides efficient caching for requests and sessions.
+
+.. automodule:: logicpwn.core.cache
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: logicpwn.models.request_config
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Key Classes:**
 
-.. automodule:: logicpwn.models
-   :members:
-   :undoc-members:
-   :show-inheritance:
+* ``CacheManager`` - Generic cache management
+* ``ResponseCache`` - HTTP response caching
+* ``SessionCache`` - Session caching
 
-Exceptions
-----------
+**Key Functions:**
 
-.. automodule:: logicpwn.exceptions
-   :members:
-   :undoc-members:
-   :show-inheritance:
+* ``get_cache_stats()`` - Get cache statistics
+* ``clear_all_caches()`` - Clear all caches
 
-Recent Improvements
-------------------
-
-Core Module Refactoring
-~~~~~~~~~~~~~~~~~~~~~~
-
-The core modules have been refactored to improve code quality and interoperability:
-
-- **Shared Utilities**: Common functionality moved to `logicpwn.core.utils`
-- **Enhanced Error Handling**: Standardized exception handling across modules
-- **Secure Logging**: URL sanitization and response size logging
-- **Test Reliability**: All tests now pass with improved mock handling
-
-Authentication Module
-~~~~~~~~~~~~~~~~~~~
-
-The authentication module has been enhanced with:
-
-- **Unified Validation**: Uses shared utilities for indicator checking
-- **Improved Error Messages**: Clear, specific error messages
-- **Secure Logging**: Automatic credential redaction
-- **Better Session Management**: Enhanced session validation and persistence
-
-Request Runner Module
+Configuration Module
 ~~~~~~~~~~~~~~~~~~~~
 
-The request runner module includes:
+The configuration module manages settings and defaults.
 
-- **Enhanced Error Handling**: Proper HTTP error status code handling
-- **Secure Logging**: URL sanitization and response size logging
-- **Improved Mock Support**: Better handling of mock objects in tests
-- **Standardized Configuration**: Consistent config validation across modules
+.. automodule:: logicpwn.core.config
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-Response Validator Module
-~~~~~~~~~~~~~~~~~~~~~~~~
+**Key Functions:**
 
-The validator module features:
+* ``get_timeout()`` - Get request timeout
+* ``get_max_retries()`` - Get maximum retries
 
-- **Unified Validation Logic**: Shared utilities for indicator checking
-- **Improved Confidence Scoring**: Lowered default threshold for better validation
-- **Enhanced Pattern Detection**: Better regex pattern handling
-- **Comprehensive Error Handling**: Robust error handling for all validation types 
+Utilities Module
+~~~~~~~~~~~~~~~~
+
+The utilities module provides shared functionality.
+
+.. automodule:: logicpwn.core.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+**Key Functions:**
+
+* ``check_indicators()`` - Check response indicators
+* ``prepare_request_kwargs()`` - Prepare request parameters
+* ``validate_config()`` - Validate configuration
+
+Logging Module
+~~~~~~~~~~~~~~
+
+The logging module provides secure logging capabilities.
+
+.. automodule:: logicpwn.core.logging_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+**Key Functions:**
+
+* ``log_request()`` - Log request information
+* ``log_response()`` - Log response information
+* ``log_info()``, ``log_warning()``, ``log_error()`` - Log levels
+
+Stress Testing Module
+~~~~~~~~~~~~~~~~~~~~~
+
+The stress testing module provides load testing capabilities.
