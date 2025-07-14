@@ -10,179 +10,197 @@ This section provides comprehensive API documentation for all LogicPwn modules, 
 Core Modules
 ------------
 
-Authentication Module
-~~~~~~~~~~~~~~~~~~~~~
-
-The authentication module provides session management and authentication capabilities.
-
+Auth Module
+----------
 .. automodule:: logicpwn.core.auth
-   :members:
-   :undoc-members:
-   :show-inheritance:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.auth.auth
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.auth.auth_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.auth.auth_models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.auth.auth_session
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.auth.auth_constants
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-**Key Functions:**
-
-* ``authenticate_session()`` - Authenticate and return a session
-* ``validate_session()`` - Validate if a session is still active
-* ``logout_session()`` - Properly logout and clean up session
-
-**Configuration:**
-
-* ``AuthConfig`` - Configuration model for authentication
-
-Request Runner Module
-~~~~~~~~~~~~~~~~~~~~~
-
-The request runner module handles HTTP request execution with advanced features.
-
+Runner Module
+-------------
 .. automodule:: logicpwn.core.runner
-   :members:
-   :undoc-members:
-   :show-inheritance:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.runner.runner
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.runner.async_runner
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.runner.async_runner_core
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.runner.async_session_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.runner.async_request_helpers
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-**Key Functions:**
-
-* ``send_request()`` - Send authenticated requests
-* ``send_request_advanced()`` - Advanced request with full configuration
-
-**Configuration:**
-
-* ``RequestConfig`` - Configuration model for requests
-
-Response Validator Module
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The validator module provides comprehensive response validation and analysis.
-
+Validator Module
+----------------
 .. automodule:: logicpwn.core.validator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-**Key Functions:**
-
-* ``validate_response()`` - Validate responses with multiple criteria
-* ``extract_from_response()`` - Extract data using regex patterns
-* ``chain_validations()`` - Execute validation chains
-* ``validate_json_response()`` - Validate JSON responses
-* ``validate_html_response()`` - Validate HTML responses
-
-**Classes:**
-
-* ``ValidationResult`` - Structured validation results
-* ``ValidationConfig`` - Validation configuration
-* ``VulnerabilityPatterns`` - Pre-defined vulnerability patterns
-
-Async Runner Module
-~~~~~~~~~~~~~~~~~~~
-
-The async runner provides high-performance async request execution.
-
-.. automodule:: logicpwn.core.async_runner
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-**Key Classes:**
-
-* ``AsyncRequestRunner`` - High-performance async request execution
-* ``AsyncSessionManager`` - Async session management with authentication
-
-**Key Functions:**
-
-* ``send_request_async()`` - Single async request
-* ``send_requests_batch_async()`` - Batch async requests
-* ``async_session_manager()`` - Async context manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.validator.validator_api
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.validator.validator_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.validator.validator_checks
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.validator.validator_models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.validator.validator_patterns
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Performance Module
-~~~~~~~~~~~~~~~~~~
-
-The performance module provides monitoring and benchmarking capabilities.
-
+------------------
 .. automodule:: logicpwn.core.performance
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-**Key Classes:**
-
-* ``PerformanceMonitor`` - Real-time performance monitoring
-* ``PerformanceBenchmark`` - Performance benchmarking
-* ``MemoryProfiler`` - Memory usage profiling
-
-**Key Functions:**
-
-* ``monitor_performance()`` - Performance monitoring decorator
-* ``performance_context()`` - Performance context manager
-* ``get_performance_summary()`` - Get performance metrics
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.performance.performance
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.performance.performance_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.performance.performance_metrics
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.performance.performance_monitor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.performance.performance_benchmark
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.performance.memory_profiler
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Cache Module
-~~~~~~~~~~~~
-
-The cache module provides efficient caching for requests and sessions.
-
+------------
 .. automodule:: logicpwn.core.cache
-   :members:
-   :undoc-members:
-   :show-inheritance:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.cache.cache
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.cache.cache_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.cache.response_cache
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.cache.session_cache
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.cache.config_cache
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.cache.cache_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-**Key Classes:**
-
-* ``CacheManager`` - Generic cache management
-* ``ResponseCache`` - HTTP response caching
-* ``SessionCache`` - Session caching
-
-**Key Functions:**
-
-* ``get_cache_stats()`` - Get cache statistics
-* ``clear_all_caches()`` - Clear all caches
-
-Configuration Module
-~~~~~~~~~~~~~~~~~~~~
-
-The configuration module manages settings and defaults.
-
+Config Module
+-------------
 .. automodule:: logicpwn.core.config
-   :members:
-   :undoc-members:
-   :show-inheritance:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.config.config
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.config.config_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.config.config_models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.config.config_env
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-**Key Functions:**
-
-* ``get_timeout()`` - Get request timeout
-* ``get_max_retries()`` - Get maximum retries
-
-Utilities Module
-~~~~~~~~~~~~~~~~
-
-The utilities module provides shared functionality.
-
+Utils Module
+------------
 .. automodule:: logicpwn.core.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-**Key Functions:**
-
-* ``check_indicators()`` - Check response indicators
-* ``prepare_request_kwargs()`` - Prepare request parameters
-* ``validate_config()`` - Validate configuration
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.utils.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Logging Module
-~~~~~~~~~~~~~~
-
-The logging module provides secure logging capabilities.
-
-.. automodule:: logicpwn.core.logging_utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-**Key Functions:**
-
-* ``log_request()`` - Log request information
-* ``log_response()`` - Log response information
-* ``log_info()``, ``log_warning()``, ``log_error()`` - Log levels
+--------------
+.. automodule:: logicpwn.core.logging.redactor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.logging.logger
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.logging.log_functions
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Stress Testing Module
 ~~~~~~~~~~~~~~~~~~~~~
