@@ -56,6 +56,8 @@ class SensitiveDataRedactor:
             return json.dumps(redacted_data, indent=2)
         except (json.JSONDecodeError, TypeError):
             return self._redact_string_body(str(body))
+    def redact_string_body(self, body: str) -> str:
+        return self._redact_string_body(body)
     def _redact_json_recursive(self, data: Any) -> Any:
         if isinstance(data, dict):
             redacted = {}

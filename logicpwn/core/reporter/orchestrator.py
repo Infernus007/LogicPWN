@@ -12,6 +12,7 @@ from logicpwn.core.performance import monitor_performance
 from logicpwn.core.cache.cache_utils import cached
 from logicpwn.core.reporter.cvss import CVSSCalculator
 from logicpwn.core.reporter.redactor import AdvancedRedactor
+from logicpwn.core.reporter.models import RedactionRule
 
 # --- Data Models ---
 class VulnerabilityFinding(BaseModel):
@@ -54,11 +55,6 @@ class ReportConfig(BaseModel):
     custom_branding: Optional[Dict[str, str]] = None
     redaction_rules: List[RedactionRule] = []
 
-class RedactionRule(BaseModel):
-    pattern: str
-    replacement: str
-    description: str
-
 # --- Main Orchestrator ---
 class ReportGenerator:
     def __init__(self, config: ReportConfig):
@@ -81,16 +77,29 @@ class ReportGenerator:
         self.findings.append(finding)
 
     @monitor_performance("report_generation")
-    def generate_report(self, format: str = "markdown") -> str:
+    def generate_report(self, format: str = "markdown", template_dir: str = None) -> str:
         from logicpwn.exporters import get_exporter
         exporter = get_exporter(format)
-        content = exporter.export(self.findings, self.metadata)
+        if hasattr(exporter, 'set_template_dir') and template_dir:
+            exporter.set_template_dir(template_dir)
+        content = exporter.export(self.findings, self.metadata, template_dir=template_dir)
         return self.redact_sensitive_data(content) if self.redactor else content
 
-    def export_to_file(self, filepath: str, format: str) -> None:
-        report = self.generate_report(format)
+    def export_to_file(self, filepath: str, format: str, template_dir: str = None) -> None:
+        report = self.generate_report(format, template_dir=template_dir)
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(report)
+
+    def stream_to_file(self, filepath: str, format: str, template_dir: str = None) -> None:
+        from logicpwn.exporters import get_exporter
+        exporter = get_exporter(format)
+        with open(filepath, "w", encoding="utf-8") as f:
+            if hasattr(exporter, 'stream_export'):
+                exporter.stream_export(self.findings, self.metadata, f, template_dir=template_dir)
+            else:
+                # fallback to normal export
+                report = exporter.export(self.findings, self.metadata, template_dir=template_dir)
+                f.write(report)
 
     def redact_sensitive_data(self, content: str) -> str:
         return self.redactor.redact_string_body(content)

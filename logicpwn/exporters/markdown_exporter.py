@@ -1,12 +1,18 @@
 from logicpwn.exporters import BaseExporter
 from logicpwn.core.reporter.orchestrator import VulnerabilityFinding, ReportMetadata
-from typing import List
+from typing import List, Optional, IO
 from logicpwn.core.reporter.template_renderer import TemplateRenderer
 import os
 
 class MarkdownExporter(BaseExporter):
-    def export(self, findings: List[VulnerabilityFinding], metadata: ReportMetadata) -> str:
-        renderer = TemplateRenderer()
+    def __init__(self):
+        self.template_dir = "logicpwn/templates"
+
+    def set_template_dir(self, template_dir: str):
+        self.template_dir = template_dir
+
+    def export(self, findings: List[VulnerabilityFinding], metadata: ReportMetadata, template_dir: Optional[str] = None) -> str:
+        renderer = TemplateRenderer(template_dir or self.template_dir)
         context = {
             "title": metadata.title,
             "target_url": metadata.target_url,
@@ -49,4 +55,29 @@ class MarkdownExporter(BaseExporter):
             lines.append(f"- **Scan Duration:** {(metadata.scan_end_time - metadata.scan_start_time)}")
             lines.append(f"- **LogicPwn Version:** {metadata.logicpwn_version}")
             lines.append(f"- **Authentication:** {metadata.authenticated_user or 'N/A'}")
-            return '\n'.join(lines) 
+            return '\n'.join(lines)
+
+    def stream_export(self, findings: List[VulnerabilityFinding], metadata: ReportMetadata, file: IO, template_dir: Optional[str] = None):
+        # Stream header
+        file.write(f"# {metadata.title}\n\n")
+        file.write(f"**Target:** {metadata.target_url}\n")
+        file.write(f"**Assessment Date:** {metadata.scan_start_time.strftime('%Y-%m-%d')} - {metadata.scan_end_time.strftime('%Y-%m-%d')}\n")
+        file.write(f"**Total Findings:** {sum(metadata.findings_count.values())}\n")
+        file.write(f"**Critical Issues:** {metadata.findings_count.get('Critical', 0)}\n\n---\n\n")
+        file.write("## Vulnerability Details\n\n")
+        # Stream findings
+        for finding in findings:
+            file.write(f"### {finding.severity} - {finding.title}\n")
+            file.write(f"**CVSS Score:** {finding.cvss_score if finding.cvss_score is not None else 'N/A'}\n")
+            file.write(f"**Affected Endpoints:** {', '.join(finding.affected_endpoints)}\n")
+            file.write(f"\n**Description:**\n{finding.description}\n")
+            file.write(f"\n**Proof of Concept:**\n```http\n{finding.proof_of_concept}\n```\n")
+            file.write(f"\n**Impact:**\n{finding.impact}\n")
+            file.write(f"\n**Remediation:**\n{finding.remediation}\n")
+            file.write(f"\n**References:** {', '.join(finding.references) if finding.references else 'N/A'}\n")
+            file.write(f"\n**Discovered At:** {finding.discovered_at.isoformat()}\n\n---\n\n")
+        # Stream appendix
+        file.write("## Appendix\n")
+        file.write(f"- **Scan Duration:** {(metadata.scan_end_time - metadata.scan_start_time)}\n")
+        file.write(f"- **LogicPwn Version:** {metadata.logicpwn_version}\n")
+        file.write(f"- **Authentication:** {metadata.authenticated_user or 'N/A'}\n") 

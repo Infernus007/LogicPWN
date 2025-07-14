@@ -244,3 +244,26 @@ Access/IDOR Detector Module
     :members:
     :undoc-members:
     :show-inheritance:
+
+Reporting Module
+---------------
+.. automodule:: logicpwn.core.reporter.orchestrator
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.reporter.redactor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.reporter.cvss
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.reporter.template_renderer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.reporter.models
+    :members:
+    :undoc-members:
+    :show-inheritance:
