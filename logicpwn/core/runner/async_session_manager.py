@@ -3,14 +3,16 @@ Async session management for LogicPwn.
 """
 import asyncio
 from typing import Dict, Optional, Any, List
-from ..models.request_result import RequestResult
-from ..exceptions import (
+from logicpwn.models.request_result import RequestResult
+from logicpwn.exceptions import (
     RequestExecutionError,
     NetworkError,
     ValidationError,
     TimeoutError,
     ResponseError
 )
+from logicpwn.core.config import get_timeout
+from logicpwn.core.logging import log_info, log_error, log_warning
 
 class AsyncSessionManager:
     """Async session manager for persistent authentication and exploit chaining."""
@@ -22,7 +24,6 @@ class AsyncSessionManager:
             max_concurrent: Maximum concurrent requests
             timeout: Default timeout in seconds
         """
-        from .config import get_timeout
         import aiohttp
         self.auth_config = auth_config
         self.max_concurrent = max_concurrent
@@ -33,7 +34,6 @@ class AsyncSessionManager:
 
     async def __aenter__(self):
         import aiohttp
-        from .logging_utils import log_info
         connector = aiohttp.TCPConnector(
             limit=self.max_concurrent,
             limit_per_host=self.max_concurrent
@@ -52,7 +52,6 @@ class AsyncSessionManager:
             await self.session.close()
 
     async def authenticate(self) -> bool:
-        from .logging_utils import log_info, log_error
         if not self.auth_config:
             raise ValidationError("No authentication configuration provided")
         try:
@@ -133,7 +132,6 @@ class AsyncSessionManager:
             )
 
     async def execute_exploit_chain(self, exploit_configs: List[Dict[str, Any]]) -> List[RequestResult]:
-        from .logging_utils import log_warning
         results = []
         for config in exploit_configs:
             method = config.get('method', 'GET')

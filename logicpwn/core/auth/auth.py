@@ -29,17 +29,16 @@ from pydantic import BaseModel, Field, field_validator
 from loguru import logger
 from urllib.parse import urlparse
 
-from ..exceptions import (
+from logicpwn.exceptions import (
     AuthenticationError,
     LoginFailedException,
     NetworkError,
     ValidationError,
-    SessionError,
     TimeoutError
 )
-from .utils import check_indicators, prepare_request_kwargs, validate_config
-from .performance import monitor_performance, performance_context
-from .cache import session_cache
+from logicpwn.core.utils import check_indicators, prepare_request_kwargs, validate_config
+from logicpwn.core.performance import monitor_performance, performance_context
+from logicpwn.core.cache import session_cache
 
 # Module constants for maintainability and configuration
 HTTP_METHODS = {"GET", "POST"}

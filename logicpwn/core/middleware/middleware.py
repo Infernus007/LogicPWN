@@ -10,8 +10,8 @@ business logic exploitation workflows.
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Union
 from dataclasses import dataclass
-from .logging_utils import log_info, log_debug, log_error
-from .config import get_timeout, get_max_retries
+from logicpwn.core.logging import log_info, log_debug, log_error
+from logicpwn.core.config import get_timeout, get_max_retries
 
 
 @dataclass

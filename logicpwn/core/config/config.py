@@ -11,7 +11,7 @@ from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 import os
-from .cache import config_cache
+from logicpwn.core.cache import config_cache
 
 
 class HTTPMethod(Enum):
@@ -111,6 +111,10 @@ class Config:
                                             self.auth_defaults = AuthDefaults()
                                             
                                                 # Load environment variables
+                                            self._load_env_vars()
+    
+    def reload_env_vars(self):
+                                            """Reload configuration from environment variables (for test isolation)."""
                                             self._load_env_vars()
     
     def _load_env_vars(self):
@@ -341,3 +345,17 @@ def get_max_sessions() -> int:
 def get_logging_defaults() -> LoggingDefaults:
     """Get logging default configuration."""
     return config.get_logging_defaults() 
+
+
+def reload_config_env_vars():
+    """Reload the global config from environment variables (for test isolation)."""
+    config.reload_env_vars() 
+
+# Add this function for test isolation
+_config_singleton = [config]
+
+def reset_config_singleton():
+    """Reset the global config singleton for test isolation."""
+    global config
+    config = Config()
+    _config_singleton[0] = config 

@@ -23,16 +23,12 @@ from loguru import logger
 # Add the project root to the path for imports
 sys.path.insert(0, '.')
 
-from logicpwn.core.validator import (
+from logicpwn.core.validator.validator_api import (
     validate_response,
     extract_from_response,
     validate_json_response,
     validate_html_response,
-    chain_validations,
-    ValidationResult,
-    ValidationConfig,
-    ValidationType,
-    VulnerabilityPatterns
+    chain_validations
 )
 from logicpwn.core.auth import authenticate_session, AuthConfig
 from logicpwn.core.runner import send_request_advanced

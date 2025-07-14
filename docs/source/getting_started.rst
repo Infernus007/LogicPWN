@@ -29,7 +29,7 @@ Test that LogicPwn is installed correctly:
 
    import logicpwn
    print(logicpwn.__version__)
-   
+
    # Test basic functionality
    from logicpwn.core import authenticate_session, send_request
    print("✅ LogicPwn installed successfully!")
@@ -80,8 +80,8 @@ Build complex exploit chains with response validation and data extraction:
    )
    
    # Step 1: Authenticate
-   session = authenticate_session(auth_config)
-   
+       session = authenticate_session(auth_config)
+
    # Step 2: Access admin panel
    admin_response = send_request(session, {
        "url": "https://target.com/admin/panel",

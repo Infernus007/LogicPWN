@@ -20,8 +20,8 @@ Key Features:
 
 Example Usage:
     from logicpwn.core.auth import authenticate_session
-    from logicpwn.core import send_request, send_request_advanced
-    from logicpwn.core import send_request_async, AsyncRequestRunner
+    from logicpwn.core.runner import send_request, send_request_advanced
+    from logicpwn.core.runner import send_request_async, AsyncRequestRunner
     from logicpwn.models import RequestResult
     
     # Synchronous authentication for exploit chaining
@@ -41,73 +41,14 @@ Example Usage:
         results = await runner.send_requests_batch(request_configs)
 """
 
-from .core import (
-    # Authentication
-    authenticate_session,
-    validate_session,
-    logout_session,
-    AuthConfig,
-    
-    # Request Execution
-    send_request,
-    send_request_advanced,
-    RequestConfig,
-    
-    # Response Validation
-    validate_response,
-    extract_from_response,
-    validate_json_response,
-    validate_html_response,
-    chain_validations,
-    ValidationResult,
-    ValidationConfig,
-    ValidationType,
-    VulnerabilityPatterns,
-    validate_validation_config,
-    MAX_RESPONSE_TEXT_LENGTH,
-    DEFAULT_CONFIDENCE_THRESHOLD,
-    
-    # Async Execution
-    AsyncRequestRunner,
-    AsyncSessionManager,
-    send_request_async,
-    send_requests_batch_async,
-    async_session_manager,
-    
-    # Performance & Caching
-    PerformanceMonitor,
-    PerformanceBenchmark,
-    MemoryProfiler,
-    monitor_performance,
-    performance_context,
-    get_performance_summary,
-    response_cache,
-    session_cache,
-    config_cache,
-    get_cache_stats,
-    clear_all_caches,
-    
-    # Stress Testing
-    StressTester,
-    StressTestConfig,
-    StressTestMetrics,
-    run_quick_stress_test,
-    run_exploit_chain_stress_test,
-    
-    # Utilities
-    check_indicators,
-    prepare_request_kwargs,
-    validate_config,
-    config,
-    get_timeout,
-    get_max_retries,
-    log_info,
-    log_warning,
-    log_error,
-    log_debug,
-    log_request,
-    log_response
-)
+from logicpwn.core.auth import authenticate_session, validate_session, logout_session, AuthConfig
+from logicpwn.core.runner import send_request, send_request_advanced, RequestConfig, AsyncRequestRunner, AsyncSessionManager, send_request_async, send_requests_batch_async, async_session_manager
+from logicpwn.core.performance import PerformanceMonitor, PerformanceBenchmark, MemoryProfiler, monitor_performance, performance_context, get_performance_summary
+from logicpwn.core.cache import response_cache, session_cache, config_cache, get_cache_stats, clear_all_caches
+from logicpwn.core.stress import StressTester, StressTestConfig, StressTestMetrics, run_quick_stress_test, run_exploit_chain_stress_test
+from logicpwn.core.utils import check_indicators, prepare_request_kwargs, validate_config
+from logicpwn.core.logging import log_info, log_warning, log_error, log_debug, log_request, log_response
+from logicpwn.core.config import get_timeout, get_max_retries
 
 from .models import (
     RequestConfig,
@@ -141,18 +82,15 @@ __all__ = [
     "RequestConfig",
     
     # Response Validation
-    "validate_response",
-    "extract_from_response",
-    "validate_json_response",
-    "validate_html_response",
-    "chain_validations",
-    "ValidationResult",
-    "ValidationConfig",
-    "ValidationType",
-    "VulnerabilityPatterns",
-    "validate_validation_config",
-    "MAX_RESPONSE_TEXT_LENGTH",
-    "DEFAULT_CONFIDENCE_THRESHOLD",
+    # REMOVED: "validate_response",
+    # REMOVED: "extract_from_response",
+    # REMOVED: "validate_json_response",
+    # REMOVED: "validate_html_response",
+    # REMOVED: "chain_validations",
+    # REMOVED: "ValidationResult",
+    # REMOVED: "ValidationConfig",
+    # REMOVED: "ValidationType",
+    # REMOVED: "VulnerabilityPatterns",
     
     # Async Execution
     "AsyncRequestRunner",

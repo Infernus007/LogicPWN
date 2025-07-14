@@ -3,8 +3,8 @@ Async request helper functions for LogicPwn.
 """
 from typing import Dict, Optional, Any, List, Union, AsyncGenerator
 from contextlib import asynccontextmanager
-from ..models.request_config import RequestConfig
-from ..models.request_result import RequestResult
+from logicpwn.models.request_config import RequestConfig
+from logicpwn.models.request_result import RequestResult
 from .async_session_manager import AsyncSessionManager
 
 async def send_request_async(url: str, method: str = "GET", headers: Optional[Dict[str, str]] = None, **kwargs) -> RequestResult:
