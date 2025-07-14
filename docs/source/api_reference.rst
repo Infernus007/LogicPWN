@@ -153,6 +153,29 @@ Cache Module
     :undoc-members:
     :show-inheritance:
 
+Exploit Engine Module
+---------------------
+.. automodule:: logicpwn.core.exploit_engine.exploit_engine
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.exploit_engine.models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.exploit_engine.payload_generator
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.exploit_engine.validation_engine
+    :members:
+    :undoc-members:
+    :show-inheritance:
+.. automodule:: logicpwn.core.exploit_engine.exploit_logger
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Config Module
 -------------
 .. automodule:: logicpwn.core.config

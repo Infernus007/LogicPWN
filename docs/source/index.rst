@@ -10,6 +10,8 @@ LogicPwn is a comprehensive security testing framework designed for advanced bus
    getting_started
    async_runner
    api_reference
+   exploit_engine
+   access_detection
    # Add a reference to the new IDOR & Access Control Detection section
    (see getting_started for usage example)
 

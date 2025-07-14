@@ -107,6 +107,81 @@ async with AsyncSessionManager(auth_config=auth_config) as session:
     )
 ```
 
+---
+
+## 🧩 Automated Exploit Engine & Chain Orchestration
+
+LogicPwn features a powerful exploit automation engine for chaining multi-step attacks, leveraging authenticated sessions, advanced payloads, and flexible validation. You can define exploit chains in YAML or JSON, and run them synchronously or asynchronously.
+
+### YAML/JSON Config-Driven Chains
+
+Define your exploit chain in a simple YAML file:
+
+```yaml
+exploit_chain:
+  name: "IDOR User Data Extraction"
+  description: "Exploit IDOR to access another user's data."
+  steps:
+    - name: "Login as User"
+      request_config:
+        method: "POST"
+        url: "https://api.example.com/login"
+        json_data:
+          username: "victim"
+          password: "password123"
+      success_indicators:
+        - "status_code == 200"
+        - "token in response.json"
+      data_extractors:
+        token: "json:token"
+    - name: "Access Another User's Data"
+      request_config:
+        method: "GET"
+        url: "https://api.example.com/api/users/2/profile"
+        headers:
+          Authorization: "Bearer {{token}}"
+      success_indicators:
+        - "status_code == 200"
+        - "py:'email' in response.text"
+```
+
+### Running a Chain (Sync & Async)
+
+```python
+from logicpwn.core.exploit_engine.exploit_engine import load_exploit_chain_from_file, run_exploit_chain, async_run_exploit_chain
+from logicpwn.core.auth.auth_session import authenticate_session
+import requests
+import asyncio
+
+# Load chain from YAML
+chain = load_exploit_chain_from_file("examples/exploits/idor_chain.yaml")
+
+# Create authenticated session (if needed)
+session = requests.Session()  # or use authenticate_session(auth_config)
+
+# Synchronous execution
+results = run_exploit_chain(session, chain)
+
+# Asynchronous execution
+async def main():
+    await async_run_exploit_chain(session, chain)
+
+asyncio.run(main())
+```
+
+### Real-World Templates
+- See `examples/exploits/` for IDOR, SSRF, privilege escalation, and advanced chains.
+
+### Advanced Features
+- **Payloads:** Static, random, fuzz, template, and context-aware injection
+- **Validation:** Status code, Python expressions, JSONPath, session state
+- **Async/Parallel:** Run steps or chains concurrently for high-throughput
+- **Caching & Performance:** Built-in response/session caching and performance monitoring
+- **Extensibility:** Add new payload types, validations, or extractors easily
+- **Logging:** Step-level and chain-level logging with request/response capture
+
+---
+
 ### IDOR & Access Control Detection
 
 Detect insecure direct object references (IDOR) and access control flaws with LogicPwn's access detector module. This example demonstrates how to test a REST API for unauthorized access to user resources.
@@ -235,14 +310,14 @@ pytest
 # Run with coverage
 pytest --cov=logicpwn
 
-# Run specific test module
-pytest tests/unit/test_auth.py
+# Run exploit engine test suite
+pytest tests/unit/test_exploit_engine.py
 ```
 
 ### Test Reliability
 All tests now pass with improved mock handling and error handling:
 
-- **45/45 tests passing** in the runner module
+- **Exploit engine test suite** covers payloads, validation, chain execution (sync/async), caching, and interoperability
 - **Enhanced mock support** for better test reliability
 - **Standardized error messages** across all modules
 - **Improved confidence scoring** for validation tests

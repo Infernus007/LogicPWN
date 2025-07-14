@@ -219,6 +219,11 @@ Detect insecure direct object references (IDOR) and access control flaws with Lo
 
 # Output will show which IDs are vulnerable to unauthorized access.
 
+See Also
+--------
+
+For advanced exploit automation, multi-step chain orchestration, and config-driven attack chaining, see :doc:`exploit_engine`.
+
 Configuration
 -------------
 
