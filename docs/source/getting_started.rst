@@ -10,7 +10,7 @@ LogicPwn requires Python 3.9+ and can be installed via pip:
 
 .. code-block:: bash
 
-   pip install logicpwn[async]
+   pip install logicpwn
 
 For development installation:
 
@@ -37,81 +37,90 @@ Test that LogicPwn is installed correctly:
 Quick Start
 -----------
 
-Basic Authentication and Request
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Basic Authentication and Request (httpbin.org)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Start with a simple authentication and request example:
+Start with a simple authentication and request example using httpbin.org (no real authentication required):
 
 .. code-block:: python
 
    from logicpwn.core import authenticate_session, send_request
-   
-   # Configure authentication
+
+   # For httpbin, credentials are not required, but the schema expects a dict
    auth_config = {
-       "url": "https://target.com/login",
-       "credentials": {"username": "admin", "password": "secret"},
-       "success_indicators": ["dashboard", "welcome"]
+       "url": "https://httpbin.org/get",
+       "method": "GET",
+       "credentials": {},
+       "success_indicators": ["url"]
    }
-   
-   # Authenticate and get session
+
    session = authenticate_session(auth_config)
-   
-   # Send authenticated request
    response = send_request(session, {
-       "url": "https://target.com/admin/panel",
+       "url": "https://httpbin.org/get",
        "method": "GET"
    })
-   
+
+   print(f"Status: {response.status_code}")
+   print(f"Content: {response.text[:200]}...")
+
+POST Request Example (reqres.in)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Demonstrate a POST request with JSON data using reqres.in:
+
+.. code-block:: python
+
+   from logicpwn.core import authenticate_session, send_request
+
+   auth_config = {
+       "url": "https://reqres.in/api/login",
+       "method": "POST",
+       "credentials": {"email": "eve.holt@reqres.in", "password": "cityslicka"},
+       "success_indicators": ["token"]
+   }
+
+   session = authenticate_session(auth_config)
+   response = send_request(session, {
+       "url": "https://reqres.in/api/users",
+       "method": "POST",
+       "json_data": {"name": "morpheus", "job": "leader"}
+   })
+
    print(f"Status: {response.status_code}")
    print(f"Content: {response.text[:200]}...")
 
 Advanced Exploit Chaining
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Build complex exploit chains with response validation and data extraction:
+Build complex exploit chains with response validation and data extraction (using httpbin.org):
 
 .. code-block:: python
 
-   from logicpwn.core import (
-       authenticate_session, 
-       send_request, 
-       validate_response,
-       extract_from_response
-   )
-   
-   # Step 1: Authenticate
-       session = authenticate_session(auth_config)
+   from logicpwn.core import authenticate_session, send_request
 
-   # Step 2: Access admin panel
-   admin_response = send_request(session, {
-       "url": "https://target.com/admin/panel",
+   # Step 1: Authenticate (no real auth needed for httpbin)
+   auth_config = {
+       "url": "https://httpbin.org/get",
+       "method": "GET",
+       "credentials": {},
+       "success_indicators": ["url"]
+   }
+   session = authenticate_session(auth_config)
+
+   # Step 2: Access another endpoint
+   response = send_request(session, {
+       "url": "https://httpbin.org/uuid",
        "method": "GET"
    })
-   
-   # Step 3: Validate response
-   is_admin = validate_response(
-       admin_response,
-       success_criteria=["admin", "privileged"],
-       regex_patterns=[r"user_id:\s*(\d+)"]
-   )
-   
-   if is_admin:
-       # Step 4: Extract user ID for next exploit
-       user_ids = extract_from_response(
-           admin_response, 
-           r"user_id:\s*(\d+)"
-       )
-       
-       # Step 5: Exploit user ID
-       for user_id in user_ids:
-           exploit_response = send_request(session, {
-               "url": f"https://target.com/api/users/{user_id}/delete",
-               "method": "POST"
-           })
-           print(f"Exploited user {user_id}")
 
-Async/Parallel Execution
-~~~~~~~~~~~~~~~~~~~~~~~~
+   if response.status_code == 200:
+       print("Chained request successful!")
+       print(f"UUID: {response.json().get('uuid')}")
+
+Async/Parallel Execution (httpbin.org)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Async support is included by default. You do not need to install any extras.
 
 Scale your testing with high-performance async execution:
 
@@ -119,26 +128,27 @@ Scale your testing with high-performance async execution:
 
    import asyncio
    from logicpwn.core import AsyncSessionManager
-   
-   async def exploit_chain():
-       async with AsyncSessionManager() as manager:
-           # Authenticate
-           await manager.authenticate(auth_config)
-           
-           # Send multiple requests in parallel
+
+   auth_config = {
+       "url": "https://httpbin.org/get",
+       "method": "GET",
+       "credentials": {},
+       "success_indicators": ["url"]
+   }
+
+   async def main():
+       async with AsyncSessionManager(auth_config=auth_config) as manager:
+           await manager.authenticate()
            request_configs = [
-               {"url": "https://target.com/api/users", "method": "GET"},
-               {"url": "https://target.com/api/admin", "method": "GET"},
-               {"url": "https://target.com/api/settings", "method": "GET"}
+               {"url": "https://httpbin.org/get", "method": "GET"},
+               {"url": "https://httpbin.org/uuid", "method": "GET"},
+               {"url": "https://httpbin.org/ip", "method": "GET"}
            ]
-           
            results = await manager.send_requests_batch(request_configs)
-           
            for i, result in enumerate(results):
-               print(f"Request {i+1}: {result.status_code}")
-   
-   # Run the exploit chain
-   asyncio.run(exploit_chain())
+               print(f"Request {i+1}: {result.status_code} - {result.text[:100]}")
+
+   asyncio.run(main())
 
 Performance Monitoring
 ----------------------
@@ -153,15 +163,20 @@ Monitor your testing performance and cache efficiency:
        get_performance_summary,
        get_cache_stats
    )
-   
-   # Your exploit chain here...
+
+   auth_config = {
+       "url": "https://httpbin.org/get",
+       "method": "GET",
+       "credentials": {},
+       "success_indicators": ["url"]
+   }
    session = authenticate_session(auth_config)
-   response = send_request(session, {"url": "https://target.com/api/data"})
-   
+   response = send_request(session, {"url": "https://httpbin.org/get", "method": "GET"})
+
    # Get performance metrics
    performance = get_performance_summary()
    cache_stats = get_cache_stats()
-   
+
    print(f"Total operations: {performance.get('total_operations', 0)}")
    print(f"Average duration: {performance.get('average_duration', 0):.3f}s")
    print(f"Cache hit rate: {cache_stats['response_cache']['hit_rate']:.1f}%")
@@ -169,7 +184,7 @@ Monitor your testing performance and cache efficiency:
 IDOR & Access Control Detection
 ------------------------------
 
-Detect insecure direct object references (IDOR) and access control flaws with LogicPwn's access detector module. This example demonstrates how to test a REST API for unauthorized access to user resources.
+Detect insecure direct object references (IDOR) and access control flaws with LogicPwn's access detector module. (For demonstration, use httpbin.org endpoints, but note that real IDOR testing requires a real application with user-specific resources.)
 
 .. code-block:: python
 
@@ -177,29 +192,26 @@ Detect insecure direct object references (IDOR) and access control flaws with Lo
    from logicpwn.core.access.models import AccessDetectorConfig
    import requests
 
-   # Assume you have an authenticated session for user1
+   # Simulate an authenticated session (no real auth needed for httpbin)
    session = requests.Session()
-   session.cookies.set('auth_token', 'user1_token')
 
-   # The endpoint template with an {id} placeholder
-   endpoint_template = "https://target.com/api/users/{id}/profile"
+   # The endpoint template with an {id} placeholder (httpbin doesn't use IDs, so this is illustrative)
+   endpoint_template = "https://httpbin.org/anything/{id}"
 
-   # IDs to test (e.g., user IDs)
-   test_ids = ["user1", "user2", "user3"]
+   # IDs to test
+   test_ids = ["1", "2", "3"]
 
-   # Indicators for access granted/denied
-   success_indicators = ["profile data", "email", "username"]
-   failure_indicators = ["access denied", "unauthorized", "forbidden"]
+   # Indicators for access granted/denied (httpbin always grants, so this is for demo)
+   success_indicators = ["url"]
+   failure_indicators = ["error"]
 
-   # Configure the detector: user1 is the current user, only user1 should be accessible
    config = AccessDetectorConfig(
-       current_user_id="user1",
-       authorized_ids=["user1"],
-       unauthorized_ids=["user2", "user3"],
+       current_user_id="1",
+       authorized_ids=["1"],
+       unauthorized_ids=["2", "3"],
        compare_unauthenticated=True
    )
 
-   # Run the IDOR/access control test
    results = detect_idor_flaws(
        session,
        endpoint_template,
@@ -217,7 +229,7 @@ Detect insecure direct object references (IDOR) and access control flaws with Lo
        print(f"  Error: {result.error_message}")
        print()
 
-# Output will show which IDs are vulnerable to unauthorized access.
+# Output will show which IDs are vulnerable to unauthorized access (for httpbin, all will be accessible).
 
 See Also
 --------
@@ -230,8 +242,11 @@ Configuration
 Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~
 
-LogicPwn supports configuration via environment variables:
+LogicPwn supports configuration via environment variables. These are loaded automatically at startup and override defaults if set.
 
 .. code-block:: bash
 
    export LOGICPWN_TIMEOUT=60
+   export LOGICPWN_LOG_LEVEL=DEBUG
+
+# Supported variables include LOGICPWN_TIMEOUT, LOGICPWN_MAX_RETRIES, LOGICPWN_VERIFY_SSL, LOGICPWN_SESSION_TIMEOUT, and more.
