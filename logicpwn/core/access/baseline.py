@@ -8,18 +8,38 @@ from .models import AccessTestResult, AccessDetectorConfig
 def _get_unauth_baseline(endpoint_url: str, id_value: Union[str, int], request_timeout: int) -> Optional[requests.Response]:
     """
     Get the unauthenticated baseline response for a given endpoint and ID.
+    
+    Enhanced with better error handling and resource management.
     """
+    session = None
     try:
         session = requests.Session()
-        response = requests.request(
+        # Remove any existing authentication headers
+        session.headers.clear()
+        
+        response = session.request(
             method="GET",
             url=endpoint_url,
-            timeout=request_timeout
+            timeout=request_timeout,
+            allow_redirects=False  # Don't follow redirects for baseline
         )
         return response
-    except Exception as e:
-        log_warning(f"Baseline unauthenticated request failed for {endpoint_url}: {e}")
+        
+    except requests.exceptions.Timeout:
+        log_warning(f"Baseline request timeout for {endpoint_url}")
         return None
+    except requests.exceptions.ConnectionError:
+        log_warning(f"Baseline connection error for {endpoint_url}")
+        return None
+    except requests.exceptions.RequestException as e:
+        log_warning(f"Baseline request failed for {endpoint_url}: {e}")
+        return None
+    except Exception as e:
+        log_warning(f"Unexpected error in baseline request for {endpoint_url}: {e}")
+        return None
+    finally:
+        if session:
+            session.close()
 
 @cached(ttl=600, key_func=lambda endpoint_url, id_value, timeout: f"{endpoint_url}|{id_value}|{timeout}")
 def get_cached_unauth_baseline(endpoint_url: str, id_value: Union[str, int], request_timeout: int) -> Optional[requests.Response]:

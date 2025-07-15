@@ -14,27 +14,101 @@ import json
 def _determine_vulnerability(id_tested: Union[str, int], access_granted: bool, config: AccessDetectorConfig) -> bool:
     """
     Determine if a vulnerability exists for the tested ID.
+    
+    Fixed bugs:
+    - Handle type inconsistencies between string and int IDs
+    - Fix logic for conflicting configurations
+    - Provide proper fallback for empty configurations
     """
     if not access_granted:
         return False
+    
+    # Normalize IDs to handle type inconsistencies
+    def normalize_id(id_val):
+        if isinstance(id_val, (str, int)):
+            return str(id_val)
+        return id_val
+    
+    normalized_tested = normalize_id(id_tested)
+    
+    # Check authorized_ids first (most specific)
     if config.authorized_ids is not None:
-        return id_tested not in config.authorized_ids
+        normalized_authorized = [normalize_id(aid) for aid in config.authorized_ids]
+        is_authorized = normalized_tested in normalized_authorized
+        
+        # Check for conflicting configuration
+        if config.unauthorized_ids is not None:
+            normalized_unauthorized = [normalize_id(uid) for uid in config.unauthorized_ids]
+            is_unauthorized = normalized_tested in normalized_unauthorized
+            
+            if is_authorized and is_unauthorized:
+                # Log conflict and prioritize unauthorized (more secure)
+                log_warning(f"Conflicting configuration: ID {id_tested} in both authorized and unauthorized lists. Treating as unauthorized.")
+                return True
+        
+        return not is_authorized
+    
+    # Check current_user_id
     if config.current_user_id is not None:
-        return id_tested != config.current_user_id
+        normalized_current = normalize_id(config.current_user_id)
+        return normalized_tested != normalized_current
+    
+    # Check unauthorized_ids
     if config.unauthorized_ids is not None:
-        return id_tested in config.unauthorized_ids
-    return False
+        normalized_unauthorized = [normalize_id(uid) for uid in config.unauthorized_ids]
+        return normalized_tested in normalized_unauthorized
+    
+    # Empty configuration - assume vulnerability exists if access is granted
+    # This is more secure than returning False
+    log_warning(f"Empty access control configuration detected. Assuming vulnerability for ID {id_tested}.")
+    return True
 
 def _should_have_access(id_tested: Union[str, int], config: AccessDetectorConfig) -> bool:
     """
     Determine if the tested ID should have access according to config.
+    
+    Fixed bugs:
+    - Handle type inconsistencies between string and int IDs
+    - Fix logic for conflicting configurations
+    - Provide proper fallback for empty configurations
     """
+    # Normalize IDs to handle type inconsistencies
+    def normalize_id(id_val):
+        if isinstance(id_val, (str, int)):
+            return str(id_val)
+        return id_val
+    
+    normalized_tested = normalize_id(id_tested)
+    
+    # Check authorized_ids first (most specific)
     if config.authorized_ids is not None:
-        return id_tested in config.authorized_ids
+        normalized_authorized = [normalize_id(aid) for aid in config.authorized_ids]
+        is_authorized = normalized_tested in normalized_authorized
+        
+        # Check for conflicting configuration
+        if config.unauthorized_ids is not None:
+            normalized_unauthorized = [normalize_id(uid) for uid in config.unauthorized_ids]
+            is_unauthorized = normalized_tested in normalized_unauthorized
+            
+            if is_authorized and is_unauthorized:
+                # Log conflict and prioritize unauthorized (more secure)
+                log_warning(f"Conflicting configuration: ID {id_tested} in both authorized and unauthorized lists. Denying access.")
+                return False
+        
+        return is_authorized
+    
+    # Check current_user_id
     if config.current_user_id is not None:
-        return id_tested == config.current_user_id
+        normalized_current = normalize_id(config.current_user_id)
+        return normalized_tested == normalized_current
+    
+    # Check unauthorized_ids
     if config.unauthorized_ids is not None:
-        return id_tested not in config.unauthorized_ids
+        normalized_unauthorized = [normalize_id(uid) for uid in config.unauthorized_ids]
+        return normalized_tested not in normalized_unauthorized
+    
+    # Empty configuration - assume no access by default (more secure)
+    log_warning(f"Empty access control configuration detected. Denying access for ID {id_tested}.")
     return False
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))

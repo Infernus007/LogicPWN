@@ -24,6 +24,7 @@ class RequestMetadata:
     response_size: int = 0
     headers_count: int = 0
     cookies_count: int = 0
+    error: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -33,7 +34,8 @@ class RequestMetadata:
             "status_code": self.status_code,
             "response_size": self.response_size,
             "headers_count": self.headers_count,
-            "cookies_count": self.cookies_count
+            "cookies_count": self.cookies_count,
+            "error": self.error
         }
 
 @dataclass

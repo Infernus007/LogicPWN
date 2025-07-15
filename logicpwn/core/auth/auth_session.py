@@ -40,7 +40,7 @@ def authenticate_session(auth_config: Union[AuthConfig, Dict[str, Any]]) -> requ
             verify_ssl=config.verify_ssl
         )
         logger.debug(f"Sending {config.method} request to {config.url}")
-        response = session.request(config.method, config.url, **request_kwargs)
+        response = session.request(**request_kwargs)
         response.raise_for_status()
         _handle_response_indicators(response, config)
         if not session.cookies:

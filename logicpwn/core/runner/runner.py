@@ -41,7 +41,7 @@ from loguru import logger
 import re
 
 from logicpwn.models.request_config import RequestConfig
-from logicpwn.models.request_result import RequestResult
+from logicpwn.models.request_result import RequestResult, RequestMetadata
 from logicpwn.exceptions import (
     RequestExecutionError,
     NetworkError,
@@ -62,16 +62,68 @@ from logicpwn.core.cache import response_cache
 MAX_RESPONSE_TEXT_LENGTH = 500
 
 
+def _validate_body_types(data: Optional[Dict[str, Any]], json_data: Optional[Dict[str, Any]], raw_body: Optional[str]) -> None:
+    """
+    Validate that only one body type is specified per request.
+    
+    Args:
+        data: Form data
+        json_data: JSON data
+        raw_body: Raw body content
+        
+    Raises:
+        ValidationError: If multiple body types are specified
+    """
+    body_fields = [data, json_data, raw_body]
+    specified_fields = [field for field in body_fields if field is not None]
+    
+    if len(specified_fields) > 1:
+        field_names = []
+        if data is not None:
+            field_names.append('data (form data)')
+        if json_data is not None:
+            field_names.append('json_data (JSON data)')
+        if raw_body is not None:
+            field_names.append('raw_body (raw body content)')
+        
+        raise ValidationError(
+            f"Multiple body types specified: {', '.join(field_names)}. "
+            f"Only one body type allowed per request. Use either form data, "
+            f"JSON data, or raw body content, but not multiple types."
+        )
+
+
 def _sanitize_url(url: str) -> str:
     """
-    Redact sensitive query parameters in URLs for safe logging.
-    Replaces values of keys like password, token, key, secret with ***.
+    Redact sensitive parameters in URLs for safe logging.
+    Handles both query parameters and path segments containing sensitive data.
+    
+    Args:
+        url: URL to sanitize
+        
+    Returns:
+        Sanitized URL with sensitive data replaced
     """
     if not url:
         return url
+    
     # Redact common sensitive keys in query params
-    pattern = re.compile(r'(?i)(password|token|key|secret)=([^&]+)')
-    return pattern.sub(lambda m: f"{m.group(1)}=***", url)
+    query_pattern = re.compile(r'(?i)(password|token|key|secret|api_key|access_token)=([^&]+)')
+    url = query_pattern.sub(lambda m: f"{m.group(1)}=***", url)
+    
+    # Redact potential API keys and tokens in path segments
+    # Pattern for UUIDs, JWT tokens, and long hex strings that might be sensitive
+    path_patterns = [
+        (r'/[a-f0-9]{32,}', '/***'),  # Long hex strings (API keys)
+        (r'/[A-Za-z0-9_-]{20,}\.', r'/***\.'),  # JWT-like tokens ending with dot
+        (r'/[A-Za-z0-9_-]{40,}', '/***'),  # Long base64-like strings
+        (r'/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', '/***')  # UUIDs
+    ]
+    
+    for pattern, replacement in path_patterns:
+        url = re.sub(pattern, replacement, url, flags=re.IGNORECASE)
+    
+    return url
 
 
 def _execute_request(session: requests.Session, config: RequestConfig, kwargs: Dict[str, Any]) -> requests.Response:
@@ -307,26 +359,16 @@ def send_request_advanced(
             print(f"Error messages: {result.security_analysis.error_messages}")
     """
     # Validate body types - only one should be specified
-    body_fields = [data, json_data, raw_body]
-    specified_fields = [field for field in body_fields if field is not None]
-    
-    if len(specified_fields) > 1:
-        field_names = []
-        if data is not None:
-            field_names.append('data (form data)')
-        if json_data is not None:
-            field_names.append('json_data (JSON data)')
-        if raw_body is not None:
-            field_names.append('raw_body (raw body content)')
-        
-        raise ValidationError(
-            f"Multiple body types specified: {', '.join(field_names)}. "
-            f"Only one body type allowed per request. Use either form data, "
-            f"JSON data, or raw body content, but not multiple types."
-        )
+    _validate_body_types(data, json_data, raw_body)
     
     # Create RequestResult for tracking
     result = RequestResult(url=url, method=method)
+    
+    # Initialize metadata
+    result.metadata = RequestMetadata(
+        request_id=str(uuid.uuid4()),
+        timestamp=time.time()
+    )
     
     # Use provided session or create new one
     if session is None:
@@ -386,10 +428,21 @@ def send_request_advanced(
             duration = time.time() - start_time
             
             # Set response data in RequestResult
-            result.set_response(
-                status_code=response.status_code,
-                headers=dict(response.headers),
-                body=response.text if response.text else None
+            result.status_code = response.status_code
+            result.headers = dict(response.headers)
+            result.body = response.text if response.text else None
+            
+            # Update metadata with response information
+            if result.metadata:
+                result.metadata.duration = duration
+                result.metadata.status_code = response.status_code
+                result.metadata.response_size = len(response.content) if response.content else 0
+                result.metadata.headers_count = len(response.headers)
+                result.metadata.cookies_count = len(response.cookies) if response.cookies else 0
+            
+            # Perform security analysis
+            result.security_analysis = RequestResult._analyze_security(
+                result.body, result.headers, result.status_code
             )
             
             # Log response
@@ -423,12 +476,14 @@ def send_request_advanced(
                 continue
             else:
                 # Set error in result
-                result.metadata.error = str(e)
+                if result.metadata:
+                    result.metadata.error = str(e)
                 log_error(e, {"url": url, "method": method})
                 raise
         except Exception as e:
             # Set error in result
-            result.metadata.error = str(e)
+            if result.metadata:
+                result.metadata.error = str(e)
             log_error(e, {"url": url, "method": method})
             raise
     

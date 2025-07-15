@@ -1,8 +1,10 @@
 """
-Async session management for LogicPwn.
+Async session management for LogicPwn with enhanced error handling and type safety.
 """
 import asyncio
-from typing import Dict, Optional, Any, List
+from typing import Dict, Optional, Any, List, Union
+import aiohttp
+from loguru import logger
 from logicpwn.models.request_result import RequestResult
 from logicpwn.exceptions import (
     RequestExecutionError,
@@ -48,18 +50,36 @@ class AsyncSessionManager:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit with proper cleanup."""
         if self.session:
-            await self.session.close()
+            try:
+                await self.session.close()
+            except Exception as e:
+                log_error(e, {"component": "AsyncSessionManager", "action": "session_cleanup"})
+            finally:
+                self.session = None
 
     async def authenticate(self) -> bool:
+        """
+        Authenticate using the provided configuration.
+        
+        Returns:
+            True if authentication successful, False otherwise
+            
+        Raises:
+            ValidationError: If no authentication configuration provided
+        """
         if not self.auth_config:
             raise ValidationError("No authentication configuration provided")
+        
         try:
             auth_url = self.auth_config['url']
             method = self.auth_config.get('method', 'POST')
             credentials = self.auth_config.get('credentials', {})
             headers = self.auth_config.get('headers', {})
+            
             request_data = credentials.copy()
+            
             async with self.session.request(
                 method=method,
                 url=auth_url,
@@ -67,17 +87,25 @@ class AsyncSessionManager:
                 headers=headers
             ) as response:
                 if response.status == 200:
-                    self.cookies.update(response.cookies)
+                    # Update cookies and headers from successful auth
+                    for cookie in response.cookies:
+                        self.cookies[cookie.key] = cookie.value
                     self.headers.update(headers)
-                    log_info("Authentication successful", {'url': auth_url})
+                    log_info("Authentication successful", {'url': auth_url, 'status': response.status})
                     return True
                 else:
                     log_error(NetworkError(f"Authentication failed: {response.status}"), {
                         'url': auth_url, 'status': response.status
                     })
                     return False
+                    
+        except aiohttp.ClientError as e:
+            log_error(NetworkError(f"Authentication network error: {str(e)}"), {
+                'url': self.auth_config.get('url', 'unknown')
+            })
+            return False
         except Exception as e:
-            log_error(NetworkError(f"Authentication error: {str(e)}"), {
+            log_error(RequestExecutionError(f"Authentication error: {str(e)}"), {
                 'url': self.auth_config.get('url', 'unknown')
             })
             return False

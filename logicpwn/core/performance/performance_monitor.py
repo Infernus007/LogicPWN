@@ -95,10 +95,27 @@ def monitor_performance(operation_name: str):
     """Decorator for monitoring performance of a function."""
     def decorator(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
-            with PerformanceMonitor() as monitor:
+            monitor = PerformanceMonitor()
+            monitor.start_monitoring(operation_name)
+            try:
                 result = func(*args, **kwargs)
+                return result
+            finally:
                 monitor.stop_monitoring()
-            return result
+        return wrapper
+    return decorator
+
+def monitor_async_performance(operation_name: str):
+    """Decorator for monitoring performance of an async function."""
+    def decorator(func: Callable) -> Callable:
+        async def wrapper(*args, **kwargs):
+            monitor = PerformanceMonitor()
+            monitor.start_monitoring(operation_name)
+            try:
+                result = await func(*args, **kwargs)
+                return result
+            finally:
+                monitor.stop_monitoring()
         return wrapper
     return decorator
 

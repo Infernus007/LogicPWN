@@ -5,6 +5,7 @@ import asyncio
 import aiohttp
 from typing import Dict, Optional, Any, Union, List
 from dataclasses import dataclass
+from loguru import logger
 from logicpwn.models.request_config import RequestConfig
 from logicpwn.models.request_result import RequestResult
 from logicpwn.exceptions import (
@@ -16,6 +17,37 @@ from logicpwn.exceptions import (
 )
 from logicpwn.core.config.config_utils import get_timeout
 from logicpwn.core.logging import log_request, log_response, log_error, log_info, log_warning
+
+
+def _validate_body_types(data: Optional[Dict[str, Any]], json_data: Optional[Dict[str, Any]], raw_body: Optional[str]) -> None:
+    """
+    Validate that only one body type is specified per request.
+    
+    Args:
+        data: Form data
+        json_data: JSON data
+        raw_body: Raw body content
+        
+    Raises:
+        ValidationError: If multiple body types are specified
+    """
+    body_fields = [data, json_data, raw_body]
+    specified_fields = [field for field in body_fields if field is not None]
+    
+    if len(specified_fields) > 1:
+        field_names = []
+        if data is not None:
+            field_names.append('data (form data)')
+        if json_data is not None:
+            field_names.append('json_data (JSON data)')
+        if raw_body is not None:
+            field_names.append('raw_body (raw body content)')
+        
+        raise ValidationError(
+            f"Multiple body types specified: {', '.join(field_names)}. "
+            f"Only one body type allowed per request. Use either form data, "
+            f"JSON data, or raw body content, but not multiple types."
+        )
 
 @dataclass
 class AsyncRequestContext:
@@ -83,21 +115,7 @@ class AsyncRequestRunner:
             RequestResult with response analysis
         """
         # Validate body types - only one should be specified
-        body_fields = [data, json_data, raw_body]
-        specified_fields = [field for field in body_fields if field is not None]
-        if len(specified_fields) > 1:
-            field_names = []
-            if data is not None:
-                field_names.append('data (form data)')
-            if json_data is not None:
-                field_names.append('json_data (JSON data)')
-            if raw_body is not None:
-                field_names.append('raw_body (raw body content)')
-            raise ValidationError(
-                f"Multiple body types specified: {', '.join(field_names)}. "
-                f"Only one body type allowed per request. Use either form data, "
-                f"JSON data, or raw body content, but not multiple types."
-            )
+        _validate_body_types(data, json_data, raw_body)
         async with self.semaphore:
             return await self._execute_request(
                 url=url,
@@ -165,16 +183,31 @@ class AsyncRequestRunner:
             # Execute request
             async with self.session.request(method, url, **request_kwargs) as response:
                 duration = time.time() - start_time
-                # Read response content
-                content = await response.read()
-                text = content.decode('utf-8', errors='ignore')
-                # Parse response body
+                
+                # Read response content safely
                 try:
-                    if 'application/json' in response.headers.get('content-type', ''):
+                    content = await response.read()
+                    text = content.decode('utf-8', errors='ignore')
+                except UnicodeDecodeError:
+                    # Fallback for problematic encodings
+                    text = content.decode('latin-1', errors='ignore')
+                except Exception as e:
+                    logger.warning(f"Failed to read response content: {e}")
+                    content = b""
+                    text = ""
+                
+                # Parse response body
+                body = text
+                try:
+                    content_type = response.headers.get('content-type', '').lower()
+                    if 'application/json' in content_type:
                         body = await response.json()
-                    else:
-                        body = text
-                except Exception:
+                except (aiohttp.ContentTypeError, ValueError, TypeError) as e:
+                    # JSON parsing failed, keep as text
+                    logger.debug(f"JSON parsing failed, keeping as text: {e}")
+                    body = text
+                except Exception as e:
+                    logger.warning(f"Unexpected error parsing response body: {e}")
                     body = text
                 # Create RequestResult
                 result = RequestResult.from_response(
