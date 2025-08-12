@@ -1,5 +1,6 @@
 API Reference
 =============
+=============
 
 This section provides comprehensive API documentation for all LogicPwn modules, classes, and functions.
 
@@ -92,6 +93,7 @@ Validator Module
     :show-inheritance:
 
 Performance Module
+~~~~~~~~~~~~~~~~~~
 ------------------
 .. automodule:: logicpwn.core.performance
     :members:
@@ -123,6 +125,7 @@ Performance Module
     :show-inheritance:
 
 Cache Module
+~~~~~~~~~~~~
 ------------
 .. automodule:: logicpwn.core.cache
     :members:
@@ -211,6 +214,7 @@ Utils Module
     :show-inheritance:
 
 Logging Module
+~~~~~~~~~~~~~~
 --------------
 .. automodule:: logicpwn.core.logging.redactor
     :members:
@@ -226,6 +230,7 @@ Logging Module
     :show-inheritance:
 
 Stress Testing Module
+~~~~~~~~~~~~~~~~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~
 
 The stress testing module provides load testing capabilities.

@@ -2,6 +2,18 @@
 
 LogicPwn is a modern, extensible framework for automated business logic vulnerability assessment, exploit chaining, and professional reporting.
 
+## Why LogicPwn?
+
+**Business logic vulnerabilities** are often missed by traditional scanners because they require understanding application workflows, not just code patterns. LogicPwn fills this gap by:
+
+- **Automating complex attack chains** - Chain multiple requests with session handling, CSRF tokens, and dynamic data extraction
+- **Detecting access control flaws** - Find IDOR vulnerabilities and privilege escalation issues through systematic testing
+- **Professional reporting** - Generate client-ready reports with CVSS scoring, proof-of-concepts, and remediation guidance
+- **Flexible authentication** - Handle complex login flows, multi-step auth, and session persistence automatically
+- **Extensible architecture** - Build custom modules for specific application types or testing scenarios
+
+Perfect for **penetration testers**, **bug bounty hunters**, and **security teams** who need to go beyond basic vulnerability scanning.
+
 
 ## Features
 - 🔐 **Authentication**: Flexible session management
@@ -201,4 +213,4 @@ poetry run pytest tests/core/reporter/
 - For questions or feature requests, open an issue.
 
 ---
-LogicPwn © 2024 | MIT License 
+LogicPwn © 2024 | MIT License

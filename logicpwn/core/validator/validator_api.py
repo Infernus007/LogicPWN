@@ -260,4 +260,60 @@ def chain_validations(
                 error_message=str(e),
                 confidence_score=0.0
             ))
-    return results 
+    return results
+
+
+def validate_with_preset(
+    response: requests.Response,
+    preset_name: str,
+    return_structured: bool = True
+) -> Union[bool, ValidationResult]:
+    """
+    Validate response using a predefined validation preset.
+    
+    Args:
+        response: HTTP response object to validate
+        preset_name: Name of the validation preset to use
+        return_structured: Whether to return ValidationResult or boolean
+        
+    Returns:
+        ValidationResult if return_structured=True, otherwise boolean
+        
+    Raises:
+        ValueError: If preset name is not found
+    """
+    from .validation_presets import get_preset
+    
+    try:
+        preset_config = get_preset(preset_name)
+        
+        return validate_response(
+            response=response,
+            success_criteria=preset_config.success_criteria,
+            failure_criteria=preset_config.failure_criteria,
+            regex_patterns=preset_config.regex_patterns,
+            status_codes=preset_config.status_codes,
+            headers_criteria=preset_config.headers_criteria,
+            return_structured=return_structured,
+            confidence_threshold=preset_config.confidence_threshold
+        )
+    except Exception as e:
+        if return_structured:
+            return ValidationResult(
+                is_valid=False,
+                error_message=f"Preset validation failed: {str(e)}",
+                confidence_score=0.0
+            )
+        else:
+            return False
+
+
+def list_available_presets() -> List[str]:
+    """
+    List all available validation presets.
+    
+    Returns:
+        List of preset names that can be used with validate_with_preset()
+    """
+    from .validation_presets import VALIDATION_PRESETS
+    return list(VALIDATION_PRESETS.keys())

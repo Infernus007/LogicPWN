@@ -14,9 +14,16 @@ def _sanitize_credentials(credentials: Dict[str, str]) -> Dict[str, str]:
 def _create_session(config: AuthConfig) -> requests.Session:
     session = requests.Session()
     session.verify = config.verify_ssl
-    session.timeout = config.timeout
+    # Note: timeout is passed to individual requests, not set on session
+    # Only add non-request-specific headers to session
     if config.headers:
-        session.headers.update(config.headers)
+        persistent_headers = {}
+        for key, value in config.headers.items():
+            # Don't persist Content-Type as it's request-specific
+            if key.lower() != 'content-type':
+                persistent_headers[key] = value
+        if persistent_headers:
+            session.headers.update(persistent_headers)
     return session
 
 def _handle_response_indicators(response: requests.Response, config: AuthConfig) -> None:

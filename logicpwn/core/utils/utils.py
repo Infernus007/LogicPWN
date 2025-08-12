@@ -45,7 +45,8 @@ def prepare_request_kwargs(
                                             'method': method.upper(),
                                             'url': url,
                                             'timeout': timeout,
-                                            'verify': verify_ssl
+                                            'verify': verify_ssl,
+                                            'allow_redirects': True
     }
     if headers:
                                             kwargs['headers'] = headers
@@ -56,15 +57,22 @@ def prepare_request_kwargs(
                                             kwargs['json'] = json_data
     elif raw_body is not None:
                                             kwargs['data'] = raw_body
-    # For GET with credentials as params
+    
+    # Handle params properly - merge credentials and params for GET requests
     if method.upper() == "GET" and credentials:
-                                            kwargs['params'] = credentials
-    # For POST with credentials as form data
-    if method.upper() == "POST" and credentials:
-                                            kwargs['data'] = credentials
-    # Additional params
-    if params:
-                                            kwargs['params'] = params
+        if params:
+            # Merge credentials and params, with params taking precedence
+            merged_params = credentials.copy()
+            merged_params.update(params)
+            kwargs['params'] = merged_params
+        else:
+            kwargs['params'] = credentials
+    elif params:
+        kwargs['params'] = params
+    
+    # For POST with credentials as form data (only if no other data specified)
+    if method.upper() == "POST" and credentials and 'data' not in kwargs and 'json' not in kwargs:
+        kwargs['data'] = credentials
     return kwargs
 
 

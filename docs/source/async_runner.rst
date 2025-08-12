@@ -1,4 +1,5 @@
 Async Request Execution
+=======================
 LogicPwn provides high-performance async request execution capabilities using aiohttp for concurrent request handling. This module is designed for large-scale security testing and exploit chaining scenarios.
 
 Overview
@@ -13,6 +14,7 @@ The async functionality includes:
 
 Why Use Async?
 ~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 * **Performance**: Execute multiple requests concurrently
 * **Scalability**: Handle hundreds of requests efficiently
@@ -21,10 +23,12 @@ Why Use Async?
 * **Rate Limiting**: Control request rates to avoid detection
 
 AsyncRequestRunner
+------------------
 
 The AsyncRequestRunner provides high-performance async HTTP request execution with connection pooling and rate limiting.
 
 Basic Usage
+-----------
 .. code-block:: python
 
    import asyncio
@@ -43,6 +47,7 @@ Basic Usage
    asyncio.run(main())
 
 Configuration
+------------
 Configure the AsyncRequestRunner with custom settings:
 
 .. code-block:: python
@@ -67,6 +72,7 @@ Configure the AsyncRequestRunner with custom settings:
 
 Batch Requests
 --------------
+--------------
 
 Send multiple requests concurrently:
 
@@ -85,6 +91,7 @@ Send multiple requests concurrently:
            print(f"Request {i+1}: {result.status_code}")
 
 Request Types
+------------
 -------------
 
 **GET Request**:
@@ -138,6 +145,7 @@ Request Types
 
 Error Handling
 --------------
+--------------
 
 Handle different types of async errors:
 
@@ -156,10 +164,12 @@ Handle different types of async errors:
 
 AsyncSessionManager
 -------------------
+-------------------
 
 The AsyncSessionManager provides async session management with authentication and session persistence.
 
 Basic Usage
+-----------
 -----------
 
 .. code-block:: python
@@ -182,6 +192,7 @@ Basic Usage
    asyncio.run(main())
 
 Authentication Configuration
+----------------------------
 ----------------------------
 
 Configure authentication with various options:
@@ -207,6 +218,7 @@ Configure authentication with various options:
        # Use authenticated session...
 
 Session Methods
+--------------
 ---------------
 
 **GET Request**:
@@ -245,6 +257,7 @@ Session Methods
 
 Exploit Chaining
 ----------------
+----------------
 
 Execute complex exploit chains with session persistence:
 
@@ -280,7 +293,9 @@ Execute complex exploit chains with session persistence:
        print(f"Step {i+1}: {result.status_code}")
 
 Convenience Functions
+--------------------
 Single Async Request
+--------------------
 
 Use the convenience function for simple async requests:
 
@@ -299,6 +314,7 @@ Use the convenience function for simple async requests:
    asyncio.run(main())
 
 Batch Async Requests
+--------------------
 
 Send multiple requests concurrently using the convenience function:
 
@@ -321,6 +337,7 @@ Send multiple requests concurrently using the convenience function:
    asyncio.run(main())
 
 Async Context Manager
+--------------------
 Use the async context manager for session management:
 
 .. code-block:: python
@@ -341,8 +358,10 @@ Use the async context manager for session management:
    asyncio.run(main())
 
 Advanced Usage
+--------------
 
 Rate Limiting
+------------
 
 Implement custom rate limiting:
 
@@ -382,6 +401,7 @@ Implement custom rate limiting:
    asyncio.run(main())
 
 Connection Pooling
+------------------
 
 Optimize connection pooling for high-performance scenarios:
 
@@ -401,6 +421,7 @@ Optimize connection pooling for high-performance scenarios:
        print(f"Completed {len(results)} requests")
 
 Performance Monitoring
+----------------------
 
 Monitor async performance:
 
@@ -433,6 +454,7 @@ Monitor async performance:
    asyncio.run(monitored_requests())
 
 Error Recovery
+--------------
 
 Implement error recovery for robust async operations:
 
@@ -464,6 +486,7 @@ Implement error recovery for robust async operations:
    asyncio.run(main())
 
 Best Practices
+--------------
 
 **Performance Optimization:**
 
@@ -490,6 +513,7 @@ Best Practices
 5. **Comprehensive logging** - Track all operations
 
 Troubleshooting
+---------------
 
 **Common Issues:**
 
