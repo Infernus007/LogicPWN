@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "logicpwn"
-version = "0.1.6"
+version = "0.2.0"
 description = "A modular web application security testing framework"
 authors = ["Jash Naik <jashnaik2004@gmail.com>"]
 readme = "README.md"
