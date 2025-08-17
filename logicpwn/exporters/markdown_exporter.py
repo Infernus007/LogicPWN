@@ -2,17 +2,36 @@ from logicpwn.exporters import BaseExporter
 from logicpwn.core.reporter.orchestrator import VulnerabilityFinding, ReportMetadata
 from typing import List, Optional, IO
 from logicpwn.core.reporter.template_renderer import TemplateRenderer
+from logicpwn.core.logging.redactor import SensitiveDataRedactor
 import os
 
 class MarkdownExporter(BaseExporter):
     """
-    Enhanced Markdown exporter with proper sanitization and error handling.
+    Enhanced Markdown exporter with proper sanitization, error handling, and sensitive data redaction.
     """
     def __init__(self):
         """
-        Initialize the exporter with the default template directory.
+        Initialize the exporter with the default template directory and data redactor.
         """
         self.template_dir = "logicpwn/templates"
+        self.redactor = SensitiveDataRedactor()
+
+    def _redact_sensitive_content(self, content: str) -> str:
+        """
+        Redact sensitive information from content using the centralized redactor.
+        
+        Args:
+            content: Content to redact
+            
+        Returns:
+            Redacted and Markdown-escaped content
+        """
+        if not content:
+            return content
+        
+        # First redact sensitive data, then escape Markdown
+        redacted = self.redactor.redact_string_body(str(content))
+        return self._escape_markdown(redacted)
 
     def set_template_dir(self, template_dir: str):
         """
@@ -88,7 +107,7 @@ class MarkdownExporter(BaseExporter):
             "cvss_score": self._safe_cvss_score(getattr(finding, 'cvss_score', None)),
             "affected_endpoints": self._format_endpoints_markdown(getattr(finding, 'affected_endpoints', [])),
             "description": self._format_markdown_content(getattr(finding, 'description', 'No description')),
-            "proof_of_concept": self._format_code_markdown(getattr(finding, 'proof_of_concept', 'No PoC')),
+            "proof_of_concept": self._redact_sensitive_content(getattr(finding, 'proof_of_concept', 'No PoC')),
             "impact": self._format_markdown_content(getattr(finding, 'impact', 'Impact not specified')),
             "remediation": self._format_markdown_content(getattr(finding, 'remediation', 'Remediation not specified')),
             "references": self._format_references_markdown(getattr(finding, 'references', [])),

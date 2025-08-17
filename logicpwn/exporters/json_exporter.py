@@ -4,11 +4,33 @@ from logicpwn.core.reporter.orchestrator import VulnerabilityFinding, ReportMeta
 from typing import List, Any, Dict
 from datetime import datetime, date
 import decimal
+from logicpwn.core.logging.redactor import SensitiveDataRedactor
 
 class JSONExporter(BaseExporter):
     """
-    Enhanced JSON exporter with proper serialization and error handling.
+    Enhanced JSON exporter with proper serialization, error handling, and sensitive data redaction.
     """
+    
+    def __init__(self):
+        """Initialize JSON exporter with data redactor."""
+        super().__init__()
+        self.redactor = SensitiveDataRedactor()
+    
+    def _redact_sensitive_content(self, content: str) -> str:
+        """
+        Redact sensitive information from content using the centralized redactor.
+        
+        Args:
+            content: Content to redact
+            
+        Returns:
+            Redacted content
+        """
+        if not content:
+            return content
+        
+        # Use the centralized redactor for consistent redaction
+        return self.redactor.redact_string_body(str(content))
     
     def export(self, findings: List[VulnerabilityFinding], metadata: ReportMetadata) -> str:
         """
@@ -66,14 +88,14 @@ class JSONExporter(BaseExporter):
                 if not attr.startswith('_') and not callable(getattr(finding, attr)):
                     data[attr] = getattr(finding, attr)
         
-        # Ensure all fields are present with safe defaults
+        # Ensure all fields are present with safe defaults and redaction
         safe_data = {
             "severity": self.sanitize_text(data.get("severity")),
             "title": self.sanitize_text(data.get("title")),
             "cvss_score": self._safe_float(data.get("cvss_score")),
             "affected_endpoints": self._safe_list(data.get("affected_endpoints")),
             "description": self.sanitize_text(data.get("description")),
-            "proof_of_concept": self.sanitize_text(data.get("proof_of_concept")),
+            "proof_of_concept": self._redact_sensitive_content(data.get("proof_of_concept")),
             "impact": self.sanitize_text(data.get("impact")),
             "remediation": self.sanitize_text(data.get("remediation")),
             "references": self._safe_list(data.get("references")),
