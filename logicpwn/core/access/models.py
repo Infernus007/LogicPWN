@@ -24,6 +24,11 @@ class AccessTestResult:
     baseline_results: Optional[List[Dict[str, Any]]] = None  # Info from baseline sessions
     decision_log: Optional[str] = None  # Human-readable explanation
 
+    @property
+    def is_vulnerable(self) -> bool:
+        """Alias for vulnerability_detected for backward compatibility."""
+        return self.vulnerability_detected
+
 @dataclass
 class AccessDetectorConfig:
     """

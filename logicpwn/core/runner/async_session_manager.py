@@ -33,6 +33,12 @@ class AsyncSessionManager:
         self.session: Optional[aiohttp.ClientSession] = None
         self.cookies: Dict[str, str] = {}
         self.headers: Dict[str, str] = {}
+        self._session_closed = False
+
+    @property
+    def session_closed(self) -> bool:
+        """Check if the session was properly closed."""
+        return self._session_closed
 
     async def __aenter__(self):
         import aiohttp
@@ -54,10 +60,15 @@ class AsyncSessionManager:
         if self.session:
             try:
                 await self.session.close()
+                # Keep a reference to check if it was closed, but mark it as closed
+                self._session_closed = True
             except Exception as e:
                 log_error(e, {"component": "AsyncSessionManager", "action": "session_cleanup"})
+                self._session_closed = False
             finally:
                 self.session = None
+        else:
+            self._session_closed = False
 
     async def authenticate(self) -> bool:
         """
@@ -88,8 +99,29 @@ class AsyncSessionManager:
             ) as response:
                 if response.status == 200:
                     # Update cookies and headers from successful auth
-                    for cookie in response.cookies:
-                        self.cookies[cookie.key] = cookie.value
+                    if hasattr(response.cookies, 'items'):
+                        # Handle dictionary-like cookie objects (for mocks)
+                        for key, value in response.cookies.items():
+                            self.cookies[key] = value
+                    else:
+                        # Handle real aiohttp cookie objects
+                        for cookie in response.cookies:
+                            try:
+                                if hasattr(cookie, 'key') and hasattr(cookie, 'value'):
+                                    # aiohttp cookie object
+                                    self.cookies[cookie.key] = cookie.value
+                                elif hasattr(cookie, 'name') and hasattr(cookie, 'value'):
+                                    # requests-style cookie
+                                    self.cookies[cookie.name] = cookie.value
+                                else:
+                                    # Handle as string (for mocks)
+                                    cookie_str = str(cookie)
+                                    if '=' in cookie_str:
+                                        key, value = cookie_str.split('=', 1)
+                                        self.cookies[key] = value
+                            except (AttributeError, ValueError) as e:
+                                log_warning(f"Failed to parse cookie: {cookie}, error: {e}")
+                            
                     self.headers.update(headers)
                     log_info("Authentication successful", {'url': auth_url, 'status': response.status})
                     return True

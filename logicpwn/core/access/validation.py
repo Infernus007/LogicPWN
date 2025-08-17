@@ -49,6 +49,9 @@ def _validate_inputs(endpoint_template: str, test_ids: List[Union[str, int]], su
     if not success_indicators:
         raise ValueError("success_indicators cannot be empty")
     
+    if not failure_indicators:
+        raise ValueError("failure_indicators cannot be empty")
+    
     if not isinstance(success_indicators, list):
         raise TypeError("success_indicators must be a list")
     

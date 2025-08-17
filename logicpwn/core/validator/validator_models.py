@@ -18,6 +18,9 @@ class ValidationType(Enum):
     JSON_PATH = "json_path"
     TIMING_ANALYSIS = "timing_analysis"
     BUSINESS_LOGIC = "business_logic"
+    CONTENT = "content"
+    ERROR = "error"
+    COMPOSITE = "composite"
 
 class SeverityLevel(Enum):
     """Vulnerability severity levels."""

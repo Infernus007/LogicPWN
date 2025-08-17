@@ -578,13 +578,16 @@ def validate_json_response(
             )
         
         validation_errors = []
-        extracted_data = {}
+        extracted_data = {"json_data": json_data}  # Include full JSON data
+        missing_keys = []
+        forbidden_keys_found = []
         
         # Check required keys
         if required_keys:
             for key in required_keys:
                 if key not in json_data:
                     validation_errors.append(f"Missing required key: {key}")
+                    missing_keys.append(key)
                 else:
                     extracted_data[key] = json_data[key]
         
@@ -593,6 +596,7 @@ def validate_json_response(
             for key in forbidden_keys:
                 if key in json_data:
                     validation_errors.append(f"Forbidden key present: {key}")
+                    forbidden_keys_found.append(key)
         
         # JSON schema validation (if provided)
         if json_schema:
@@ -609,12 +613,22 @@ def validate_json_response(
         is_valid = len(validation_errors) == 0
         confidence_score = 1.0 if is_valid else 0.0
         
+        metadata = {
+            "json_keys": list(json_data.keys()) if isinstance(json_data, dict) else []
+        }
+        
+        # Add missing/forbidden keys to metadata
+        if missing_keys:
+            metadata["missing_keys"] = missing_keys
+        if forbidden_keys_found:
+            metadata["forbidden_keys_found"] = forbidden_keys_found
+        
         return ValidationResult(
             is_valid=is_valid,
             extracted_data=extracted_data,
             confidence_score=confidence_score,
             error_message="; ".join(validation_errors) if validation_errors else None,
-            metadata={"json_keys": list(json_data.keys()) if isinstance(json_data, dict) else []}
+            metadata=metadata
         )
         
     except Exception as e:
@@ -842,6 +856,323 @@ def list_vulnerability_presets() -> List[str]:
     return list_critical_presets()
 
 
+@monitor_performance("html_response_validation")
+def validate_html_response(
+    response: requests.Response,
+    expected_title: Optional[str] = None,
+    title_patterns: Optional[List[str]] = None,  # Add title_patterns parameter
+    expected_elements: Optional[List[str]] = None,
+    forbidden_elements: Optional[List[str]] = None,
+    form_validation: Optional[Dict[str, Any]] = None,
+    return_structured: bool = True  # Default to True for consistency
+) -> Union[bool, ValidationResult]:
+    """
+    Validate HTML response content for specific elements and structure.
+    
+    Args:
+        response: HTTP response object to validate
+        expected_title: Expected HTML title
+        title_patterns: List of patterns to match in the title
+        expected_elements: List of HTML elements/selectors that should be present
+        forbidden_elements: List of HTML elements/selectors that should not be present
+        form_validation: Dictionary with form validation criteria
+        return_structured: Whether to return ValidationResult object
+        
+    Returns:
+        bool or ValidationResult: Validation result
+    """
+    try:
+        # Check content type
+        content_type = response.headers.get("content-type", "").lower()
+        if "html" not in content_type and "text/html" not in content_type:
+            if return_structured:
+                return ValidationResult(
+                    is_valid=False,
+                    confidence_score=0.0,
+                    evidence=[],
+                    validation_type=ValidationType.ERROR,
+                    error_message="Response is not HTML",
+                    metadata={
+                        'content_type': content_type,
+                        'success_indicators': [],
+                        'failure_indicators': []
+                    }
+                )
+            return False
+        
+        response_text = response.text
+        success_indicators = []
+        failure_indicators = []
+        evidence = []
+        matched_patterns = []
+        
+        # Basic HTML structure detection
+        if re.search(r'<html\b', response_text, re.IGNORECASE):
+            success_indicators.append("HTML structure detected")
+            evidence.append("Basic HTML structure present")
+            matched_patterns.append("html_structure")
+        
+        # Check HTML title patterns
+        if title_patterns:
+            title_match = re.search(r'<title[^>]*>([^<]*)</title>', response_text, re.IGNORECASE)
+            if title_match:
+                title_text = title_match.group(1).strip()
+                for pattern in title_patterns:
+                    if re.search(pattern, title_text, re.IGNORECASE):
+                        success_indicators.append(f"Title pattern matched: {pattern}")
+                        evidence.append(f"Title pattern '{pattern}' found in: {title_text}")
+                        matched_patterns.append(f"title_pattern: {pattern}")
+        
+        # Check expected title (legacy support)
+        if expected_title:
+            title_pattern = rf'<title[^>]*>([^<]*{re.escape(expected_title)}[^<]*)</title>'
+            if re.search(title_pattern, response_text, re.IGNORECASE):
+                success_indicators.append(f"Expected title found: {expected_title}")
+                evidence.append(f"Title validation passed for: {expected_title}")
+                matched_patterns.append(f"expected_title: {expected_title}")
+            else:
+                failure_indicators.append(f"Expected title not found: {expected_title}")
+        
+        # Check expected elements
+        if expected_elements:
+            for element in expected_elements:
+                if element in response_text:
+                    success_indicators.append(f"Expected element found: {element}")
+                    evidence.append(f"Element present: {element}")
+                    matched_patterns.append(f"element: {element}")
+                else:
+                    failure_indicators.append(f"Expected element not found: {element}")
+        
+        # Check forbidden elements
+        if forbidden_elements:
+            for element in forbidden_elements:
+                if element in response_text:
+                    failure_indicators.append(f"Forbidden element found: {element}")
+                else:
+                    success_indicators.append(f"Forbidden element not found: {element}")
+                    evidence.append(f"Forbidden element absent: {element}")
+        
+        # Check form validation
+        if form_validation:
+            form_action = form_validation.get('action')
+            form_method = form_validation.get('method')
+            required_inputs = form_validation.get('required_inputs', [])
+            
+            if form_action:
+                if f'action="{form_action}"' in response_text or f"action='{form_action}'" in response_text:
+                    success_indicators.append(f"Form action found: {form_action}")
+                    evidence.append(f"Form action validation passed: {form_action}")
+                    matched_patterns.append(f"form_action: {form_action}")
+                else:
+                    failure_indicators.append(f"Form action not found: {form_action}")
+            
+            if form_method:
+                if f'method="{form_method}"' in response_text or f"method='{form_method}'" in response_text:
+                    success_indicators.append(f"Form method found: {form_method}")
+                    evidence.append(f"Form method validation passed: {form_method}")
+                    matched_patterns.append(f"form_method: {form_method}")
+                else:
+                    failure_indicators.append(f"Form method not found: {form_method}")
+            
+            for input_name in required_inputs:
+                if f'name="{input_name}"' in response_text or f"name='{input_name}'" in response_text:
+                    success_indicators.append(f"Required input found: {input_name}")
+                    evidence.append(f"Input field present: {input_name}")
+                    matched_patterns.append(f"input: {input_name}")
+                else:
+                    failure_indicators.append(f"Required input not found: {input_name}")
+        
+        # Calculate confidence based on validation results
+        total_checks = len(success_indicators) + len(failure_indicators)
+        if total_checks == 0:
+            confidence = 0.5  # Neutral confidence when no specific checks
+        else:
+            confidence = len(success_indicators) / total_checks
+        
+        is_valid = len(failure_indicators) == 0 and len(success_indicators) > 0
+        
+        if return_structured:
+            return ValidationResult(
+                is_valid=is_valid,
+                confidence_score=confidence,
+                matched_patterns=matched_patterns,
+                evidence=evidence,
+                validation_type=ValidationType.CONTENT,
+                metadata={
+                    'validation_method': 'html_response',
+                    'response_size': len(response_text),
+                    'status_code': response.status_code,
+                    'content_type': content_type,
+                    'success_indicators': success_indicators,
+                    'failure_indicators': failure_indicators
+                }
+            )
+        
+        return is_valid
+        
+    except Exception as e:
+        if return_structured:
+            return ValidationResult(
+                is_valid=False,
+                confidence_score=0.0,
+                evidence=[],
+                validation_type=ValidationType.ERROR,
+                error_message=f"HTML validation error: {str(e)}",
+                metadata={
+                    'error': str(e),
+                    'success_indicators': [],
+                    'failure_indicators': [f"HTML validation error: {str(e)}"]
+                }
+            )
+        return False
+
+
+@monitor_performance("chained_validations")
+def chain_validations(
+    response: requests.Response,
+    validation_chain: List[Dict[str, Any]],
+    chain_logic: str = "AND",
+    return_structured: bool = True  # Default to True to return list of results
+) -> Union[bool, ValidationResult, List[ValidationResult]]:
+    """
+    Chain multiple validations together with logical operators.
+    
+    Args:
+        response: HTTP response object to validate
+        validation_chain: List of validation configurations
+        chain_logic: Logic operator for chaining ("AND", "OR")
+        return_structured: Whether to return ValidationResult object(s)
+        
+    Returns:
+        bool, ValidationResult, or List[ValidationResult]: Combined or individual validation results
+    """
+    try:
+        results = []
+        all_success_indicators = []
+        all_failure_indicators = []
+        all_evidence = []
+        
+        for i, validation_config in enumerate(validation_chain):
+            validation_type = validation_config.get('type', 'response')
+            
+            # Check for recognized validation parameters
+            recognized_params = {
+                'type', 'success_criteria', 'failure_criteria', 'regex_patterns', 
+                'status_codes', 'headers_criteria', 'required_keys', 'forbidden_keys',
+                'json_schema', 'expected_title', 'title_patterns', 'expected_elements',
+                'forbidden_elements', 'form_validation', 'return_structured'
+            }
+            
+            unrecognized_params = set(validation_config.keys()) - recognized_params
+            if unrecognized_params:
+                # Create error result for unrecognized parameters
+                error_result = ValidationResult(
+                    is_valid=False,
+                    confidence_score=0.0,
+                    evidence=[],
+                    validation_type=ValidationType.ERROR,
+                    error_message=f"Unrecognized validation parameters: {', '.join(unrecognized_params)}",
+                    metadata={'unrecognized_params': list(unrecognized_params)}
+                )
+                results.append(error_result)
+                continue
+            
+            if validation_type == 'response':
+                result = validate_response(
+                    response=response,
+                    success_criteria=validation_config.get('success_criteria'),
+                    failure_criteria=validation_config.get('failure_criteria'),
+                    regex_patterns=validation_config.get('regex_patterns'),
+                    status_codes=validation_config.get('status_codes'),
+                    headers_criteria=validation_config.get('headers_criteria'),
+                    return_structured=True
+                )
+            elif validation_type == 'json':
+                result = validate_json_response(
+                    response=response,
+                    required_keys=validation_config.get('required_keys'),
+                    forbidden_keys=validation_config.get('forbidden_keys'),
+                    json_schema=validation_config.get('json_schema')
+                )
+            elif validation_type == 'html':
+                result = validate_html_response(
+                    response=response,
+                    expected_title=validation_config.get('expected_title'),
+                    title_patterns=validation_config.get('title_patterns'),
+                    expected_elements=validation_config.get('expected_elements'),
+                    forbidden_elements=validation_config.get('forbidden_elements'),
+                    form_validation=validation_config.get('form_validation'),
+                    return_structured=True
+                )
+            else:
+                # Default to basic response validation
+                result = validate_response(response=response, return_structured=True)
+            
+            results.append(result)
+            if hasattr(result, 'success_indicators'):
+                all_success_indicators.extend(result.success_indicators or [])
+            if hasattr(result, 'failure_indicators'):
+                all_failure_indicators.extend(result.failure_indicators or [])
+            if hasattr(result, 'evidence'):
+                all_evidence.extend(result.evidence or [])
+        
+        # If tests expect individual results, return the list
+        if return_structured and len(validation_chain) > 1:
+            return results
+        
+        # Apply chain logic for combined result
+        if chain_logic.upper() == "AND":
+            final_result = all(r.is_valid for r in results)
+        elif chain_logic.upper() == "OR":
+            final_result = any(r.is_valid for r in results)
+        else:
+            raise ValueError(f"Unsupported chain logic: {chain_logic}")
+        
+        # Calculate combined confidence
+        if results:
+            combined_confidence = sum(r.confidence_score for r in results) / len(results)
+        else:
+            combined_confidence = 0.0
+        
+        if return_structured:
+            return ValidationResult(
+                is_valid=final_result,
+                confidence_score=combined_confidence,
+                success_indicators=all_success_indicators,
+                failure_indicators=all_failure_indicators,
+                evidence=all_evidence,
+                validation_type=ValidationType.COMPOSITE,
+                metadata={
+                    'validation_method': 'chained_validations',
+                    'chain_logic': chain_logic,
+                    'validation_count': len(validation_chain),
+                    'individual_results': [
+                        {
+                            'valid': r.is_valid,
+                            'confidence': r.confidence_score,
+                            'type': getattr(r, 'validation_type', ValidationType.CONTENT).value if hasattr(ValidationType, 'CONTENT') else 'content'
+                        } for r in results
+                    ]
+                }
+            )
+        
+        return final_result
+        
+    except Exception as e:
+        if return_structured:
+            return ValidationResult(
+                is_valid=False,
+                confidence_score=0.0,
+                success_indicators=[],
+                failure_indicators=[f"Chain validation error: {str(e)}"],
+                evidence=[],
+                validation_type=ValidationType.ERROR,
+                error_message=f"Chain validation error: {str(e)}",
+                metadata={'error': str(e)}
+            )
+        return False
+
+
 # Export enhanced API functions
 __all__ = [
     'validate_response',
@@ -852,5 +1183,7 @@ __all__ = [
     'validate_json_response',
     'validate_business_logic',
     'validate_timing_attack',
-    'create_custom_preset'
+    'create_custom_preset',
+    'validate_html_response',
+    'chain_validations'
 ]

@@ -7,4 +7,7 @@ from .baseline import _get_unauth_baseline, get_cached_unauth_baseline, _check_u
 from .core_logic import (
     _determine_vulnerability, _should_have_access, _make_request_with_retry,
     _test_single_id, _test_single_id_async, _test_single_id_with_baselines, _test_single_id_with_baselines_async
-) 
+)
+
+# Import send_request from runner module for backward compatibility
+from ..runner.runner import send_request 

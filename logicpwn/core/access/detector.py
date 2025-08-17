@@ -247,19 +247,17 @@ def detect_idor_flaws(
         
         for future in as_completed(futures):
             result = future.result()
-            results.append(result)
-            
-            # Record security events for detected vulnerabilities
+            results.append(result)                # Record security events for detected vulnerabilities
             if result.is_vulnerable:
                 record_security_event(
                     SecurityEventType.IDOR_VULNERABILITY,
                     SecuritySeverity.HIGH,
-                    f"IDOR vulnerability detected: {result.test_id} - {result.vulnerability_evidence[:200]}...",
+                    f"IDOR vulnerability detected: {result.id_tested} - {getattr(result, 'vulnerability_evidence', 'N/A')[:200]}...",
                     metadata={
-                        "test_id": result.test_id,
-                        "url": result.url,
+                        "test_id": result.id_tested,
+                        "url": result.endpoint_url,
                         "status_code": result.status_code,
-                        "evidence": result.vulnerability_evidence[:500],  # Limit evidence size
+                        "evidence": getattr(result, 'vulnerability_evidence', 'N/A')[:500],  # Limit evidence size
                         "detection_method": "batch_detection"
                     },
                     source_module="idor_detector"
@@ -268,10 +266,10 @@ def detect_idor_flaws(
                 record_security_event(
                     SecurityEventType.SUSPICIOUS_REQUEST,
                     SecuritySeverity.MEDIUM,
-                    f"IDOR test error for {result.test_id}: {result.error_message[:100]}",
+                    f"IDOR test error for {result.id_tested}: {result.error_message[:100]}",
                     metadata={
-                        "test_id": result.test_id,
-                        "url": result.url,
+                        "test_id": result.id_tested,
+                        "url": result.endpoint_url,
                         "error": result.error_message
                     },
                     source_module="idor_detector"
