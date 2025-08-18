@@ -12,7 +12,7 @@
 
 **LogicPWN** is a comprehensive Python framework designed for advanced **business logic vulnerability testing**, **IDOR detection**, **privilege escalation testing**, and **multi-step security exploitation**. Built for penetration testers, security researchers, bug bounty hunters, and security teams who need to systematically test complex application workflows and access controls.
 
-🌟 **Join 10,000+ security professionals** using LogicPwn to discover vulnerabilities that traditional scanners miss!
+
 
 ---
 
