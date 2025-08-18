@@ -3,64 +3,102 @@
 LogicPwn vs. Traditional Security Testing Tools
 ===============================================
 
-LogicPwn stands apart from traditional security scanners and penetration testing tools by focusing on **business logic exploitation** and **multi-step attack automation**. This comparison shows how LogicPwn addresses gaps left by conventional security tools.
+LogicPwn focuses on **business logic exploitation** and **multi-step attack automation**, addressing specific gaps in traditional security testing approaches. This comparison highlights LogicPwn's strengths and appropriate use cases.
 
-Why Traditional Scanners Fall Short
------------------------------------
+Understanding the Landscape
+---------------------------
 
-**Traditional web application scanners** like Burp Suite, OWASP ZAP, and Nessus excel at finding technical vulnerabilities but struggle with business logic flaws because they:
+**Traditional Security Scanners**
 
-- **Cannot understand application workflows** - They crawl pages but don't comprehend multi-step business processes
-- **Miss context-dependent vulnerabilities** - IDOR and privilege escalation require understanding user roles and access patterns  
-- **Lack session state management** - Complex authentication flows and session persistence are poorly handled
-- **Generate false positives** - Pattern matching without context leads to inaccurate results
-- **Don't chain exploits** - Each vulnerability is tested in isolation, missing compound attack scenarios
+Tools like Burp Suite, OWASP ZAP, and Nessus excel at:
 
-LogicPwn's Unique Advantages
-----------------------------
+- Pattern-based vulnerability detection
+- Large-scale automated scanning
+- Comprehensive vulnerability databases
+- Mature reporting and enterprise features
+- Extensive plugin ecosystems
 
-Advanced Business Logic Testing
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Where Traditional Scanners Have Limitations**
+
+- **Complex Business Logic**: Multi-step workflows are difficult to automate
+- **Context-Dependent Vulnerabilities**: IDOR and privilege escalation require understanding user roles
+- **Stateful Authentication**: Complex auth flows with MFA and IdP integration
+- **Custom Applications**: Unique business logic patterns
+
+LogicPwn's Complementary Approach
+---------------------------------
+
+**What LogicPwn Does Well**
 
 .. list-table::
-   :widths: 30 30 40
+   :widths: 30 35 35
    :header-rows: 1
 
    * - Feature
-     - Traditional Scanners  
-     - LogicPwn
-   * - Multi-step Attack Chains
-     - Limited/Manual
-     - **Automated with state management**
-   * - Session Persistence
-     - Basic
-     - **Advanced with validation & CSRF**
-   * - IDOR Detection
-     - Pattern-based only
-     - **Systematic access control testing**
-   * - Business Logic Understanding
-     - None
-     - **Workflow-aware exploitation**
-   * - Custom Authentication
-     - Template-based
-     - **Flexible, code-driven flows**
+     - Traditional Approach
+     - LogicPwn Approach
+   * - **Multi-step Attacks**
+     - Manual scripting required
+     - Built-in workflow orchestration
+   * - **Session Management**
+     - Basic cookie handling
+     - Comprehensive auth state management
+   * - **Access Control Testing**
+     - Pattern-based detection
+     - Systematic multi-user testing
+   * - **Authentication Flows**
+     - Limited flow support
+     - OAuth, SAML, MFA automation
+   * - **Business Logic**
+     - Manual analysis needed
+     - Code-driven workflow testing
 
-Technical Superiority
-~~~~~~~~~~~~~~~~~~~~~
+**Authentication Capabilities**
 
-**Performance & Scalability**
+LogicPwn provides sophisticated authentication support:
 
-- **Async/Concurrent Execution**: Test hundreds of endpoints simultaneously
-- **Connection Pooling**: Efficient resource utilization for large-scale testing  
-- **Intelligent Caching**: Avoid redundant requests, speed up testing cycles
-- **Memory Efficient**: Optimized for long-running penetration tests
+.. code-block:: python
 
-**Accuracy & Precision**
+   # OAuth 2.0 with PKCE
+   oauth_config = create_google_oauth_config(
+       client_id="your_client_id",
+       client_secret="your_secret",
+       redirect_uri="http://localhost:8080/callback"
+   )
+   
+   # SAML SSO with Okta
+   saml_config = create_okta_saml_config(
+       sp_entity_id="https://your-app.com",
+       sp_acs_url="https://your-app.com/saml/acs",
+       okta_domain="your-domain",
+       app_id="your_app_id"
+   )
+   
+   # Multi-Factor Authentication
+   mfa_config = MFAConfig(
+       totp_issuer="YourApp",
+       sms_provider="twilio",
+       email_provider="sendgrid"
+   )
 
-- **Context-Aware Validation**: Multi-criteria analysis reduces false positives
-- **Confidence Scoring**: Quantified vulnerability likelihood assessments
-- **Custom Pattern Matching**: Fine-tuned detection for specific application types
-- **Baseline Comparison**: Compare authenticated vs unauthenticated responses
+When to Use LogicPwn
+--------------------
+
+**Ideal Use Cases**
+
+1. **Custom Web Applications** with unique business logic
+2. **Multi-tenant Systems** requiring cross-tenant testing
+3. **Complex Authentication** (OAuth, SAML, MFA)
+4. **API Security Testing** with stateful workflows
+5. **Business Logic Vulnerability Research**
+
+**When Traditional Tools Are Better**
+
+1. **Large-scale Network Scanning**
+2. **Infrastructure Vulnerability Assessment** 
+3. **Compliance Reporting Requirements**
+4. **Automated CI/CD Security Gates**
+5. **Standard Web Application Scanning**
 
 Detailed Feature Comparison
 ---------------------------
@@ -68,37 +106,181 @@ Detailed Feature Comparison
 Authentication & Session Management
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+**LogicPwn Authentication Features:**
+
 .. code-block:: python
 
-   # Traditional tools: Basic form submission
-   # LogicPwn: Advanced workflow automation
-   
+   # Advanced authentication configuration
    auth_config = AuthConfig(
        url="https://app.example.com/login",
        credentials={"username": "admin", "password": "secret"},
-       csrf_config=CSRFConfig(enabled=True, auto_include=True),
+       csrf_config=CSRFConfig(
+           enabled=True,
+           auto_include=True,
+           refresh_on_failure=True
+       ),
        session_validation_url="/dashboard",
        success_indicators=["Welcome", "Dashboard"],
-       max_retries=3
+       max_retries=3,
+       timeout=15
    )
    
-   # Automatic CSRF handling, session validation, retry logic
+   # Enhanced authentication with MFA
+   enhanced_config = EnhancedAuthConfig(
+       base_config=auth_config,
+       oauth_config=oauth_config,
+       saml_config=saml_config,
+       mfa_config=mfa_config
+   )
 
 Access Control Testing (IDOR)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table::
-   :widths: 20 40 40
+   :widths: 25 35 40
    :header-rows: 1
 
-   * - Tool Type
-     - Approach
+   * - Approach
+     - How It Works
      - LogicPwn Advantage
+   * - **Manual Testing**
+     - Parameter enumeration by hand
+     - **Systematic automation with multiple user contexts**
    * - **Burp Suite**
-     - Manual parameter enumeration
-     - **Systematic, automated ID testing with baselines**
+     - Intruder-based parameter fuzzing
+     - **Context-aware validation with baseline comparison**
    * - **OWASP ZAP**
-     - Basic forced browsing
+     - Forced browsing detection
+     - **Multi-step access control testing**
+   * - **Custom Scripts**
+     - Ad-hoc parameter testing
+     - **Reusable framework with session management**
+
+**IDOR Testing Example:**
+
+.. code-block:: python
+
+   # Multi-user IDOR testing
+   user_contexts = [
+       {"user_id": "user1", "role": "standard"},
+       {"user_id": "user2", "role": "premium"},
+       {"user_id": "admin", "role": "administrator"}
+   ]
+   
+   for context in user_contexts:
+       validator = AuthenticatedValidator(
+           auth_config.for_user(context),
+           "https://api.example.com"
+       )
+       
+       if await validator.authenticate():
+           # Test access to resources across user boundaries
+           results = await validator.test_cross_user_access(user_contexts)
+
+Business Logic Testing
+~~~~~~~~~~~~~~~~~~~~~~
+
+**LogicPwn's Business Logic Capabilities:**
+
+.. code-block:: python
+
+   # Multi-step business logic testing
+   async def test_purchase_workflow():
+       # Step 1: Add items to cart
+       cart_response = await session.post("/api/cart/add", 
+                                         json={"product_id": 123, "quantity": 1})
+       
+       # Step 2: Apply discount (potential race condition)
+       discount_response = await session.post("/api/cart/discount",
+                                            json={"code": "SAVE20"})
+       
+       # Step 3: Modify quantity (business logic bypass?)
+       modify_response = await session.put("/api/cart/update",
+                                         json={"product_id": 123, "quantity": -1})
+       
+       # Step 4: Complete purchase
+       purchase_response = await session.post("/api/purchase/complete")
+       
+       return analyze_workflow_results([cart_response, discount_response, 
+                                      modify_response, purchase_response])
+
+Performance Considerations
+--------------------------
+
+**Realistic Performance Expectations**
+
+.. list-table::
+   :widths: 30 25 25 20
+   :header-rows: 1
+
+   * - Tool Category
+     - Coverage
+     - Speed
+     - Use Case
+   * - **Network Scanners**
+     - Very High
+     - Very Fast
+     - Infrastructure assessment
+   * - **Web App Scanners**
+     - High
+     - Fast
+     - Standard web vulnerabilities
+   * - **LogicPwn**
+     - Targeted
+     - Moderate
+     - Business logic & access control
+   * - **Manual Testing**
+     - Variable
+     - Slow
+     - Complex custom applications
+
+**Complementary Usage Pattern**
+
+1. **Start with traditional scanners** for broad vulnerability coverage
+2. **Use LogicPwn for targeted testing** of business logic and access controls
+3. **Manual verification** of findings from both approaches
+4. **Combine results** for comprehensive security assessment
+
+Integration Strategy
+--------------------
+
+**Working with Existing Tools**
+
+LogicPwn is designed to complement, not replace, existing security tools:
+
+.. code-block:: python
+
+   # Export findings in standard formats
+   results_exporter = ResultsExporter()
+   
+   # Compatible with Burp Suite imports
+   results_exporter.to_burp_format(findings)
+   
+   # SARIF format for CI/CD integration
+   results_exporter.to_sarif(findings)
+   
+   # Custom reporting formats
+   results_exporter.to_json(findings)
+
+**Best Practices for Tool Combination**
+
+1. Use traditional scanners for initial vulnerability discovery
+2. Focus LogicPwn on authentication and business logic flows
+3. Cross-validate findings between tools
+4. Leverage LogicPwn's detailed session management for complex scenarios
+5. Use LogicPwn's async capabilities for efficient access control testing
+
+Conclusion
+----------
+
+LogicPwn addresses specific gaps in security testing, particularly around:
+
+- Complex authentication workflows
+- Multi-step business logic vulnerabilities
+- Systematic access control testing
+- Stateful application security assessment
+
+It works best when used as part of a comprehensive security testing strategy, complementing traditional scanning tools with focused business logic testing capabilities.
      - **Multi-user context testing with access matrices**
    * - **Custom Scripts**
      - Ad-hoc, unreliable  
@@ -148,31 +330,27 @@ Performance Benchmarks
 **Concurrent Request Testing**
 
 .. list-table::
-   :widths: 30 25 25 20
+   :widths: 30 35 35
    :header-rows: 1
 
    * - Scenario
-     - Traditional Tool
-     - LogicPwn
-     - Improvement
-   * - 1000 endpoint IDOR test
-     - 45 minutes
-     - **8 minutes**
-     - **5.6x faster**
+     - Traditional Approach
+     - LogicPwn Approach
+   * - Large-scale IDOR testing
+     - Time-consuming manual enumeration
+     - **Automated ID generation and batch testing**
    * - Multi-step auth testing
-     - Manual/hours
-     - **2 minutes**
-     - **Automated**
-   * - Memory usage (1000 requests)
-     - 500MB+
-     - **120MB**
-     - **4x more efficient**
+     - Manual workflow recreation
+     - **Automated session management**
+   * - Memory usage optimization
+     - Variable depending on tool
+     - **Optimized for concurrent operations**
 
-**Accuracy Metrics**
+**Key Advantages**
 
-- **False Positive Rate**: 15% (traditional) vs **3%** (LogicPwn)
-- **Business Logic Coverage**: 20% vs **85%**  
-- **Exploit Chain Success**: Manual vs **95% automated**
+- **Reduced False Positives**: Context-aware validation reduces manual verification effort
+- **Business Logic Focus**: Specialized for access control and workflow testing
+- **Automation-First**: Multi-step attack chain orchestration
 
 Integration & Ecosystem
 -----------------------
@@ -258,8 +436,8 @@ Real-World Success Stories
 **Case Study 1: E-commerce Platform**
 
 - **Challenge**: 50,000 product endpoints, complex user roles
-- **Traditional Approach**: Manual testing, 3 weeks, 40% coverage  
-- **LogicPwn Results**: Automated testing, 2 days, 95% coverage, 12 IDOR vulnerabilities found
+- **Traditional Approach**: Manual testing, 3 weeks, limited coverage  
+- **LogicPwn Results**: Automated testing, 2 days, comprehensive coverage, 12 IDOR vulnerabilities found
 
 **Case Study 2: Banking API** 
 

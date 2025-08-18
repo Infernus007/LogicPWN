@@ -6,7 +6,7 @@ Frequently Asked Questions
 Get answers to the most common questions about LogicPwn, from basic setup to advanced enterprise deployment scenarios.
 
 🚀 Getting Started
-------------------
+-----------------
 
 **Q: What makes LogicPwn different from other security testing tools?**
 
@@ -14,9 +14,9 @@ A: LogicPwn is specifically designed for **business logic vulnerability testing*
 
 - **Business Process Understanding**: LogicPwn comprehends multi-step workflows, not just individual requests
 - **Advanced Session Management**: Handles complex authentication flows, CSRF tokens, and session persistence automatically
-- **Exploit Chain Automation**: Orchestrates multi-step attacks that require maintaining state across requests
+- **Async Architecture**: Concurrent testing capabilities for improved performance
 - **Python-Native**: Code-first approach enables unlimited customization and CI/CD integration
-- **Performance Optimized**: Async architecture delivers 5x faster testing than traditional tools
+- **Multi-Protocol Auth**: Native support for OAuth 2.0, SAML, JWT, and MFA
 
 **Q: Do I need programming experience to use LogicPwn?**
 
@@ -104,32 +104,27 @@ A: Yes, LogicPwn supports various network configurations:
 
 **Q: How accurate is LogicPwn's vulnerability detection?**
 
-A: LogicPwn achieves **95% accuracy** through multi-criteria validation:
+A: LogicPwn uses multi-criteria validation to improve detection accuracy:
 
 .. list-table::
-   :widths: 25 25 25 25
+   :widths: 30 35 35
    :header-rows: 1
 
    * - Validation Method
-     - Accuracy
-     - Speed
+     - Description
      - Best For
    * - **Pattern Matching**
-     - 85%
-     - Fast
-     - Known vulnerabilities
+     - Response content analysis
+     - Known vulnerability patterns
    * - **Multi-Criteria Analysis**
-     - 95%
-     - Medium  
+     - Combined validation techniques
      - Business logic flaws
    * - **Context-Aware Validation**
-     - 98%
-     - Slower
+     - Application context consideration
      - Complex workflows
    * - **Machine Learning** (Enterprise)
-     - 99%+
-     - Variable
-     - Adaptive detection
+     - Adaptive pattern recognition
+     - Advanced threat detection
 
 🛡️ Security & Compliance
 ------------------------
@@ -252,37 +247,31 @@ A: Yes, LogicPwn is designed for enterprise-scale testing:
        
        return analyze_results(results)
 
-**Q: How does LogicPwn perform compared to commercial tools?**
+**Q: How does LogicPwn compare to commercial tools?**
 
-A: Benchmark comparisons show significant advantages:
+A: LogicPwn offers unique advantages for business logic testing:
 
 .. list-table::
-   :widths: 25 25 25 25
+   :widths: 25 35 40
    :header-rows: 1
 
-   * - Tool
-     - Speed
-     - Business Logic Coverage
-     - False Positive Rate
-   * - **Burp Suite Pro**
-     - Baseline
-     - 20%
-     - 35%
-   * - **OWASP ZAP**
-     - 1.2x
-     - 15%
-     - 40%
-   * - **LogicPwn**
-     - **5.6x**
-     - **85%**
-     - **3%**
+   * - Tool Category
+     - Primary Strengths
+     - LogicPwn's Unique Value
    * - **Commercial DAST**
-     - 0.8x
-     - 25%
-     - 45%
+     - Broad vulnerability coverage
+     - **Business logic & access control focus**
+   * - **Open Source Scanners**
+     - Cost-effective, customizable
+     - **Specialized exploit chain automation**
+   * - **Manual Testing Tools**
+     - Comprehensive analysis
+     - **Automated complex workflow testing**
+
+LogicPwn is designed to complement existing tools by addressing business logic vulnerabilities that traditional scanners often miss.
 
 🏢 Enterprise & Professional
-----------------------------
+---------------------------
 
 **Q: What's included in LogicPwn Enterprise Edition?**
 
@@ -358,7 +347,7 @@ A: Multiple support tiers to meet different needs:
      - **24/7 dedicated engineer, SLA guarantee**
 
 🔧 Troubleshooting
-------------------
+-----------------
 
 **Q: LogicPwn authentication keeps failing. How do I debug this?**
 
@@ -468,7 +457,7 @@ A: LogicPwn includes advanced CSRF handling capabilities:
    )
 
 💰 Pricing & Licensing
-----------------------
+---------------------
 
 **Q: Is LogicPwn really free and open source?**
 
@@ -508,12 +497,12 @@ A: Consider Enterprise when you need:
 
 **Q: What's the ROI of using LogicPwn vs. traditional tools?**
 
-A: Organizations typically see significant ROI within 3-6 months:
+A: Organizations typically see positive ROI through:
 
 **Cost Savings**:
-- **Tool licensing**: Save $50K-200K annually vs. commercial DAST tools
-- **Time efficiency**: 5x faster testing reduces labor costs by 80%
-- **False positive reduction**: 95% accuracy saves 20+ hours weekly on verification
+- **Open source advantage**: No licensing fees compared to commercial DAST tools
+- **Time efficiency**: Automated testing reduces manual security assessment effort
+- **Reduced false positives**: Context-aware validation minimizes manual verification time
 
 **Risk Reduction**:
 - **Business logic coverage**: Find vulnerabilities traditional tools miss
@@ -521,7 +510,7 @@ A: Organizations typically see significant ROI within 3-6 months:
 - **Compliance efficiency**: Automated compliance reporting saves audit costs
 
 📞 Getting Help
----------------
+--------------
 
 **Q: Where can I get help if I'm stuck?**
 

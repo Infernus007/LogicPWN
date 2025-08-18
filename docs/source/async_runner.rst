@@ -14,7 +14,6 @@ The async functionality includes:
 
 Why Use Async?
 ~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~
 
 * **Performance**: Execute multiple requests concurrently
 * **Scalability**: Handle hundreds of requests efficiently
@@ -47,7 +46,7 @@ Basic Usage
    asyncio.run(main())
 
 Configuration
-------------
+-------------
 Configure the AsyncRequestRunner with custom settings:
 
 .. code-block:: python
@@ -72,7 +71,6 @@ Configure the AsyncRequestRunner with custom settings:
 
 Batch Requests
 --------------
---------------
 
 Send multiple requests concurrently:
 
@@ -91,7 +89,6 @@ Send multiple requests concurrently:
            print(f"Request {i+1}: {result.status_code}")
 
 Request Types
-------------
 -------------
 
 **GET Request**:
@@ -145,7 +142,6 @@ Request Types
 
 Error Handling
 --------------
---------------
 
 Handle different types of async errors:
 
@@ -164,12 +160,10 @@ Handle different types of async errors:
 
 AsyncSessionManager
 -------------------
--------------------
 
 The AsyncSessionManager provides async session management with authentication and session persistence.
 
 Basic Usage
------------
 -----------
 
 .. code-block:: python
@@ -192,7 +186,6 @@ Basic Usage
    asyncio.run(main())
 
 Authentication Configuration
-----------------------------
 ----------------------------
 
 Configure authentication with various options:
@@ -218,7 +211,6 @@ Configure authentication with various options:
        # Use authenticated session...
 
 Session Methods
---------------
 ---------------
 
 **GET Request**:
@@ -257,7 +249,6 @@ Session Methods
 
 Exploit Chaining
 ----------------
-----------------
 
 Execute complex exploit chains with session persistence:
 
@@ -293,7 +284,7 @@ Execute complex exploit chains with session persistence:
        print(f"Step {i+1}: {result.status_code}")
 
 Convenience Functions
---------------------
+---------------------
 Single Async Request
 --------------------
 
@@ -337,7 +328,7 @@ Send multiple requests concurrently using the convenience function:
    asyncio.run(main())
 
 Async Context Manager
---------------------
+---------------------
 Use the async context manager for session management:
 
 .. code-block:: python
@@ -361,7 +352,7 @@ Advanced Usage
 --------------
 
 Rate Limiting
-------------
+-------------
 
 Implement custom rate limiting:
 

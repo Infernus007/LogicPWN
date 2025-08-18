@@ -2,7 +2,7 @@
    Always import from the relevant submodule, e.g. ``from logicpwn.core.runner import send_request``. Do not import directly from ``logicpwn.core``.
 
 Getting Started with LogicPwn
-============================
+=============================
 =============================
 
 This comprehensive guide will help you get started with LogicPwn, from installation to your first exploit chain. Whether you're a security researcher, penetration tester, or developer, this guide covers everything you need to know.
@@ -94,7 +94,7 @@ Async Example (No Authentication)
    asyncio.run(main())
 
 IDOR Detection Example
----------------------
+----------------------
 
 .. code-block:: python
 
@@ -217,7 +217,7 @@ Exploit Engine Example
            print("Response:", result.response.text[:200])
 
 Configuration
-------------
+-------------
 -------------
 
 Environment Variables

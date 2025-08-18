@@ -1,6 +1,5 @@
 API Reference
 =============
-=============
 
 This section provides comprehensive API documentation for all LogicPwn modules, classes, and functions.
 
@@ -12,27 +11,38 @@ Core Modules
 ------------
 
 Auth Module
-----------
-.. automodule:: logicpwn.core.auth
-    :members:
-    :undoc-members:
-    :show-inheritance:
-.. automodule:: logicpwn.core.auth.auth
-    :members:
-    :undoc-members:
-    :show-inheritance:
-.. automodule:: logicpwn.core.auth.auth_utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
+-----------
+
+Auth Models
+~~~~~~~~~~~
 .. automodule:: logicpwn.core.auth.auth_models
     :members:
     :undoc-members:
     :show-inheritance:
+
+Auth Session
+~~~~~~~~~~~~
 .. automodule:: logicpwn.core.auth.auth_session
     :members:
     :undoc-members:
     :show-inheritance:
+
+Auth Utils
+~~~~~~~~~~
+.. automodule:: logicpwn.core.auth.auth_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+HTTP Client
+~~~~~~~~~~~
+.. automodule:: logicpwn.core.auth.http_client
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Auth Constants
+~~~~~~~~~~~~~~
 .. automodule:: logicpwn.core.auth.auth_constants
     :members:
     :undoc-members:
@@ -93,8 +103,8 @@ Validator Module
     :show-inheritance:
 
 Performance Module
-~~~~~~~~~~~~~~~~~~
 ------------------
+
 .. automodule:: logicpwn.core.performance
     :members:
     :undoc-members:
@@ -125,8 +135,8 @@ Performance Module
     :show-inheritance:
 
 Cache Module
-~~~~~~~~~~~~
 ------------
+
 .. automodule:: logicpwn.core.cache
     :members:
     :undoc-members:
@@ -214,8 +224,8 @@ Utils Module
     :show-inheritance:
 
 Logging Module
-~~~~~~~~~~~~~~
 --------------
+
 .. automodule:: logicpwn.core.logging.redactor
     :members:
     :undoc-members:
@@ -230,13 +240,12 @@ Logging Module
     :show-inheritance:
 
 Stress Testing Module
-~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 The stress testing module provides load testing capabilities.
 
 Access/IDOR Detector Module
--------------------------
+---------------------------
 .. automodule:: logicpwn.core.access.detector
     :members:
     :undoc-members:
@@ -251,7 +260,7 @@ Access/IDOR Detector Module
     :show-inheritance:
 
 Reporting Module
----------------
+----------------
 .. automodule:: logicpwn.core.reporter.orchestrator
     :members:
     :undoc-members:

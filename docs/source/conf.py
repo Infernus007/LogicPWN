@@ -23,6 +23,27 @@ copyright = '2024, LogicPwn Team'
 author = 'LogicPwn Team'
 release = '0.1.0'
 
+# Enhanced metadata for SEO
+html_title = "LogicPwn - Advanced Business Logic Security Testing Framework"
+html_short_title = "LogicPwn Docs"
+
+# SEO and meta information
+html_meta = {
+    'description': 'LogicPwn is the most advanced open-source business logic security testing framework for penetration testing, bug bounty hunting, and automated vulnerability assessment.',
+    'keywords': 'security testing, business logic vulnerabilities, IDOR testing, penetration testing, bug bounty, vulnerability assessment, automated security, Python security framework, exploit chaining, access control testing',
+    'author': 'LogicPwn Development Team',
+    'robots': 'index, follow',
+    'viewport': 'width=device-width, initial-scale=1.0',
+    'og:title': 'LogicPwn - Advanced Business Logic Security Testing Framework',
+    'og:description': 'The only open-source framework specifically designed for business logic exploitation and multi-step attack automation.',
+    'og:type': 'website',
+    'og:url': 'https://logicpwn.readthedocs.io/',
+    'og:image': 'https://logicpwn.readthedocs.io/_static/logicpwn-logo.png',
+    'twitter:card': 'summary_large_image',
+    'twitter:title': 'LogicPwn - Advanced Business Logic Security Testing Framework',
+    'twitter:description': 'Discover business logic vulnerabilities that traditional scanners miss with LogicPwn.',
+}
+
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -69,6 +90,22 @@ html_theme_options = {
     'prev_next_buttons_location': 'bottom',
     'style_external_links': True,
     'style_nav_header_background': '#2980B9',
+    'analytics_id': '',  # Add your Google Analytics ID here
+}
+
+# Favicon
+html_favicon = '_static/favicon.svg'
+
+# Logo
+html_logo = '_static/logicpwn-logo-v2.svg'
+
+# Show "Edit on GitHub" links
+html_context = {
+    'display_github': True,
+    'github_user': 'logicpwn',
+    'github_repo': 'logicpwn',
+    'github_version': 'main',
+    'conf_py_path': '/docs/source/',
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -80,6 +117,36 @@ html_static_path = ['_static']
 html_css_files = [
     'custom.css',
 ]
+
+# Custom HTML head content for SEO and branding
+html_extra_head = """
+    <!-- Additional SEO -->
+    <link rel="sitemap" type="application/xml" href="_static/sitemap.xml">
+    
+    <!-- Schema.org structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "LogicPWN",
+        "description": "Advanced business logic vulnerability testing framework for penetration testers, bug bounty hunters, and security teams.",
+        "url": "https://logicpwn.readthedocs.io/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Cross-platform",
+        "programmingLanguage": "Python",
+        "license": "https://opensource.org/licenses/MIT",
+        "author": {
+            "@type": "Organization",
+            "name": "LogicPWN Team"
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+"""
 
 # -- Options for HTMLHelp output ------------------------------------------
 

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="24" cy="24" r="24" fill="url(#logoGradient)"/>
+  
+  <!-- Security shield -->
+  <g transform="translate(24, 10)">
+    <path d="M0 0 L8 3 L8 16 Q8 20 0 25 Q-8 20 -8 16 L-8 3 Z" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.5)" stroke-width="0.5"/>
+    <circle cx="0" cy="12.5" r="3.5" fill="url(#logoGradient)"/>
+    <path d="M-2 12.5 L-0.5 14 L2 11.5" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  
+  <!-- "L" for LogicPwn -->
+  <text x="24" y="42" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">L</text>
+  
+  <!-- Chain link accent -->
+  <g transform="translate(36, 36)">
+    <circle cx="0" cy="0" r="4" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+    <circle cx="-6" cy="-6" r="4" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+  </g>
+</svg>

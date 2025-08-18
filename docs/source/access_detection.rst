@@ -21,28 +21,41 @@ Core Functions
 
 .. autofunction:: logicpwn.core.access.detector.detect_idor_flaws
 .. autofunction:: logicpwn.core.access.detector.detect_idor_flaws_async
+   :no-index:
 
 **Enhanced Access Testing**
 
-.. autofunction:: logicpwn.core.access.enhanced_detector.EnhancedAccessTester.comprehensive_test
-.. autofunction:: logicpwn.core.access.enhanced_detector.EnhancedAccessTester.test_idor_with_smart_ids
-.. autofunction:: logicpwn.core.access.enhanced_detector.EnhancedAccessTester.test_tenant_isolation
-.. autofunction:: logicpwn.core.access.enhanced_detector.EnhancedAccessTester.test_privilege_escalation
+.. autoclass:: logicpwn.core.access.enhanced_detector.EnhancedAccessTester
+   :members: run_comprehensive_access_test, generate_detailed_report
+
+.. autofunction:: logicpwn.core.access.enhanced_detector.run_enhanced_access_detection
+.. autofunction:: logicpwn.core.access.enhanced_detector.quick_idor_with_smart_ids
+.. autofunction:: logicpwn.core.access.enhanced_detector.tenant_isolation_test_only
+.. autofunction:: logicpwn.core.access.enhanced_detector.privilege_escalation_test_only
 
 **Intelligent ID Generation**
 
-.. autofunction:: logicpwn.core.access.id_generation.EnhancedIDGenerator.generate_smart_id_list
-.. autofunction:: logicpwn.core.access.id_generation.PatternDetector.detect_patterns
+.. autoclass:: logicpwn.core.access.id_generation.EnhancedIDGenerator
+   :members: generate_smart_id_list
+
+.. autoclass:: logicpwn.core.access.id_generation.PatternDetector
+   :members: detect_patterns
 
 **Tenant Isolation Testing**
 
-.. autofunction:: logicpwn.core.access.tenant_isolation.TenantIsolationTester.test_cross_tenant_access
-.. autofunction:: logicpwn.core.access.tenant_isolation.TenantEnumerator.enumerate_tenants
+.. autoclass:: logicpwn.core.access.tenant_isolation.TenantIsolationTester
+   :members: test_cross_tenant_access
+
+.. autoclass:: logicpwn.core.access.tenant_isolation.TenantEnumerator
+   :members: enumerate_tenants
 
 **Privilege Escalation Detection**
 
-.. autofunction:: logicpwn.core.access.privilege_escalation.PrivilegeEscalationTester.test_privilege_escalation
-.. autofunction:: logicpwn.core.access.privilege_escalation.RoleHierarchyMapper.discover_admin_functions
+.. autoclass:: logicpwn.core.access.privilege_escalation.PrivilegeEscalationTester
+   :members: test_privilege_escalation
+
+.. autoclass:: logicpwn.core.access.privilege_escalation.RoleHierarchyMapper
+   :members: discover_admin_functions
 
 Quick Start Example
 -------------------
@@ -169,8 +182,9 @@ Quick Start Example
    for result in results:
        if result.vulnerability_detected:
            print(f"Privilege escalation found: {result.escalation_type} - {result.details}")
-       Advanced Configuration
----------------------
+
+Advanced Configuration
+----------------------
 
 **Custom Pattern Detection**
 
@@ -461,7 +475,6 @@ Troubleshooting
 See Also
 --------
 
-- :doc:`authentication` - Session management and authentication bypass
+- :doc:`getting_started` - Session management and authentication bypass
 - :doc:`exploit_engine` - Exploit chaining and automation  
-- :doc:`business_logic` - Business logic flaw detection
-- :ref:`api-reference` - Complete API documentation 
+- :doc:`features` - Business logic flaw detection

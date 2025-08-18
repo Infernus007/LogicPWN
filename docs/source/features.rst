@@ -1,16 +1,16 @@
 .. _features:
 
 Comprehensive Feature Overview
-===============================
+==============================
 
 LogicPwn is the most advanced open-source framework for business logic vulnerability testing and exploit chain automation. Built by security professionals for security professionals.
 
 🔐 Advanced Authentication System
----------------------------------
+--------------------------------
 
 **Multi-Protocol Authentication Support**
 
-LogicPwn handles the most complex authentication scenarios that traditional tools struggle with:
+LogicPwn provides comprehensive authentication capabilities for modern web applications:
 
 .. list-table::
    :widths: 30 70
@@ -19,47 +19,223 @@ LogicPwn handles the most complex authentication scenarios that traditional tool
    * - Authentication Type
      - LogicPwn Capabilities
    * - **Form-Based Login**
-     - Automatic CSRF token extraction, multi-step workflows, conditional logic
+     - CSRF token extraction, session validation, multi-step workflows
    * - **OAuth 2.0/OpenID**
-     - Full flow automation, token refresh, scope validation
-   * - **SAML Authentication**
-     - Assertion parsing, signature validation, identity provider integration
+     - Authorization code flow, PKCE support, token refresh, Google/Microsoft/GitHub providers
+   * - **SAML SSO**
+     - Assertion processing, attribute mapping, Okta/Azure integration
    * - **Multi-Factor Auth**
-     - TOTP/SMS integration, conditional MFA triggers
-   * - **API Key Management**
-     - Rotation, header/query parameter injection, validation
+     - TOTP, SMS, Email verification, backup codes
    * - **JWT Token Handling**
-     - Automatic renewal, payload manipulation, signature bypass testing
+     - Token validation, signature verification, claim extraction
 
-**CSRF Protection & Session Management**
+**Form-Based Authentication Examples**
 
 .. code-block:: python
 
-   # Intelligent CSRF token handling
+   # Basic form authentication with CSRF protection
+   from logicpwn.core.auth import AuthConfig, CSRFConfig
+   
    csrf_config = CSRFConfig(
        enabled=True,
-       token_name="csrf_token",
        auto_include=True,
-       refresh_on_failure=True,
-       extraction_patterns=[
-           r'name="csrf_token" value="([^"]+)"',
-           r'<meta name="csrf-token" content="([^"]+)"'
-       ]
+       refresh_on_failure=True
    )
    
-   # Advanced session validation
    auth_config = AuthConfig(
        url="https://app.example.com/login",
        credentials={"username": "admin", "password": "secret"},
        csrf_config=csrf_config,
-       session_validation_url="/api/user/profile",
-       session_indicators=["user_id", "authenticated"],
+       session_validation_url="/dashboard",
+       success_indicators=["Welcome", "Dashboard"],
        max_retries=3,
-       retry_backoff=2.0
+       timeout=15
    )
 
+**OAuth 2.0 Integration**
+
+.. code-block:: python
+
+   # OAuth 2.0 with popular providers
+   from logicpwn.core.auth import (
+       create_google_oauth_config, 
+       create_microsoft_oauth_config, 
+       create_github_oauth_config
+   )
+   
+   # Google OAuth configuration
+   google_config = create_google_oauth_config(
+       client_id="your-google-client-id",
+       client_secret="your-google-secret",
+       redirect_uri="http://localhost:8080/callback"
+   )
+   
+   # Microsoft Azure AD OAuth
+   microsoft_config = create_microsoft_oauth_config(
+       client_id="your-azure-client-id",
+       client_secret="your-azure-secret",
+       tenant="your-tenant-id"
+   )
+   
+   # GitHub OAuth
+   github_config = create_github_oauth_config(
+       client_id="your-github-client-id",
+       client_secret="your-github-secret"
+   )
+
+**SAML SSO Configuration**
+
+.. code-block:: python
+
+   # SAML SSO with identity providers
+   from logicpwn.core.auth import create_okta_saml_config, create_azure_saml_config
+   
+   # Okta SAML configuration
+   okta_config = create_okta_saml_config(
+       sp_entity_id="https://your-app.com",
+       sp_acs_url="https://your-app.com/saml/acs",
+       okta_domain="your-domain",
+       app_id="your_okta_app_id"
+   )
+   
+   # Azure AD SAML configuration
+   azure_config = create_azure_saml_config(
+       sp_entity_id="https://your-app.com",
+       sp_acs_url="https://your-app.com/saml/acs",
+       tenant_id="your-azure-tenant-id",
+       app_id="your-azure-app-id"
+   )
+
+**Multi-Factor Authentication**
+
+.. code-block:: python
+
+   # MFA configuration and testing
+   from logicpwn.core.auth import MFAConfig, MFAManager
+   
+   mfa_config = MFAConfig(
+       totp_issuer="YourApp",
+       totp_period=30,
+       totp_digits=6,
+       sms_provider="twilio",
+       sms_config={
+           "account_sid": "your_twilio_sid",
+           "auth_token": "your_twilio_token",
+           "from_number": "+1234567890"
+       },
+       email_provider="sendgrid",
+       email_config={
+           "api_key": "your_sendgrid_key",
+           "from_email": "noreply@yourapp.com"
+       },
+       code_length=6,
+       code_expiry=300,  # 5 minutes
+       max_attempts=3
+   )
+   
+   # Create MFA manager
+   mfa_manager = MFAManager(mfa_config)
+   
+   # Create TOTP challenge
+   totp_challenge = mfa_manager.create_challenge("totp", "user@example.com")
+   
+   # Create SMS challenge
+   sms_challenge = mfa_manager.create_challenge("sms", "+1234567890")
+   
+   # Verify challenge
+   is_valid = mfa_manager.verify_challenge(totp_challenge.challenge_id, "123456")
+
+**Enhanced Multi-Protocol Authentication**
+
+.. code-block:: python
+
+   # Comprehensive authentication with multiple protocols
+   from logicpwn.core.auth import EnhancedAuthenticator, EnhancedAuthConfig
+   
+   enhanced_config = EnhancedAuthConfig(
+       base_config=auth_config,
+       oauth_config=google_config,
+       saml_config=okta_config,
+       mfa_config=mfa_config,
+       jwt_config=jwt_config,
+       flow_timeout=300,  # 5 minutes for multi-step flows
+       max_redirects=10
+   )
+   
+   authenticator = EnhancedAuthenticator(enhanced_config)
+   
+   # Intelligent authentication detection
+   session = authenticator.authenticate_intelligent("https://app.example.com/login")
+   
+   # Multi-step OAuth + MFA flow
+   oauth_mfa_flow = authenticator.authenticate_multi_step(
+       "oauth_mfa",
+       provider_id="google",
+       mfa_method="totp"
+   )
+   
+   # JWT token validation
+   jwt_claims = authenticator.validate_jwt_token("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+
+**JWT Token Management**
+
+.. code-block:: python
+
+   # JWT configuration and validation
+   from logicpwn.core.auth import JWTConfig, JWTHandler
+   
+   jwt_config = JWTConfig(
+       secret_key="your-secret-key",
+       expected_issuer="https://your-app.com",
+       expected_audience="api-users",
+       verify_signature=True,
+       verify_exp=True,
+       verify_nbf=True,
+       verify_iat=True,
+       leeway=10  # 10 seconds clock skew tolerance
+   )
+   
+   jwt_handler = JWTHandler(jwt_config)
+   
+   # Create JWT token
+   claims = {
+       'sub': 'user123',
+       'role': 'admin',
+       'exp': int(time.time()) + 3600  # 1 hour expiry
+   }
+   token = jwt_handler.create_token(claims)
+   
+   # Validate JWT token
+   validated_claims = jwt_handler.validate_token(token)
+   print(f"User ID: {validated_claims.sub}")
+   print(f"Role: {validated_claims.custom_claims.get('role')}")
+
+**Session Management & Validation**
+
+.. code-block:: python
+
+   # Advanced session management
+   from logicpwn.core.auth import authenticate_session, validate_session
+   
+   # Authenticate with comprehensive session handling
+   session = authenticate_session(auth_config)
+   
+   # Validate session state
+   is_valid = validate_session(session, auth_config.session_validation_url)
+   
+   # DVWA validator for testing
+   from logicpwn.core.integration_utils import create_dvwa_validator
+   
+   dvwa_validator = create_dvwa_validator("http://localhost/DVWA")
+   if dvwa_validator.authenticate():
+       # Test DVWA with authenticated session
+       result = dvwa_validator.request_and_validate(
+           "GET", "/vulnerabilities/sqli/?id=1' OR 1=1--&Submit=Submit",
+           validation_preset="sql_injection"
+       )
+
 ⚡ High-Performance Execution Engine
-------------------------------------
+-----------------------------------
 
 **Asynchronous Request Processing**
 
@@ -98,7 +274,7 @@ LogicPwn's async architecture delivers unmatched performance for large-scale sec
    print(f"Memory usage: {metrics.peak_memory_mb}MB")
 
 🔍 Intelligent Vulnerability Detection
---------------------------------------
+-------------------------------------
 
 **Multi-Criteria Response Analysis**
 
@@ -167,7 +343,7 @@ LogicPwn goes beyond simple pattern matching with sophisticated validation:
    )
 
 🎯 Advanced Access Control Testing
-----------------------------------
+---------------------------------
 
 **Systematic IDOR Detection**
 
@@ -215,7 +391,7 @@ LogicPwn provides the most comprehensive IDOR testing capabilities available:
      - Systematic testing of role permissions
 
 🔗 Automated Exploit Chain Orchestration  
-----------------------------------------
+-----------------------------------------
 
 **Visual Workflow Definition**
 
@@ -290,7 +466,7 @@ Define complex multi-step attacks with intuitive configuration:
    )
 
 📊 Comprehensive Performance & Load Testing
--------------------------------------------
+------------------------------------------
 
 **Stress Testing Capabilities**
 
@@ -328,7 +504,7 @@ Define complex multi-step attacks with intuitive configuration:
 - **Resource Monitoring**: Real-time CPU, memory, and network monitoring
 
 📄 Professional Reporting & Documentation
------------------------------------------
+----------------------------------------
 
 **Multi-Format Report Generation**
 
@@ -412,7 +588,7 @@ Define complex multi-step attacks with intuitive configuration:
 - **Compliance Integration**: GDPR, HIPAA, SOX compliance features
 
 🧩 Extensible Architecture
---------------------------
+-------------------------
 
 **Middleware System**
 
@@ -481,7 +657,7 @@ Define complex multi-step attacks with intuitive configuration:
          --fail-on-high-severity
 
 🚀 Getting Started
-------------------
+-----------------
 
 **Quick Installation**
 

@@ -6,7 +6,7 @@ Comprehensive Tutorials & Guides
 Master LogicPwn with these step-by-step tutorials covering real-world security testing scenarios. Each tutorial builds practical skills while demonstrating LogicPwn's advanced capabilities.
 
 🎓 Beginner Tutorials
----------------------
+--------------------
 
 Tutorial 1: Your First Business Logic Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -198,7 +198,7 @@ Tutorial 2: Automated SQL Injection Detection
    print(f"   Vulnerabilities found: {len(vulnerabilities)}")
 
 🚀 Intermediate Tutorials  
--------------------------
+--------------------------
 
 Tutorial 3: Complex Multi-Step Exploit Chain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -316,7 +316,7 @@ Tutorial 3: Complex Multi-Step Exploit Chain
        print("⚠️  Critical steps failed - partial exploitation only")
 
 Tutorial 4: High-Performance Concurrent Testing
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Objective**: Scale security testing to handle thousands of endpoints efficiently.
 
@@ -414,7 +414,7 @@ Tutorial 4: High-Performance Concurrent Testing
 --------------------
 
 Tutorial 5: Custom Validation Rule Development
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Objective**: Create application-specific security validation rules.
 
@@ -483,7 +483,7 @@ Tutorial 5: Custom Validation Rule Development
        print(f"   Matched patterns: {result.matched_patterns}")
 
 Tutorial 6: Enterprise CI/CD Integration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Objective**: Integrate LogicPwn into enterprise deployment pipelines.
 
@@ -640,7 +640,7 @@ Tutorial 6: Enterprise CI/CD Integration
        return config
 
 📚 Best Practices & Tips
-------------------------
+-----------------------
 
 **Performance Optimization**
 

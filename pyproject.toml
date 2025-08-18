@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "logicpwn"
 version = "0.2.0"
-description = "A modular web application security testing framework"
+description = "LogicPwn represents a paradigm shift from traditional security testing toward intelligent, business-aware security automation. Its unique focus on business logic vulnerabilities, combined with enterprise-grade performance and comprehensive documentation, positions it as a leader in the next generation of security testing tools."
 authors = ["Jash Naik <jashnaik2004@gmail.com>"]
 readme = "README.md"
 packages = [{include = "logicpwn"}]
