@@ -7,13 +7,13 @@ their docstrings, then creating Astro-compatible MDX files.
 """
 
 import ast
+import importlib
 import inspect
 import os
+import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-import importlib
-import re
+from typing import Any, Dict, List, Optional
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent
@@ -24,45 +24,45 @@ def clean_docstring(docstring: str) -> str:
     """Clean and format docstring for MDX."""
     if not docstring:
         return ""
-    
+
     # Remove extra indentation
-    lines = docstring.strip().split('\n')
+    lines = docstring.strip().split("\n")
     if len(lines) == 1:
         cleaned = lines[0]
     else:
         # Find minimum indentation (excluding first line)
-        min_indent = float('inf')
+        min_indent = float("inf")
         for line in lines[1:]:
             if line.strip():
                 min_indent = min(min_indent, len(line) - len(line.lstrip()))
-        
-        if min_indent == float('inf'):
+
+        if min_indent == float("inf"):
             min_indent = 0
-        
+
         # Remove common indentation
         cleaned_lines = [lines[0]]
         for line in lines[1:]:
             if line.strip():
                 cleaned_lines.append(line[min_indent:])
             else:
-                cleaned_lines.append('')
-        
-        cleaned = '\n'.join(cleaned_lines)
-    
+                cleaned_lines.append("")
+
+        cleaned = "\n".join(cleaned_lines)
+
     # Remove problematic Pydantic documentation links
     problematic_patterns = [
-        r'\[([^\]]+)\]\(\.\.\/concepts\/[^)]+\)',  # Pydantic concept links
-        r'See the [^.]*pydantic[^.]*\.',  # Pydantic references
-        r'See [^.]*documentation[^.]*\.',  # Generic documentation references
+        r"\[([^\]]+)\]\(\.\.\/concepts\/[^)]+\)",  # Pydantic concept links
+        r"See the [^.]*pydantic[^.]*\.",  # Pydantic references
+        r"See [^.]*documentation[^.]*\.",  # Generic documentation references
     ]
-    
+
     for pattern in problematic_patterns:
-        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
-    
+        cleaned = re.sub(pattern, "", cleaned, flags=re.IGNORECASE)
+
     # Clean up any remaining double spaces or empty lines
-    cleaned = re.sub(r'\n\s*\n\s*\n', '\n\n', cleaned)
-    cleaned = re.sub(r'  +', ' ', cleaned)
-    
+    cleaned = re.sub(r"\n\s*\n\s*\n", "\n\n", cleaned)
+    cleaned = re.sub(r"  +", " ", cleaned)
+
     return cleaned.strip()
 
 
@@ -75,162 +75,153 @@ def format_signature(obj) -> str:
         return "()"
 
 
-def extract_module_info(module_name: str) -> Dict[str, Any]:
+def extract_module_info(module_name: str) -> dict[str, Any]:
     """Extract information from a module."""
     try:
         module = importlib.import_module(module_name)
-        
+
         info = {
-            'name': module_name,
-            'docstring': inspect.getdoc(module) or "",
-            'classes': [],
-            'functions': []
+            "name": module_name,
+            "docstring": inspect.getdoc(module) or "",
+            "classes": [],
+            "functions": [],
         }
-        
+
         # Get all public members
         for name, obj in inspect.getmembers(module):
-            if name.startswith('_'):
+            if name.startswith("_"):
                 continue
-                
+
             if inspect.isclass(obj):
                 # Include classes if they're defined in this module or its submodules
-                if (obj.__module__ == module_name or 
-                    (obj.__module__ and obj.__module__.startswith(module_name + '.'))):
+                if obj.__module__ == module_name or (
+                    obj.__module__ and obj.__module__.startswith(module_name + ".")
+                ):
                     class_info = extract_class_info(obj)
                     if class_info:
-                        info['classes'].append(class_info)
-                        
+                        info["classes"].append(class_info)
+
             elif inspect.isfunction(obj):
                 # Include functions if they're defined in this module or its submodules
-                if (obj.__module__ == module_name or 
-                    (obj.__module__ and obj.__module__.startswith(module_name + '.'))):
+                if obj.__module__ == module_name or (
+                    obj.__module__ and obj.__module__.startswith(module_name + ".")
+                ):
                     func_info = extract_function_info(obj)
                     if func_info:
-                        info['functions'].append(func_info)
-        
+                        info["functions"].append(func_info)
+
         return info
-        
+
     except Exception as e:
         print(f"Error importing {module_name}: {e}")
         return None
 
 
-def extract_class_info(cls) -> Dict[str, Any]:
+def extract_class_info(cls) -> dict[str, Any]:
     """Extract information from a class."""
     try:
         info = {
-            'name': cls.__name__,
-            'docstring': inspect.getdoc(cls) or "",
-            'methods': [],
-            'properties': [],
-            'signature': format_signature(cls.__init__) if hasattr(cls, '__init__') else "()"
+            "name": cls.__name__,
+            "docstring": inspect.getdoc(cls) or "",
+            "methods": [],
+            "properties": [],
+            "signature": (
+                format_signature(cls.__init__) if hasattr(cls, "__init__") else "()"
+            ),
         }
-        
+
         # Get inheritance
         bases = [base.__name__ for base in cls.__bases__ if base != object]
-        info['inheritance'] = bases
-        
+        info["inheritance"] = bases
+
         # Get methods and properties
         for name, obj in inspect.getmembers(cls):
-            if name.startswith('_') and name != '__init__':
+            if name.startswith("_") and name != "__init__":
                 continue
-                
+
             if inspect.ismethod(obj) or inspect.isfunction(obj):
-                if name != '__init__':  # Skip constructor, we handle it separately
+                if name != "__init__":  # Skip constructor, we handle it separately
                     method_info = extract_function_info(obj, is_method=True)
                     if method_info:
-                        info['methods'].append(method_info)
-                        
+                        info["methods"].append(method_info)
+
             elif isinstance(obj, property):
                 prop_info = {
-                    'name': name,
-                    'docstring': inspect.getdoc(obj) or "",
-                    'type': getattr(obj.fget, '__annotations__', {}).get('return', 'Any')
+                    "name": name,
+                    "docstring": inspect.getdoc(obj) or "",
+                    "type": getattr(obj.fget, "__annotations__", {}).get(
+                        "return", "Any"
+                    ),
                 }
-                info['properties'].append(prop_info)
-        
+                info["properties"].append(prop_info)
+
         return info
-        
+
     except Exception as e:
         print(f"Error extracting class {cls}: {e}")
         return None
 
 
-def extract_function_info(func, is_method=False) -> Dict[str, Any]:
+def extract_function_info(func, is_method=False) -> dict[str, Any]:
     """Extract information from a function."""
     try:
         info = {
-            'name': func.__name__,
-            'docstring': inspect.getdoc(func) or "",
-            'signature': format_signature(func),
-            'is_async': inspect.iscoroutinefunction(func),
-            'is_method': is_method
+            "name": func.__name__,
+            "docstring": inspect.getdoc(func) or "",
+            "signature": format_signature(func),
+            "is_async": inspect.iscoroutinefunction(func),
+            "is_method": is_method,
         }
-        
+
         return info
-        
+
     except Exception as e:
         print(f"Error extracting function {func}: {e}")
         return None
 
 
-def generate_module_mdx(module_info: Dict[str, Any]) -> str:
+def generate_module_mdx(module_info: dict[str, Any]) -> str:
     """Generate MDX content for a module."""
-    name = module_info['name']
-    clean_name = name.replace('logicpwn.core.', '').replace('logicpwn.', '')
-    
+    name = module_info["name"]
+    clean_name = name.replace("logicpwn.core.", "").replace("logicpwn.", "")
+
     # Create a display title that removes indian_ prefix for better readability
     display_name = clean_name
-    parts = display_name.split('.')
-    if len(parts) > 1 and parts[-1].startswith('indian_'):
+    parts = display_name.split(".")
+    if len(parts) > 1 and parts[-1].startswith("indian_"):
         parts[-1] = parts[-1][7:]  # Remove "indian_" prefix
-        display_name = '.'.join(parts)
-    
-    title = display_name.replace('_', ' ').replace('.', ' ').title()
-    
+        display_name = ".".join(parts)
+
+    title = display_name.replace("_", " ").replace(".", " ").title()
+
     # Determine module category for better navigation
     category = ""
-    if 'auth' in name:
+    if "auth" in name:
         category = "Authentication"
-    elif 'access' in name:
+    elif "access" in name:
         category = "Access Control"
-    elif any(x in name for x in ['runner', 'async']):
+    elif any(x in name for x in ["runner", "async"]):
         category = "Test Runner"
-    elif 'validator' in name:
+    elif "validator" in name:
         category = "Validation"
-    elif 'reporter' in name or 'reporting' in name:
+    elif "reporter" in name or "reporting" in name:
         category = "Reporting & Compliance"
-    elif any(x in name for x in ['utils', 'config', 'performance', 'cache']):
+    elif any(x in name for x in ["utils", "config", "performance", "cache"]):
         category = "Utilities"
-    elif 'exceptions' in name:
+    elif "exceptions" in name:
         category = "Exceptions"
-    
-    # Generate breadcrumb navigation
-    parts = clean_name.split('.')
-    breadcrumbs = []
-    current_path = ""
-    for i, part in enumerate(parts):
-        if i == 0:
-            current_path = part.replace('_', '-')
-            # Calculate relative path back to first level
-            back_levels = len(parts) - 1
-            if back_levels > 0:
-                back_path = "../" * back_levels
-                breadcrumbs.append(f"[{part.replace('_', ' ').title()}]({back_path}{current_path})")
-            else:
-                breadcrumbs.append(part.replace('_', ' ').title())
-        else:
-            current_path += f"/{part.replace('_', '-')}"
-            if i < len(parts) - 1:  # Not the last item
-                back_levels = len(parts) - 1 - i
-                if back_levels > 0:
-                    back_path = "../" * back_levels
-                    breadcrumbs.append(f"[{part.replace('_', ' ').title()}]({back_path}{current_path})")
-                else:
-                    breadcrumbs.append(f"[{part.replace('_', ' ').title()}](./{current_path})")
-    
-    breadcrumb_nav = " › ".join(breadcrumbs) if breadcrumbs else ""
-    
+
+    # Generate simple navigation breadcrumbs
+    parts = clean_name.split(".")
+
+    # For nested modules (e.g., validator.validator_api), show parent navigation
+    if len(parts) > 1:
+        parent_part = parts[0].replace("_", "-")
+        parent_title = parts[0].replace("_", " ").title()
+        breadcrumb_nav = f"[{parent_title}](../)"
+    else:
+        breadcrumb_nav = ""
+
     # Generate frontmatter with better metadata
     content = f"""---
 title: {title}
@@ -238,7 +229,6 @@ description: API documentation for {name}
 category: {category}
 sidebar:
   order: {hash(name) % 100}
-editUrl: https://github.com/logicpwn/logicpwn/blob/main/{name.replace('.', '/').replace('logicpwn/', '')}.py
 ---
 
 import {{ Code, Aside, Steps, Tabs, TabItem }} from '@astrojs/starlight/components';
@@ -246,11 +236,7 @@ import {{ Code, Aside, Steps, Tabs, TabItem }} from '@astrojs/starlight/componen
 # {title}
 
 {f"**Category:** {category}" if category else ""}
-{f"**Navigation:** [API Reference](../index) › {breadcrumb_nav}" if breadcrumb_nav else ""}
-
-:::tip[Source Code]
-View the source code: [**{name}.py**](https://github.com/logicpwn/logicpwn/blob/main/{name.replace('.', '/').replace('logicpwn/', '')}.py)
-:::
+{f"**Navigation:** [API Reference](../) › {breadcrumb_nav}" if breadcrumb_nav else "**Navigation:** [API Reference](../)" if len(parts) > 1 else ""}
 
 {clean_docstring(module_info['docstring']) or f"API documentation for the `{name}` module."}
 
@@ -268,36 +254,40 @@ from {name} import *
 """
 
     # Add classes with better formatting
-    if module_info['classes']:
+    if module_info["classes"]:
         content += "## Classes\n\n"
         content += ":::note[Available Classes]\n"
         content += f"This module provides {len(module_info['classes'])} class(es) for {category.lower() if category else 'core functionality'}.\n"
         content += ":::\n\n"
-        
-        for class_info in module_info['classes']:
+
+        for class_info in module_info["classes"]:
             content += generate_class_section(class_info)
-    
+
     # Add functions with better formatting
-    if module_info['functions']:
+    if module_info["functions"]:
         content += "## Functions\n\n"
         content += ":::note[Available Functions]\n"
         content += f"This module provides {len(module_info['functions'])} function(s) for direct use.\n"
         content += ":::\n\n"
-        
-        for func_info in module_info['functions']:
+
+        for func_info in module_info["functions"]:
             content += generate_function_section(func_info)
-    
+
     # Add related modules section
     content += generate_related_modules_section(name, category)
-    
+
     return content
 
 
-def generate_class_section(class_info: Dict[str, Any]) -> str:
+def generate_class_section(class_info: dict[str, Any]) -> str:
     """Generate MDX section for a class."""
-    name = class_info['name']
-    inheritance = f" ({', '.join(class_info['inheritance'])})" if class_info['inheritance'] else ""
-    
+    name = class_info["name"]
+    inheritance = (
+        f" ({', '.join(class_info['inheritance'])})"
+        if class_info["inheritance"]
+        else ""
+    )
+
     content = f"""### {name}
 
 <Tabs>
@@ -327,9 +317,9 @@ def __init__{class_info['signature']}
 """
 
     # Properties
-    if class_info['properties']:
+    if class_info["properties"]:
         content += "#### Properties\n\n"
-        for prop in class_info['properties']:
+        for prop in class_info["properties"]:
             content += f"""<details>
 <summary><code>{prop['name']}</code></summary>
 
@@ -340,32 +330,34 @@ def __init__{class_info['signature']}
 """
 
     # Methods
-    if class_info['methods']:
+    if class_info["methods"]:
         content += "#### Methods\n\n"
-        for method in class_info['methods']:
+        for method in class_info["methods"]:
             content += generate_function_section(method, level=5, is_method=True)
-    
+
     return content + "\n---\n\n"
 
 
-def generate_function_section(func_info: Dict[str, Any], level: int = 3, is_method: bool = False) -> str:
+def generate_function_section(
+    func_info: dict[str, Any], level: int = 3, is_method: bool = False
+) -> str:
     """Generate MDX section for a function."""
     prefix = "#" * level
-    name = func_info['name']
-    
+    name = func_info["name"]
+
     # Add method indicator
     method_type = ""
     if is_method:
         method_type = "Method: "
-    elif func_info.get('is_async', False):
+    elif func_info.get("is_async", False):
         method_type = "Async Function: "
     else:
         method_type = "Function: "
-    
+
     content = f"""{prefix} {name}
 
 :::note[{method_type.rstrip(': ')}]
-{f"Asynchronous method" if is_method and func_info.get('is_async', False) else 
+{f"Asynchronous method" if is_method and func_info.get('is_async', False) else
   f"Asynchronous function" if func_info.get('is_async', False) else
   f"Instance method" if is_method else "Module function"}
 :::
@@ -377,24 +369,24 @@ def generate_function_section(func_info: Dict[str, Any], level: int = 3, is_meth
 {clean_docstring(func_info['docstring']) or f"Documentation for `{name}` is not available."}
 
 """
-    
+
     # Add usage example for async functions
-    if func_info.get('is_async', False):
+    if func_info.get("is_async", False):
         content += f"""**Usage Example:**
 ```python
 result = await {name}(...)
 ```
 
 """
-    
+
     return content
 
 
 def generate_related_modules_section(module_name: str, category: str) -> str:
     """Generate related modules section for cross-referencing."""
     content = "\n## Related Modules\n\n"
-    
-    # Define related modules by category  
+
+    # Define related modules by category
     related_by_category = {
         "Authentication": [
             ("auth", "Core authentication functionality"),
@@ -428,36 +420,45 @@ def generate_related_modules_section(module_name: str, category: str) -> str:
             ("reporter/law-enforcement", "Law enforcement reports"),
             ("reporter/framework-mapper", "Compliance framework mapping"),
             ("reporter/integration", "Integration utilities"),
-        ]
+        ],
     }
-    
+
     if category in related_by_category:
         related_modules = related_by_category[category]
-        current_clean = module_name.replace('logicpwn.core.', '').replace('logicpwn.', '')
-        current_path = current_clean.replace('.', '/').replace('_', '-')
-        
+        current_clean = module_name.replace("logicpwn.core.", "").replace(
+            "logicpwn.", ""
+        )
+        current_path = current_clean.replace(".", "/").replace("_", "-")
+
         content += f":::tip[{category} Modules]\n"
         content += f"Explore other modules in the {category} category:\n\n"
-        
+
         for module_path, description in related_modules:
-            if module_path.replace('/', '.').replace('-', '_') != current_clean:  # Don't link to self
+            if (
+                module_path.replace("/", ".").replace("-", "_") != current_clean
+            ):  # Don't link to self
                 # Calculate proper relative path
-                current_depth = current_path.count('/')
+                current_depth = current_path.count("/")
                 if current_depth > 0:
                     back_path = "../" * current_depth
                     link_path = f"{back_path}{module_path}"
                 else:
                     link_path = f"./{module_path}"
-                
-                module_title = module_path.replace('_', ' ').replace('/', ' › ').replace('-', ' ').title()
+
+                module_title = (
+                    module_path.replace("_", " ")
+                    .replace("/", " › ")
+                    .replace("-", " ")
+                    .title()
+                )
                 content += f"- **[{module_title}]({link_path})** - {description}\n"
-        
+
         content += ":::\n\n"
-    
+
     return content
 
 
-def generate_api_index(modules: List[str], output_dir: Path) -> None:
+def generate_api_index(modules: list[str], output_dir: Path) -> None:
     """Generate the main API index page."""
     content = """---
 title: API Reference
@@ -474,55 +475,59 @@ Complete API documentation for all LogicPwn framework components.
 
 <CardGrid>
 """
-    
+
     # Categorize modules with better organization
     categories = {
         "Authentication": {
             "description": "Authentication mechanisms, session management, and identity provider integration",
-            "modules": [m for m in modules if 'auth' in m]
+            "modules": [m for m in modules if "auth" in m],
         },
         "Access Control": {
             "description": "IDOR detection, privilege escalation testing, and access control validation",
-            "modules": [m for m in modules if 'access' in m]
+            "modules": [m for m in modules if "access" in m],
         },
         "Test Runner": {
             "description": "Test execution, async processing, and session management",
-            "modules": [m for m in modules if any(x in m for x in ['runner', 'async'])]
+            "modules": [m for m in modules if any(x in m for x in ["runner", "async"])],
         },
         "Validation": {
             "description": "Response validation, test result analysis, and reporting",
-            "modules": [m for m in modules if 'validator' in m]
+            "modules": [m for m in modules if "validator" in m],
         },
         "Utilities": {
             "description": "Configuration, caching, performance monitoring, and utility functions",
-            "modules": [m for m in modules if any(x in m for x in ['utils', 'config', 'performance', 'cache'])]
+            "modules": [
+                m
+                for m in modules
+                if any(x in m for x in ["utils", "config", "performance", "cache"])
+            ],
         },
         "Reporting & Compliance": {
             "description": "Report generation, compliance frameworks, and law enforcement reporting",
-            "modules": [m for m in modules if 'reporter' in m or 'reporting' in m]
+            "modules": [m for m in modules if "reporter" in m or "reporting" in m],
         },
         "Exceptions": {
             "description": "Error handling and exception definitions",
-            "modules": [m for m in modules if 'exceptions' in m]
-        }
+            "modules": [m for m in modules if "exceptions" in m],
+        },
     }
-    
+
     for category, info in categories.items():
         category_modules = info["modules"]
         if not category_modules:
             continue
-            
+
         content += f'  <Card title="{category}" icon="puzzle">\n'
         content += f'    <p>{info["description"]}</p>\n'
-        content += '    <ul>\n'
+        content += "    <ul>\n"
         for module in category_modules:
-            clean_name = module.replace('logicpwn.core.', '').replace('logicpwn.', '')
-            link = clean_name.replace('.', '/').replace('_', '-')
-            display_name = clean_name.replace('_', ' ').replace('.', ' › ').title()
+            clean_name = module.replace("logicpwn.core.", "").replace("logicpwn.", "")
+            link = clean_name.replace(".", "/").replace("_", "-")
+            display_name = clean_name.replace("_", " ").replace(".", " › ").title()
             content += f'      <li><a href="./{link}">{display_name}</a></li>\n'
-        content += '    </ul>\n'
-        content += '  </Card>\n'
-    
+        content += "    </ul>\n"
+        content += "  </Card>\n"
+
     content += """</CardGrid>
 
 ## Quick Start Examples
@@ -594,7 +599,7 @@ session = await auth_handler.authenticate_oauth(oauth_config)
 />
 
 <LinkCard
-  title="Access Control Testing" 
+  title="Access Control Testing"
   description="Advanced IDOR detection and privilege escalation testing capabilities"
   href="./access"
 />
@@ -612,7 +617,7 @@ session = await auth_handler.authenticate_oauth(oauth_config)
 />
 
 :::tip[Documentation Notes]
-This API reference is automatically generated from the source code. For usage examples and tutorials, see the [main documentation](/). 
+This API reference is automatically generated from the source code. For usage examples and tutorials, see the [main documentation](/).
 
 All async functions support standard Python `asyncio` patterns and can be used with `async`/`await` syntax.
 :::
@@ -623,9 +628,9 @@ All async functions support standard Python `asyncio` patterns and can be used w
 - **Discussions**: Join the community discussions
 - **Documentation**: Full guides and tutorials in the main documentation
 """
-    
+
     index_file = output_dir / "index.mdx"
-    with open(index_file, 'w', encoding='utf-8') as f:
+    with open(index_file, "w", encoding="utf-8") as f:
         f.write(content)
 
 
@@ -633,7 +638,7 @@ def main():
     """Main function."""
     # Define modules to document
     modules_to_document = [
-        "logicpwn.core.auth",   
+        "logicpwn.core.auth",
         "logicpwn.core.auth.enhanced_auth",
         "logicpwn.core.auth.idp_integration",
         "logicpwn.core.access",
@@ -651,63 +656,73 @@ def main():
         "logicpwn.core.validator.validator_models",
         "logicpwn.core.reporter",
         "logicpwn.core.reporter.indian_compliance",
-        "logicpwn.core.reporter.indian_law_enforcement", 
+        "logicpwn.core.reporter.indian_law_enforcement",
         "logicpwn.core.reporter.framework_mapper",
         "logicpwn.core.reporter.indian_integration",
-        "logicpwn.exceptions"
+        "logicpwn.exceptions",
     ]
-    
+
     # Output directory
-    output_dir = project_root / "doks" / "purple-atmosphere" / "src" / "content" / "docs" / "api-reference"
+    output_dir = (
+        project_root
+        / "doks"
+        / "purple-atmosphere"
+        / "src"
+        / "content"
+        / "docs"
+        / "api-reference"
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     print(f"Generating API documentation in {output_dir}")
-    
+
     # Generate documentation for each module
     successful_modules = []
     for module_name in modules_to_document:
         print(f"Processing {module_name}...")
-        
+
         module_info = extract_module_info(module_name)
         if not module_info:
             continue
-            
+
         # Generate MDX content
         mdx_content = generate_module_mdx(module_info)
-        
+
         # Create output file path
-        clean_name = module_name.replace('logicpwn.core.', '').replace('logicpwn.', '')
-        file_parts = clean_name.split('.')
-        
+        clean_name = module_name.replace("logicpwn.core.", "").replace("logicpwn.", "")
+        file_parts = clean_name.split(".")
+
         # Create directory structure
         current_dir = output_dir
         for part in file_parts[:-1]:
-            current_dir = current_dir / part.replace('_', '-')
+            current_dir = current_dir / part.replace("_", "-")
             current_dir.mkdir(exist_ok=True)
-        
+
         # Generate filename with underscores replaced by hyphens
         # Special handling for indian_* modules - remove "indian_" prefix
         final_filename = file_parts[-1]
-        
+
         # Remove "indian_" prefix for reporter modules
-        if final_filename.startswith('indian_'):
+        if final_filename.startswith("indian_"):
             final_filename = final_filename[7:]  # Remove "indian_" (7 characters)
-        
+
         # Write file
-        filename = final_filename.replace('_', '-') + '.mdx'
+        filename = final_filename.replace("_", "-") + ".mdx"
         output_file = current_dir / filename
-        
-        with open(output_file, 'w', encoding='utf-8') as f:
+
+        with open(output_file, "w", encoding="utf-8") as f:
             f.write(mdx_content)
-        
+
         successful_modules.append(module_name)
         print(f"  ✓ Generated {output_file}")
-    
+
     # Generate index page
     generate_api_index(successful_modules, output_dir)
     print(f"  ✓ Generated index page")
-    
-    print(f"\nSuccessfully generated documentation for {len(successful_modules)} modules!")
+
+    print(
+        f"\nSuccessfully generated documentation for {len(successful_modules)} modules!"
+    )
     print(f"Output directory: {output_dir}")
 
 
