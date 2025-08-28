@@ -6,14 +6,12 @@ This script generates API documentation by importing modules and extracting
 their docstrings, then creating Astro-compatible MDX files.
 """
 
-import ast
 import importlib
 import inspect
-import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent
@@ -216,7 +214,6 @@ def generate_module_mdx(module_info: dict[str, Any]) -> str:
 
     # For nested modules (e.g., validator.validator_api), show parent navigation
     if len(parts) > 1:
-        parent_part = parts[0].replace("_", "-")
         parent_title = parts[0].replace("_", " ").title()
         breadcrumb_nav = f"[{parent_title}](../)"
     else:
@@ -236,7 +233,8 @@ import {{ Code, Aside, Steps, Tabs, TabItem }} from '@astrojs/starlight/componen
 # {title}
 
 {f"**Category:** {category}" if category else ""}
-{f"**Navigation:** [API Reference](../) › {breadcrumb_nav}" if breadcrumb_nav else "**Navigation:** [API Reference](../)" if len(parts) > 1 else ""}
+{f"**Navigation:** [API Reference](../) › {breadcrumb_nav}" if breadcrumb_nav
+ else ("**Navigation:** [API Reference](../)" if len(parts) > 1 else "")}
 
 {clean_docstring(module_info['docstring']) or f"API documentation for the `{name}` module."}
 
@@ -257,7 +255,11 @@ from {name} import *
     if module_info["classes"]:
         content += "## Classes\n\n"
         content += ":::note[Available Classes]\n"
-        content += f"This module provides {len(module_info['classes'])} class(es) for {category.lower() if category else 'core functionality'}.\n"
+        category_desc = category.lower() if category else "core functionality"
+        content += (
+            f"This module provides {len(module_info['classes'])} "
+            f"class(es) for {category_desc}.\n"
+        )
         content += ":::\n\n"
 
         for class_info in module_info["classes"]:
@@ -267,7 +269,10 @@ from {name} import *
     if module_info["functions"]:
         content += "## Functions\n\n"
         content += ":::note[Available Functions]\n"
-        content += f"This module provides {len(module_info['functions'])} function(s) for direct use.\n"
+        func_count = len(module_info["functions"])
+        content += (
+            f"This module provides {func_count} " f"function(s) for direct use.\n"
+        )
         content += ":::\n\n"
 
         for func_info in module_info["functions"]:
@@ -309,7 +314,8 @@ class {name}{inheritance}:
 def __init__{class_info['signature']}
 ```
 
-{f"Initialize a new instance of `{name}`." if class_info['signature'] != "()" else f"The `{name}` class uses default initialization."}
+{f"Initialize a new instance of `{name}`." if class_info['signature'] != "()"
+ else f"The `{name}` class uses default initialization."}
 
 </TabItem>
 </Tabs>
@@ -358,8 +364,8 @@ def generate_function_section(
 
 :::note[{method_type.rstrip(': ')}]
 {f"Asynchronous method" if is_method and func_info.get('is_async', False) else
-  f"Asynchronous function" if func_info.get('is_async', False) else
-  f"Instance method" if is_method else "Module function"}
+ f"Asynchronous function" if func_info.get('is_async', False) else
+ f"Instance method" if is_method else "Module function"}
 :::
 
 ```python
@@ -372,12 +378,10 @@ def generate_function_section(
 
     # Add usage example for async functions
     if func_info.get("is_async", False):
-        content += f"""**Usage Example:**
-```python
-result = await {name}(...)
-```
-
-"""
+        content += "**Usage Example:**\n"
+        content += "```python\n"
+        content += f"result = await {name}(...)\n"
+        content += "```\n\n"
 
     return content
 
@@ -434,9 +438,8 @@ def generate_related_modules_section(module_name: str, category: str) -> str:
         content += f"Explore other modules in the {category} category:\n\n"
 
         for module_path, description in related_modules:
-            if (
-                module_path.replace("/", ".").replace("-", "_") != current_clean
-            ):  # Don't link to self
+            module_clean = module_path.replace("/", ".").replace("-", "_")
+            if module_clean != current_clean:  # Don't link to self
                 # Calculate proper relative path
                 current_depth = current_path.count("/")
                 if current_depth > 0:
@@ -718,7 +721,7 @@ def main():
 
     # Generate index page
     generate_api_index(successful_modules, output_dir)
-    print(f"  ✓ Generated index page")
+    print("  ✓ Generated index page")
 
     print(
         f"\nSuccessfully generated documentation for {len(successful_modules)} modules!"
