@@ -787,15 +787,6 @@ poetry run safety check
 - **[Case Studies](docs/source/case_studies.rst)** - Real-world success stories
 - **[Performance Benchmarks](docs/source/performance_benchmarks.rst)** - Performance analysis
 
-## 🛡️ Security & Compliance
-
-LogicPWN is designed with security-first principles:
-
-- **Sensitive Data Protection**: Automatic redaction of credentials and tokens
-- **Secure Logging**: No sensitive information in logs or error messages
-- **Input Validation**: All inputs are validated and sanitized
-- **Error Handling**: Comprehensive error handling without information disclosure
-- **Audit Trails**: Complete request/response logging for compliance
 
 ## 📄 License
 
@@ -819,17 +810,6 @@ LogicPWN is intended for **authorized security testing only**. Users must:
 - **Issues**: https://github.com/logicpwn/logicpwn/issues
 - **Discussions**: https://github.com/logicpwn/logicpwn/discussions
 
-## 🏆 Recognition
-
-LogicPWN has been successfully used in:
-
-- **500+ penetration testing engagements**
-- **Major bug bounty programs** with critical findings
-- **Enterprise security assessments** for Fortune 500 companies
-- **Academic research** in business logic vulnerability detection
-- **Security training programs** for hands-on learning
-
----
 
 **Built with ❤️ for the security community by security professionals**
 
