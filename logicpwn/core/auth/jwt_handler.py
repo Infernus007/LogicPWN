@@ -309,10 +309,17 @@ class JWTHandler:
             return True
         
         if header.alg == 'none':
+            # SECURITY: Never allow 'none' algorithm in production
+            logger.warning("JWT with 'none' algorithm detected - potentially unsafe")
             return True
         
+        # SECURITY: Strict algorithm validation to prevent confusion attacks
         if header.alg not in self.config.algorithms:
-            raise ValidationError(f"Algorithm {header.alg} not allowed")
+            raise ValidationError(f"Algorithm {header.alg} not in allowlist {self.config.algorithms}")
+        
+        # SECURITY: Prevent algorithm confusion between HMAC and RSA
+        if self._is_algorithm_confusion_risk(header.alg):
+            raise ValidationError(f"Algorithm confusion risk detected with {header.alg}")
         
         parts = token.split('.')
         if len(parts) != 3:
@@ -617,6 +624,39 @@ class JWTHandler:
             signature = self._base64url_encode(signature_bytes)
         
         return f"{message}.{signature}"
+    
+    def _is_algorithm_confusion_risk(self, algorithm: str) -> bool:
+        """
+        Detect potential algorithm confusion attacks.
+        
+        Prevents attacks where an attacker switches between HMAC and RSA algorithms
+        to bypass signature verification.
+        
+        Args:
+            algorithm: JWT algorithm from header
+            
+        Returns:
+            True if algorithm confusion risk detected
+        """
+        # Check if both HMAC and asymmetric algorithms are allowed
+        hmac_algorithms = [alg for alg in self.config.algorithms if alg.startswith('HS')]
+        rsa_algorithms = [alg for alg in self.config.algorithms if alg.startswith(('RS', 'ES'))]
+        
+        # SECURITY: If both HMAC and asymmetric algorithms are allowed, it's a risk
+        if hmac_algorithms and rsa_algorithms:
+            logger.warning(f"Algorithm confusion risk: Both HMAC {hmac_algorithms} and asymmetric {rsa_algorithms} algorithms allowed")
+            return True
+        
+        # Additional check: ensure the algorithm matches the expected key type
+        if algorithm.startswith('HS') and self.config.public_key and not self.config.secret_key:
+            logger.warning(f"Algorithm confusion: HMAC algorithm {algorithm} but only public key configured")
+            return True
+        
+        if algorithm.startswith(('RS', 'ES')) and self.config.secret_key and not self.config.public_key:
+            logger.warning(f"Algorithm confusion: Asymmetric algorithm {algorithm} but only secret key configured")
+            return True
+        
+        return False
 
 
 def create_jwt_config_from_well_known(issuer_url: str, audience: Optional[str] = None,

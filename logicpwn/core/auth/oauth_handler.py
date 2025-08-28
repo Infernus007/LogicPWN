@@ -144,11 +144,18 @@ class OAuthHandler:
         self.token: Optional[OAuthToken] = None
         self._pkce_challenge: Optional[PKCEChallenge] = None
         self._state: Optional[str] = None
+        self._state_store: Dict[str, float] = {}  # Store state with timestamp for validation
         
     def generate_state(self) -> str:
         """Generate secure state parameter."""
         if self.config.state_generator:
-            return self.config.state_generator()
+            state = self.config.state_generator()
+        else:
+            state = secrets.token_urlsafe(32)
+        
+        # Store state with timestamp for validation (expires in 10 minutes)
+        self._state_store[state] = time.time() + 600
+        return state
         return secrets.token_urlsafe(32)
     
     @monitor_performance("oauth_authorization_url_generation")
@@ -207,9 +214,8 @@ class OAuthHandler:
         Returns:
             OAuthToken with access token and metadata
         """
-        # Validate state parameter
-        if state != self._state:
-            raise AuthenticationError(f"Invalid state parameter. Expected: {self._state}, Got: {state}")
+        # SECURITY: Enhanced state parameter validation
+        self._validate_state_parameter(state)
         
         # Prepare token request
         data = {
@@ -438,6 +444,47 @@ class OAuthHandler:
         
         logger.warning("Token revocation failed - no working revocation endpoint found")
         return False
+
+    def _validate_state_parameter(self, received_state: str) -> None:
+        """
+        Enhanced state parameter validation with replay protection.
+        
+        Args:
+            received_state: State parameter received from OAuth callback
+            
+        Raises:
+            AuthenticationError: If state validation fails
+        """
+        # Basic state comparison
+        if received_state != self._state:
+            logger.error(f"OAuth state mismatch: expected {self._state}, got {received_state}")
+            raise AuthenticationError(f"Invalid state parameter. Expected: {self._state}, Got: {received_state}")
+        
+        # Check if state exists in store and hasn't expired
+        if received_state not in self._state_store:
+            logger.error(f"OAuth state not found in store: {received_state}")
+            raise AuthenticationError("State parameter not found or already used")
+        
+        # Check if state has expired
+        expiry_time = self._state_store[received_state]
+        if time.time() > expiry_time:
+            logger.error(f"OAuth state expired: {received_state}")
+            del self._state_store[received_state]  # Clean up expired state
+            raise AuthenticationError("State parameter has expired")
+        
+        # Remove state to prevent replay attacks
+        del self._state_store[received_state]
+        logger.debug(f"OAuth state validation successful: {received_state}")
+    
+    def _cleanup_expired_states(self) -> None:
+        """Clean up expired state parameters."""
+        current_time = time.time()
+        expired_states = [state for state, expiry in self._state_store.items() if current_time > expiry]
+        for state in expired_states:
+            del self._state_store[state]
+        
+        if expired_states:
+            logger.debug(f"Cleaned up {len(expired_states)} expired OAuth states")
 
 
 def create_oauth_config_from_well_known(issuer_url: str, client_id: str, 

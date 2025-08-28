@@ -1,0 +1,109 @@
+# API Documentation Generation Configuration
+
+# Modules to include/exclude
+include_modules:
+  - "logicpwn.core.auth"
+  - "logicpwn.core.access" 
+  - "logicpwn.core.exploit_engine"
+  - "logicpwn.core.async_runner"
+  - "logicpwn.core.utils"
+  - "logicpwn.core.performance"
+  - "logicpwn.core.config"
+  - "logicpwn.core.cache"
+  - "logicpwn.core.logging"
+  - "logicpwn.core.validator"
+  - "logicpwn.core.reporter"
+  - "logicpwn.core.reporter.indian_compliance"
+  - "logicpwn.core.reporter.indian_law_enforcement"
+  - "logicpwn.core.reporter.framework_mapper"
+  - "logicpwn.core.reporter.indian_integration"
+  - "logicpwn.exceptions"
+
+exclude_modules:
+  - "logicpwn.core.stress"  # Internal stress testing
+  - "logicpwn.core.middleware"  # Internal middleware
+
+# Categories for organizing modules
+categories:
+  "Authentication & Sessions":
+    - "logicpwn.core.auth"
+    - "logicpwn.core.auth.*"
+  
+  "Access Control & Detection":
+    - "logicpwn.core.access"
+    - "logicpwn.core.access.*"
+  
+  "Exploit Engine":
+    - "logicpwn.core.exploit_engine"
+    - "logicpwn.core.async_runner"
+    - "logicpwn.core.runner"
+  
+  "Configuration & Utils":
+    - "logicpwn.core.config"
+    - "logicpwn.core.utils"
+    - "logicpwn.core.performance"
+    - "logicpwn.core.cache"
+    - "logicpwn.core.logging"
+  
+  "Validation & Reporting":
+    - "logicpwn.core.validator"
+    - "logicpwn.core.reporter"
+  
+  "Exceptions":
+    - "logicpwn.exceptions"
+
+# Functions to exclude from documentation
+exclude_functions:
+  - "_*"  # Private functions
+  - "test_*"  # Test functions
+
+# Classes to exclude
+exclude_classes:
+  - "*Test*"  # Test classes
+  - "*Mock*"  # Mock classes
+
+# Template settings
+templates:
+  module_template: |
+    ---
+    title: {title}
+    description: {description}
+    ---
+    
+    import {{ Code, Aside }} from '@astrojs/starlight/components';
+    
+    # {title}
+    
+    {docstring}
+    
+    {content}
+  
+  class_template: |
+    ### {name}
+    
+    ```python
+    class {name}{inheritance}:
+        """{short_docstring}"""
+    ```
+    
+    {docstring}
+    
+    {content}
+  
+  function_template: |
+    ### {name}
+    
+    ```python
+    {signature}
+    ```
+    
+    {docstring}
+
+# Navigation settings
+generate_sidebar: true
+sidebar_title: "API Reference"
+
+# Output settings
+output_format: "mdx"
+create_index: true
+cross_reference: true

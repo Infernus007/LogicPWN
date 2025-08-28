@@ -1,0 +1,634 @@
+{
+  "executive_summary": {
+    "incident_overview": {
+      "total_vulnerabilities": 2,
+      "critical_issues": 1,
+      "high_priority_issues": 1,
+      "potential_data_breach": false,
+      "national_security_implications": false
+    },
+    "legal_implications": {
+      "it_act_violations": [
+        "section_72_ita",
+        "section_43_ita"
+      ],
+      "potential_penalties": "As per Information Technology Act 2000 and applicable sections",
+      "criminal_provisions": "May invoke relevant sections of IT Act 2000 and IPC"
+    },
+    "immediate_actions_required": [
+      "Secure and preserve all digital evidence",
+      "Report incident to CERT-In within 6 hours",
+      "Initiate chain of custody procedures",
+      "Begin impact assessment and victim notification"
+    ],
+    "compliance_status": {
+      "cert_in_guidelines": "Investigation initiated as per CERT-In protocols",
+      "it_act_compliance": "Evidence handling follows IT Act Section 65B requirements",
+      "digital_forensics": "Standard digital forensics procedures applied"
+    }
+  },
+  "incident_details": {
+    "case_information": {
+      "case_reference": "CC/DEL/2025/0123",
+      "fir_number": "FIR-123/2025",
+      "investigating_agency": "Cyber Crime Investigation Cell, Delhi Police",
+      "investigating_officer": "Inspector Rajesh Sharma",
+      "jurisdiction": "Delhi, India",
+      "incident_classification": "cyber_crime",
+      "priority_level": "high"
+    },
+    "timeline": {
+      "incident_discovery": "2025-08-28 12:58:40.264056",
+      "investigation_started": "2025-08-28 12:58:40.265014",
+      "evidence_collection_started": "2025-08-28 12:58:40.265017",
+      "preliminary_analysis_completed": "2025-08-28 18:58:40.265019"
+    },
+    "affected_systems": {
+      "target_systems": [
+        "https://example.com/api/users/user456/profile",
+        "https://example.com/api/users/admin/settings"
+      ],
+      "vulnerability_types": [
+        "idor"
+      ],
+      "threat_classifications": [
+        "critical_infrastructure"
+      ]
+    }
+  },
+  "technical_findings": [
+    {
+      "finding_id": "IDOR_001",
+      "vulnerability_title": "Insecure Direct Object Reference - Access to user456",
+      "severity_assessment": {
+        "severity": "High",
+        "cvss_score": 7.2,
+        "business_impact": "Unauthorized access to user456's sensitive data. Potential privacy violation and data breach.",
+        "legal_severity": [
+          "section_43_ita",
+          "section_72_ita"
+        ]
+      },
+      "technical_details": {
+        "description": "The application allows unauthorized access to user user456's data through direct object reference manipulation. An authenticated user can access other users' sensitive information by modifying URL parameters.",
+        "affected_endpoints": [
+          "https://example.com/api/users/user456/profile"
+        ],
+        "proof_of_concept": "1. Login as legitimate user\n2. Navigate to: https://example.com/api/users/user456/profile\n3. Observe unauthorized data access\n4. Status Code: 200\n5. Response contains: user_profile, personal_data",
+        "exploitation_scenario": "Attacker manipulates object references to access unauthorized data belonging to other users"
+      },
+      "digital_evidence": {
+        "evidence_hash": "e82344ac7a2415d56ff76f82164505a9075e2b253ce81d64c6c49e290e570578",
+        "evidence_items": [
+          "HTTP request/response logs showing unauthorized access",
+          "Screenshot/video proof of accessing other user's data",
+          "Database query logs if available",
+          "Session/authentication tokens used",
+          "Timestamp records of the unauthorized access"
+        ],
+        "collection_timestamp": "2025-08-28 12:58:40.264056",
+        "forensic_integrity": "SHA-256 hash verification completed"
+      },
+      "legal_classification": {
+        "threat_type": "critical_infrastructure",
+        "applicable_sections": [
+          "section_43_ita",
+          "section_72_ita"
+        ],
+        "potential_charges": "This vulnerability may constitute unauthorized access to computer systems under Section 43 of IT Act 2000, potentially leading to penalties up to Rs. 1 crore. If personal data is accessed, Section 72 regarding breach of confidentiality may apply."
+      }
+    },
+    {
+      "finding_id": "IDOR_002",
+      "vulnerability_title": "Insecure Direct Object Reference - Access to admin",
+      "severity_assessment": {
+        "severity": "Critical",
+        "cvss_score": 8.5,
+        "business_impact": "Unauthorized access to admin's sensitive data. Potential privacy violation and data breach.",
+        "legal_severity": [
+          "section_43_ita",
+          "section_72_ita"
+        ]
+      },
+      "technical_details": {
+        "description": "The application allows unauthorized access to user admin's data through direct object reference manipulation. An authenticated user can access other users' sensitive information by modifying URL parameters.",
+        "affected_endpoints": [
+          "https://example.com/api/users/admin/settings"
+        ],
+        "proof_of_concept": "1. Login as legitimate user\n2. Navigate to: https://example.com/api/users/admin/settings\n3. Observe unauthorized data access\n4. Status Code: 200\n5. Response contains: admin_panel, privileged_access",
+        "exploitation_scenario": "Attacker manipulates object references to access unauthorized data belonging to other users"
+      },
+      "digital_evidence": {
+        "evidence_hash": "0e4da39c6911d06b11a3b9af3949ad0cc8e66dde84231685c83c644f7c0892ec",
+        "evidence_items": [
+          "HTTP request/response logs showing unauthorized access",
+          "Screenshot/video proof of accessing other user's data",
+          "Database query logs if available",
+          "Session/authentication tokens used",
+          "Timestamp records of the unauthorized access"
+        ],
+        "collection_timestamp": "2025-08-28 12:58:40.264119",
+        "forensic_integrity": "SHA-256 hash verification completed"
+      },
+      "legal_classification": {
+        "threat_type": "critical_infrastructure",
+        "applicable_sections": [
+          "section_43_ita",
+          "section_72_ita"
+        ],
+        "potential_charges": "This vulnerability may constitute unauthorized access to computer systems under Section 43 of IT Act 2000, potentially leading to penalties up to Rs. 1 crore. If personal data is accessed, Section 72 regarding breach of confidentiality may apply."
+      }
+    }
+  ],
+  "legal_analysis": {
+    "applicable_laws": {
+      "primary_legislation": "Information Technology Act 2000",
+      "secondary_legislation": [
+        "Indian Penal Code 1860",
+        "Indian Evidence Act 1872"
+      ],
+      "relevant_sections": [
+        "section_43_ita",
+        "section_72_ita"
+      ]
+    },
+    "legal_implications": [
+      "This vulnerability may constitute unauthorized access to computer systems under Section 43 of IT Act 2000, potentially leading to penalties up to Rs. 1 crore. If personal data is accessed, Section 72 regarding breach of confidentiality may apply.",
+      "This vulnerability may constitute unauthorized access to computer systems under Section 43 of IT Act 2000, potentially leading to penalties up to Rs. 1 crore. If personal data is accessed, Section 72 regarding breach of confidentiality may apply."
+    ],
+    "prosecution_prospects": "Strong prospects for prosecution with substantial evidence of violations",
+    "evidence_admissibility": {
+      "digital_evidence_standards": "As per IT Act Section 65B requirements",
+      "chain_of_custody": "Maintained as per legal standards",
+      "expert_testimony": "Technical expert testimony available",
+      "forensic_reports": "Digital forensics reports prepared"
+    },
+    "recommended_charges": [
+      "Penalty for damage to computer system (Section 43)",
+      "Breach of confidentiality and privacy (Section 72)"
+    ]
+  },
+  "digital_evidence": {
+    "evidence_summary": {
+      "total_evidence_items": 2,
+      "evidence_types": [
+        "IDOR_001",
+        "IDOR_002"
+      ],
+      "collection_period": {
+        "start": "2025-08-28 12:58:40.264056",
+        "end": "2025-08-28 12:58:40.265084"
+      }
+    },
+    "evidence_catalog": {
+      "IDOR_001": {
+        "vulnerability_type": "idor",
+        "evidence_items": [
+          "HTTP request/response logs showing unauthorized access",
+          "Screenshot/video proof of accessing other user's data",
+          "Database query logs if available",
+          "Session/authentication tokens used",
+          "Timestamp records of the unauthorized access"
+        ],
+        "collection_timestamp": "2025-08-28 12:58:40.264056",
+        "integrity_hash": "e82344ac7a2415d56ff76f82164505a9075e2b253ce81d64c6c49e290e570578",
+        "chain_of_custody": {
+          "case_reference": "CC/DEL/2025/0123",
+          "evidence_id": "EVD_IDOR_001",
+          "collection_timestamp": "2025-08-28 12:58:40.264386",
+          "collecting_officer": "Inspector Rajesh Sharma",
+          "digital_forensics_team": "Delhi Police Cyber Forensics Lab",
+          "storage_location": "Secure digital evidence repository"
+        }
+      },
+      "IDOR_002": {
+        "vulnerability_type": "idor",
+        "evidence_items": [
+          "HTTP request/response logs showing unauthorized access",
+          "Screenshot/video proof of accessing other user's data",
+          "Database query logs if available",
+          "Session/authentication tokens used",
+          "Timestamp records of the unauthorized access"
+        ],
+        "collection_timestamp": "2025-08-28 12:58:40.264119",
+        "integrity_hash": "0e4da39c6911d06b11a3b9af3949ad0cc8e66dde84231685c83c644f7c0892ec",
+        "chain_of_custody": {
+          "case_reference": "CC/DEL/2025/0123",
+          "evidence_id": "EVD_IDOR_002",
+          "collection_timestamp": "2025-08-28 12:58:40.264530",
+          "collecting_officer": "Inspector Rajesh Sharma",
+          "digital_forensics_team": "Delhi Police Cyber Forensics Lab",
+          "storage_location": "Secure digital evidence repository"
+        }
+      }
+    },
+    "integrity_verification": {
+      "hash_algorithm": "SHA-256",
+      "verification_status": "All evidence items verified",
+      "chain_of_custody_status": "Maintained"
+    },
+    "storage_information": {
+      "secure_storage": "Digital evidence locker",
+      "access_controls": "Multi-factor authentication required",
+      "backup_status": "Evidence backed up to secure secondary location"
+    }
+  },
+  "investigation_recommendations": {
+    "immediate_actions": [
+      "Preserve all system logs and evidence",
+      "Interview relevant personnel",
+      "Secure affected systems",
+      "Document incident timeline",
+      "Notify stakeholders as required"
+    ],
+    "detailed_investigation": [
+      "Conduct comprehensive forensic analysis",
+      "Analyze attack vectors and methodologies",
+      "Identify potential suspects or sources",
+      "Assess full scope of compromise",
+      "Document financial or other damages"
+    ],
+    "legal_proceedings": [
+      "Prepare comprehensive case file",
+      "Coordinate with public prosecutor",
+      "Arrange expert witness testimony",
+      "Ensure evidence admissibility",
+      "Follow up on remediation compliance"
+    ],
+    "stakeholder_coordination": {
+      "internal": [
+        "Investigation team",
+        "Digital forensics",
+        "Legal counsel"
+      ],
+      "external": [
+        "CERT-In",
+        "Local cyber crime cell",
+        "Affected organizations"
+      ],
+      "regulatory": [
+        "Data protection authorities",
+        "Sector regulators"
+      ]
+    }
+  },
+  "compliance_assessment": {
+    "overall_compliance": {
+      "cert_in": {
+        "framework_name": "cert_in",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [
+          "Incident reporting within 6 hours",
+          "Vulnerability assessment documentation",
+          "Security control implementation",
+          "Digital forensics evidence preservation"
+        ],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "it_act_2000": {
+        "framework_name": "it_act_2000",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "digital_india": {
+        "framework_name": "digital_india",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "nciipc": {
+        "framework_name": "nciipc",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "cdac": {
+        "framework_name": "cdac",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "meity": {
+        "framework_name": "meity",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "rbi_cyber": {
+        "framework_name": "rbi_cyber",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [
+          "Board-approved cyber security policy",
+          "Baseline cyber security controls",
+          "Advanced monitoring and controls",
+          "Incident reporting to RBI within 2-6 hours",
+          "Third-party risk management"
+        ],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "icert": {
+        "framework_name": "icert",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      }
+    },
+    "critical_gaps": [
+      "Failure to implement reasonable security practices as required by IT Act 2000",
+      "Inadequate protection of personal data",
+      "Insufficient incident reporting and response procedures"
+    ],
+    "regulatory_reporting": {
+      "cert_in_reported": true,
+      "timeline_compliance": "Within required timeframes",
+      "documentation_status": "Complete"
+    }
+  },
+  "remediation_plan": {
+    "immediate_remediation": [
+      {
+        "vulnerability_id": "IDOR_001",
+        "remediation_action": "Implement proper access controls and authorization checks",
+        "priority": "high",
+        "estimated_timeline": "Urgent (1-7 days)",
+        "responsible_party": "System owner/administrator",
+        "verification_method": "Security testing and audit"
+      },
+      {
+        "vulnerability_id": "IDOR_001",
+        "remediation_action": "Conduct comprehensive access control audit",
+        "priority": "high",
+        "estimated_timeline": "Urgent (1-7 days)",
+        "responsible_party": "System owner/administrator",
+        "verification_method": "Security testing and audit"
+      },
+      {
+        "vulnerability_id": "IDOR_001",
+        "remediation_action": "Implement user-specific data isolation",
+        "priority": "high",
+        "estimated_timeline": "Urgent (1-7 days)",
+        "responsible_party": "System owner/administrator",
+        "verification_method": "Security testing and audit"
+      },
+      {
+        "vulnerability_id": "IDOR_001",
+        "remediation_action": "Add logging and monitoring for data access attempts",
+        "priority": "high",
+        "estimated_timeline": "Urgent (1-7 days)",
+        "responsible_party": "System owner/administrator",
+        "verification_method": "Security testing and audit"
+      },
+      {
+        "vulnerability_id": "IDOR_002",
+        "remediation_action": "Implement proper access controls and authorization checks",
+        "priority": "critical",
+        "estimated_timeline": "Immediate (0-24 hours)",
+        "responsible_party": "System owner/administrator",
+        "verification_method": "Security testing and audit"
+      },
+      {
+        "vulnerability_id": "IDOR_002",
+        "remediation_action": "Conduct comprehensive access control audit",
+        "priority": "critical",
+        "estimated_timeline": "Immediate (0-24 hours)",
+        "responsible_party": "System owner/administrator",
+        "verification_method": "Security testing and audit"
+      },
+      {
+        "vulnerability_id": "IDOR_002",
+        "remediation_action": "Implement user-specific data isolation",
+        "priority": "critical",
+        "estimated_timeline": "Immediate (0-24 hours)",
+        "responsible_party": "System owner/administrator",
+        "verification_method": "Security testing and audit"
+      },
+      {
+        "vulnerability_id": "IDOR_002",
+        "remediation_action": "Add logging and monitoring for data access attempts",
+        "priority": "critical",
+        "estimated_timeline": "Immediate (0-24 hours)",
+        "responsible_party": "System owner/administrator",
+        "verification_method": "Security testing and audit"
+      }
+    ],
+    "medium_term_remediation": [],
+    "long_term_remediation": [],
+    "compliance_verification": {
+      "follow_up_required": true,
+      "verification_timeline": "30-90 days post remediation",
+      "compliance_certification": "Required for case closure"
+    }
+  },
+  "chain_of_custody": [
+    {
+      "document_id": "COC_IDOR_001_20250828_125840",
+      "case_reference": "CC/DEL/2025/0123",
+      "evidence_items": [
+        {
+          "item_id": "EVD_IDOR_001_001",
+          "description": "HTTP request/response logs showing unauthorized access",
+          "collection_timestamp": "2025-08-28 12:58:40.265160",
+          "collection_method": "Digital forensics extraction",
+          "integrity_hash": "SHA256_001",
+          "collected_by": "Inspector Rajesh Sharma",
+          "storage_location": "Secure digital evidence locker"
+        },
+        {
+          "item_id": "EVD_IDOR_001_002",
+          "description": "Screenshot/video proof of accessing other user's data",
+          "collection_timestamp": "2025-08-28 12:58:40.265163",
+          "collection_method": "Digital forensics extraction",
+          "integrity_hash": "SHA256_002",
+          "collected_by": "Inspector Rajesh Sharma",
+          "storage_location": "Secure digital evidence locker"
+        },
+        {
+          "item_id": "EVD_IDOR_001_003",
+          "description": "Database query logs if available",
+          "collection_timestamp": "2025-08-28 12:58:40.265167",
+          "collection_method": "Digital forensics extraction",
+          "integrity_hash": "SHA256_003",
+          "collected_by": "Inspector Rajesh Sharma",
+          "storage_location": "Secure digital evidence locker"
+        },
+        {
+          "item_id": "EVD_IDOR_001_004",
+          "description": "Session/authentication tokens used",
+          "collection_timestamp": "2025-08-28 12:58:40.265169",
+          "collection_method": "Digital forensics extraction",
+          "integrity_hash": "SHA256_004",
+          "collected_by": "Inspector Rajesh Sharma",
+          "storage_location": "Secure digital evidence locker"
+        },
+        {
+          "item_id": "EVD_IDOR_001_005",
+          "description": "Timestamp records of the unauthorized access",
+          "collection_timestamp": "2025-08-28 12:58:40.265171",
+          "collection_method": "Digital forensics extraction",
+          "integrity_hash": "SHA256_005",
+          "collected_by": "Inspector Rajesh Sharma",
+          "storage_location": "Secure digital evidence locker"
+        }
+      ],
+      "chain_entries": [
+        {
+          "timestamp": "2025-08-28 12:58:40.265172",
+          "action": "Evidence collected and secured",
+          "person": "Inspector Rajesh Sharma",
+          "purpose": "Initial digital forensics collection"
+        }
+      ],
+      "compliance_certification": "This chain of custody follows CERT-In and IT Act 2000 evidence handling requirements"
+    },
+    {
+      "document_id": "COC_IDOR_002_20250828_125840",
+      "case_reference": "CC/DEL/2025/0123",
+      "evidence_items": [
+        {
+          "item_id": "EVD_IDOR_002_001",
+          "description": "HTTP request/response logs showing unauthorized access",
+          "collection_timestamp": "2025-08-28 12:58:40.265182",
+          "collection_method": "Digital forensics extraction",
+          "integrity_hash": "SHA256_001",
+          "collected_by": "Inspector Rajesh Sharma",
+          "storage_location": "Secure digital evidence locker"
+        },
+        {
+          "item_id": "EVD_IDOR_002_002",
+          "description": "Screenshot/video proof of accessing other user's data",
+          "collection_timestamp": "2025-08-28 12:58:40.265184",
+          "collection_method": "Digital forensics extraction",
+          "integrity_hash": "SHA256_002",
+          "collected_by": "Inspector Rajesh Sharma",
+          "storage_location": "Secure digital evidence locker"
+        },
+        {
+          "item_id": "EVD_IDOR_002_003",
+          "description": "Database query logs if available",
+          "collection_timestamp": "2025-08-28 12:58:40.265186",
+          "collection_method": "Digital forensics extraction",
+          "integrity_hash": "SHA256_003",
+          "collected_by": "Inspector Rajesh Sharma",
+          "storage_location": "Secure digital evidence locker"
+        },
+        {
+          "item_id": "EVD_IDOR_002_004",
+          "description": "Session/authentication tokens used",
+          "collection_timestamp": "2025-08-28 12:58:40.265187",
+          "collection_method": "Digital forensics extraction",
+          "integrity_hash": "SHA256_004",
+          "collected_by": "Inspector Rajesh Sharma",
+          "storage_location": "Secure digital evidence locker"
+        },
+        {
+          "item_id": "EVD_IDOR_002_005",
+          "description": "Timestamp records of the unauthorized access",
+          "collection_timestamp": "2025-08-28 12:58:40.265189",
+          "collection_method": "Digital forensics extraction",
+          "integrity_hash": "SHA256_005",
+          "collected_by": "Inspector Rajesh Sharma",
+          "storage_location": "Secure digital evidence locker"
+        }
+      ],
+      "chain_entries": [
+        {
+          "timestamp": "2025-08-28 12:58:40.265192",
+          "action": "Evidence collected and secured",
+          "person": "Inspector Rajesh Sharma",
+          "purpose": "Initial digital forensics collection"
+        }
+      ],
+      "compliance_certification": "This chain of custody follows CERT-In and IT Act 2000 evidence handling requirements"
+    }
+  ],
+  "appendices": {
+    "technical_appendix": {
+      "vulnerability_details": "Detailed technical analysis of each vulnerability",
+      "network_diagrams": "System architecture and attack paths",
+      "log_analysis": "Relevant system and application logs"
+    },
+    "legal_appendix": {
+      "relevant_statutes": "Complete text of applicable legal sections",
+      "case_precedents": "Similar cases and legal precedents",
+      "expert_opinions": "Technical and legal expert assessments"
+    },
+    "compliance_appendix": {
+      "framework_requirements": "Detailed compliance framework requirements",
+      "gap_analysis": "Comprehensive compliance gap analysis",
+      "best_practices": "Industry best practices and recommendations"
+    }
+  }
+}

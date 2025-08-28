@@ -65,7 +65,6 @@ Performance Notes:
 import requests
 import re
 from typing import Dict, Any, Optional, Union, List, Tuple
-from unittest.mock import Mock
 from loguru import logger
 from logicpwn.exceptions import (
     AuthenticationError,
@@ -115,7 +114,7 @@ def _extract_csrf_token(html_content: str) -> Optional[str]:
         >>> token = _extract_csrf_token(html)
         >>> print(token)  # "xyz789"
     """
-    # Handle Mock objects in testing environment
+    # Validate input type
     if not isinstance(html_content, str):
         logger.debug(f"CSRF extraction skipped: html_content is not a string (got {type(html_content)})")
         return None
@@ -507,13 +506,13 @@ def _perform_robust_authentication(config: AuthConfig) -> requests.Session:
         
         logger.debug(f"Authentication response: {auth_response.status_code}")
         try:
-            # Handle both real sessions and Mock objects for testing
-            if hasattr(session.cookies, '__iter__') and not hasattr(session.cookies, '_mock_name'):
+            # Log session state after authentication
+            if hasattr(session.cookies, '__iter__'):
                 logger.debug(f"Session cookies after auth: {len(list(session.cookies))}")
             else:
-                logger.debug("Session cookies after auth: Mock object (testing)")
+                logger.debug("Session cookies after auth: No enumerable cookies")
         except (TypeError, AttributeError):
-            logger.debug("Session cookies after auth: Unable to enumerate (testing)")
+            logger.debug("Session cookies after auth: Unable to enumerate cookies")
         
         # Step 4: Validate the session actually works
         if not _validate_session_access(session, config):
@@ -545,10 +544,10 @@ def _validate_session_access(session: requests.Session, config: AuthConfig) -> b
         bool: True if session can access protected resources, False otherwise
     """
     try:
-        # Handle Mock objects in testing environment
-        if hasattr(session, '_mock_name') or hasattr(session, 'request') and hasattr(session.request, '_mock_name'):
-            logger.debug("Session validation skipped: Mock session detected (testing environment)")
-            return True
+        # Validate session object
+        if not hasattr(session, 'get') or not callable(getattr(session, 'get')):
+            logger.warning("Session validation skipped: Invalid session object")
+            return False
         
         # Extract base URL
         base_url = config.url
@@ -573,10 +572,10 @@ def _validate_session_access(session: requests.Session, config: AuthConfig) -> b
                 if test_response.status_code == 200:
                     content = test_response.text
                     
-                    # Handle Mock response objects
-                    if hasattr(content, '_mock_name'):
-                        logger.debug("Session validation passed: Mock response detected (testing)")
-                        return True
+                    # Validate response content
+                    if not isinstance(content, str):
+                        logger.warning("Session validation failed: Invalid response content type")
+                        return False
                     
                     # Use the same validation logic as the working example
                     has_vuln_title = "Vulnerability: Brute Force" in content
@@ -915,14 +914,14 @@ def authenticate_session(auth_config: Union[AuthConfig, Dict[str, Any]]) -> requ
             logger.warning("No cookies received during authentication - session may not persist")
         else:
             try:
-                # Handle Mock objects safely during testing
-                if hasattr(session.cookies, '__iter__') and not isinstance(session.cookies, Mock):
+                # Log session state after successful authentication
+                if hasattr(session.cookies, '__iter__'):
                     cookie_count = len(list(session.cookies))
                     logger.debug(f"Authentication successful with {cookie_count} cookies")
                 else:
-                    logger.debug("Authentication successful with cookies (Mock object - testing)")
+                    logger.debug("Authentication successful with cookies (no enumerable cookies)")
             except (TypeError, AttributeError):
-                logger.debug("Authentication successful with cookies (testing environment)")
+                logger.debug("Authentication successful with cookies (unable to enumerate)")
         
         # Cache the authenticated session
         session_cache.set_session(session_id, session)
@@ -1006,16 +1005,16 @@ def validate_session(session: requests.Session, test_url: str) -> bool:
         
         # Check response content for login indicators
         try:
-            # Handle both real responses and Mock objects for testing
+            # Validate response content for login indicators
             if hasattr(response, 'text') and isinstance(response.text, str):
                 if 'Login ::' in response.text or 'Please log in' in response.text:
                     return False
-            elif hasattr(response.text, '_mock_name'):
-                # For Mock objects, assume no login indicators unless specifically set
-                pass
+            else:
+                # If response text is not a string, we can't check for login indicators
+                logger.debug("Cannot check login indicators: response.text is not a string")
         except (TypeError, AttributeError):
             # If we can't check response text, skip this check
-            pass
+            logger.debug("Cannot check login indicators: error accessing response.text")
             
         # If we get a 200 response without login indicators, session is likely valid
         return response.status_code == 200

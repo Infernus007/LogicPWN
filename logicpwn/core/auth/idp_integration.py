@@ -280,13 +280,9 @@ class OIDCProvider(BaseIdPProvider):
                 algorithms=discovery.get('id_token_signing_alg_values_supported', ['RS256'])
             )
         except Exception as e:
-            logger.warning(f"Failed to fetch discovery document for JWT config: {e}")
-            # Return minimal JWT config for testing
-            return JWTConfig(
-                secret_key="test_fallback_secret",  # For testing only
-                expected_audience=self.config.client_id if self.config.validate_audience else None,
-                algorithms=['RS256', 'HS256']
-            )
+            logger.error(f"Failed to fetch discovery document for JWT config: {e}")
+            # SECURITY: Never use hardcoded secrets in production
+            raise ValidationError(f"Cannot create JWT config without valid discovery document: {e}")
     
     @monitor_performance("oidc_discovery")
     def _fetch_discovery_document(self) -> Dict[str, Any]:
@@ -495,10 +491,11 @@ class SAMLIdPProvider(BaseIdPProvider):
                 assertion.session_index
             )
             
-            # For testing purposes, we'll just log the logout URL
-            # In a real implementation, you'd redirect the user
-            logger.info(f"SAML logout URL: {logout_url}")
-            return True
+            # TODO: Implement proper SAML logout redirection for production use
+            # This placeholder just logs the URL instead of performing actual logout
+            logger.warning(f"SAML logout not fully implemented - would redirect to: {logout_url}")
+            # In production, this should perform actual logout redirection
+            raise NotImplementedError("SAML logout redirection not implemented for production use")
         
         return False
 

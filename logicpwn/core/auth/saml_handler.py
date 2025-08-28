@@ -262,9 +262,9 @@ class SAMLHandler:
     
     def _create_post_form_url(self, saml_request: str, relay_state: str) -> str:
         """Create HTML form for POST binding (simplified)."""
-        # In a real implementation, this would generate an HTML form
-        # For testing purposes, we'll return a data URL with the parameters
-        return f"POST:{self.config.idp_sso_url}?SAMLRequest={urllib.parse.quote(saml_request)}&RelayState={relay_state}"
+        # TODO: Implement proper HTML form generation for POST binding
+        # This is a placeholder implementation that needs to be completed for production use
+        raise NotImplementedError("SAML POST binding form generation not implemented for production use")
     
     @monitor_performance("saml_response_processing")
     def process_saml_response(self, saml_response: str, relay_state: str) -> SAMLAssertion:
@@ -340,6 +340,9 @@ class SAMLHandler:
             # Extract issuer
             issuer_elem = assertion.find('.//saml:Issuer', ns)
             issuer = issuer_elem.text if issuer_elem is not None else None
+            
+            # SECURITY WARNING: Add signature verification
+            self._verify_saml_signature_warning(root, assertion)
             
             # Extract attributes
             attributes = {}
@@ -455,6 +458,43 @@ class SAMLHandler:
                 mapped_attributes[key] = values
         
         return mapped_attributes
+
+    def _verify_saml_signature_warning(self, response_root: ET.Element, assertion: ET.Element) -> None:
+        """
+        SECURITY WARNING: Basic SAML signature verification check.
+        
+        This is a minimal implementation that warns about missing signatures.
+        For production use, implement proper XML-DSIG verification.
+        
+        Args:
+            response_root: SAML Response root element
+            assertion: SAML Assertion element
+        """
+        # Define namespace for XML Digital Signature
+        ds_ns = {'ds': 'http://www.w3.org/2000/09/xmldsig#'}
+        
+        # Check for response signature
+        response_signature = response_root.find('.//ds:Signature', ds_ns)
+        assertion_signature = assertion.find('.//ds:Signature', ds_ns)
+        
+        if not response_signature and not assertion_signature:
+            if self.config.want_assertions_signed or self.config.want_response_signed:
+                logger.error("SECURITY RISK: No SAML signatures found but signatures required by config")
+                raise AuthenticationError("SAML response/assertion must be signed but no signatures found")
+            else:
+                logger.warning("SECURITY WARNING: SAML response and assertion are not signed - vulnerable to tampering")
+        
+        if response_signature:
+            logger.info("SAML Response signature detected (verification not implemented)")
+            
+        if assertion_signature:
+            logger.info("SAML Assertion signature detected (verification not implemented)")
+            
+        # Basic issuer validation
+        if self.config.idp_entity_id:
+            assertion_issuer = assertion.find('.//saml:Issuer', {'saml': 'urn:oasis:names:tc:SAML:2.0:assertion'})
+            if assertion_issuer is not None and assertion_issuer.text != self.config.idp_entity_id:
+                logger.warning(f"SECURITY WARNING: Assertion issuer {assertion_issuer.text} doesn't match expected {self.config.idp_entity_id}")
 
 
 def load_idp_metadata_from_url(metadata_url: str, timeout: int = 30) -> IdPMetadata:

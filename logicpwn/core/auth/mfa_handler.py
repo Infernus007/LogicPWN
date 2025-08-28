@@ -21,7 +21,6 @@ Features:
 import base64
 import hashlib
 import hmac
-import qrcode
 import secrets
 import struct
 import time
@@ -36,6 +35,13 @@ from pydantic import BaseModel, Field, field_validator
 
 from logicpwn.exceptions import AuthenticationError, ValidationError, NetworkError
 from logicpwn.core.performance import monitor_performance
+
+# Optional QR code support
+try:
+    import qrcode
+    QR_CODE_AVAILABLE = True
+except ImportError:
+    QR_CODE_AVAILABLE = False
 
 
 @dataclass
@@ -65,6 +71,9 @@ class TOTPSecret:
     
     def generate_qr_code(self) -> bytes:
         """Generate QR code for TOTP setup."""
+        if not QR_CODE_AVAILABLE:
+            raise ValidationError("QR code generation requires 'qrcode' library. Install with: pip install qrcode[pil]")
+        
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
