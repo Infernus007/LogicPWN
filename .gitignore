@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-/doks
 
 # C extensions
 *.so
@@ -330,4 +329,4 @@ core.*
 tmp/
 temp/
 .tmp/
-.temp/ 
+.temp/

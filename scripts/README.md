@@ -1,100 +1,141 @@
 # LogicPwn Documentation Automation Scripts
 
-This directory contains scripts to automate the documentation verification and build process for LogicPwn.
+This directory contains scripts to automate the API documentation generation
+and maintenance for LogicPwn.
 
 ## Scripts
 
-### `fix_docs.sh` - Quick Fix Script
-A targeted script that specifically fixes common Sphinx build issues:
+### `generate_simple_api_docs.py` - Main API Documentation Generator
 
-- **Section underline problems**: Automatically corrects underlines to match title length
-- **Docstring formatting**: Fixes common docstring formatting issues
-- **Build verification**: Attempts to build documentation after fixes
+The primary script that generates API documentation from Python source code:
 
-**Usage:**
-```bash
-./scripts/fix_docs.sh
-```
-
-### `verify_docs.sh` - Comprehensive Verification Script
-A comprehensive script that performs full documentation verification:
-
-- **Environment checks**: Verifies Python and Poetry installation
-- **Dependency installation**: Installs required Sphinx packages
-- **Structure verification**: Checks for required documentation files
-- **Formatting fixes**: Applies comprehensive formatting corrections
-- **Build testing**: Attempts to build documentation
-- **Issue detection**: Identifies common problems
-- **Report generation**: Creates a detailed report
+- **Module extraction**: Extracts docstrings, type hints, and signatures
+- **MDX generation**: Creates Astro-compatible MDX files
+- **Structure organization**: Organizes modules by category
+- **Cross-referencing**: Generates proper navigation and links
 
 **Usage:**
+
 ```bash
-./scripts/verify_docs.sh
+# Using poetry (recommended)
+poetry run python3 scripts/generate_simple_api_docs.py
+
+# Or directly
+python3 scripts/generate_simple_api_docs.py
 ```
 
-## Common Issues Fixed
+### `update_api_docs.sh` - Documentation Update Script
 
-### 1. Section Underline Problems
-- **Problem**: Sphinx reports "Title underline too short"
-- **Solution**: Scripts automatically correct underlines to match title length exactly
+A wrapper script that automates the documentation update process:
 
-### 2. Docstring Formatting Issues
-- **Problem**: Invalid indentation or missing blank lines in docstrings
-- **Solution**: Scripts fix indentation and add required blank lines
+- **Backup creation**: Creates backups before updates
+- **Dependency check**: Ensures required packages are installed
+- **Documentation generation**: Runs the API generator
+- **Status reporting**: Shows generated files and stats
 
-### 3. Example Formatting
-- **Problem**: "Example:" instead of "Examples::" in docstrings
-- **Solution**: Scripts convert to proper Sphinx format
+**Usage:**
+
+```bash
+./scripts/update_api_docs.sh
+```
+
+### `fix_api_docs.py` - Documentation Post-Processor
+
+Fixes and enhances generated documentation:
+
+- **Content cleanup**: Removes redundant sections
+- **Example updates**: Updates code examples with current patterns
+- **Format improvements**: Enhances readability and structure
+
+**Usage:**
+
+```bash
+# Using poetry (recommended)
+poetry run python3 scripts/fix_api_docs.py
+
+# Or directly
+python3 scripts/fix_api_docs.py
+```
+
+### `verify_api_docs_structure.py` - Documentation Validator
+
+Verifies the integrity of generated documentation:
+
+- **Link validation**: Checks for broken internal links
+- **Structure verification**: Ensures consistent formatting
+- **Navigation check**: Validates sidebar structure
+- **Report generation**: Provides detailed issue reports
+
+**Usage:**
+
+```bash
+# Using poetry (recommended)
+poetry run python3 scripts/verify_api_docs_structure.py
+
+# Or directly
+python3 scripts/verify_api_docs_structure.py
+```
+
+## Configuration
+
+### `api_docs_config.yaml` - API Documentation Configuration
+
+Configuration file for the API documentation generator:
+
+- **Module inclusion/exclusion**: Controls which modules to document
+- **Category organization**: Defines how modules are grouped
+- **Template settings**: Customizes output format and structure
+- **Navigation settings**: Controls sidebar and cross-references
+
+## Automation
+
+### Pre-commit Integration
+
+These scripts can be integrated with pre-commit hooks to automatically update
+documentation when code changes.
+
+### CI/CD Integration
+
+Example GitHub Actions integration:
+
+```yaml
+- name: Update API Documentation
+  run: |
+    chmod +x scripts/update_api_docs.sh
+    ./scripts/update_api_docs.sh
+```
 
 ## Output
 
-Both scripts provide colored output:
+All scripts provide colored output:
+
 - 🔵 **Blue**: Information messages
 - 🟢 **Green**: Success messages
 - 🔴 **Red**: Error messages
+- 🟡 **Yellow**: Warning messages
 
-## Files Modified
+## Files Generated
 
-The scripts may modify:
-- `docs/source/*.rst` - Documentation source files
-- `logicpwn/core/*.py` - Python source files with docstrings
+The scripts generate:
 
-## Backup Files
-
-The `fix_docs.sh` script creates backup files (`.backup`) before making changes and cleans them up after successful builds.
+- `doks/purple-atmosphere/src/content/docs/api-reference/*.mdx` - API docs
+- Organized directory structure matching module hierarchy
+- Navigation-ready MDX files with proper frontmatter
 
 ## Troubleshooting
 
 ### Script fails to run
-- Ensure you're in the LogicPwn project root directory
-- Verify Python 3 and Poetry are installed
-- Check that `pyproject.toml` exists
 
-### Documentation still fails to build
-- Check the Sphinx error output for specific issues
-- Manual fixes may be required for complex formatting problems
-- Consider using a text editor that shows invisible characters
+- Ensure you're in the LogicPwn project root directory
+- Verify Python 3 is installed and accessible
+- Check that required dependencies are installed
+
+### Documentation generation issues
+
+- Check module import paths in the generator script
+- Verify that the target modules have proper docstrings
+- Ensure output directory has write permissions
 
 ### Permission denied
-- Make scripts executable: `chmod +x scripts/*.sh`
 
-## Integration
-
-These scripts can be integrated into CI/CD pipelines:
-
-```yaml
-# Example GitHub Actions step
-- name: Verify Documentation
-  run: |
-    chmod +x scripts/verify_docs.sh
-    ./scripts/verify_docs.sh
-```
-
-## Manual Override
-
-If automated fixes don't work, you can manually fix issues:
-
-1. **Section underlines**: Ensure underline length matches title length exactly
-2. **Docstring formatting**: Add blank lines after Args/Returns/Raises sections
-3. **Code blocks**: Use proper indentation (8 spaces for code blocks)
-4. **Examples**: Use "Examples::" instead of "Example:" 
+- Make shell scripts executable: `chmod +x scripts/*.sh`

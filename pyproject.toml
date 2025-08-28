@@ -30,7 +30,7 @@ pyyaml = "^6.0.2"
 
 [tool.poetry.extras]
 sms = ["twilio", "boto3"]
-email = ["sendgrid"] 
+email = ["sendgrid"]
 providers = ["twilio", "boto3", "sendgrid"]
 
 [tool.poetry.group.dev.dependencies]
@@ -40,7 +40,8 @@ twine = "^6.1.0"
 sphinx = "^7.2.0"
 sphinx-rtd-theme = "^3.0.2"
 sphinx-autodoc-typehints = "^1.22.0"
+pre-commit = "^4.3.0"
 
 [build-system]
 requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api" 
+build-backend = "poetry.core.masonry.api"
