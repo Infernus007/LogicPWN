@@ -32,7 +32,7 @@ repos:
 
   # Remove unused imports
   - repo: https://github.com/PyCQA/autoflake
-    rev: v2.4.0
+    rev: v2.3.1
     hooks:
       - id: autoflake
         args:
