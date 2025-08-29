@@ -53,12 +53,15 @@ import requests
 from loguru import logger
 
 from logicpwn.core.cache import response_cache
-from logicpwn.core.config.config_utils import get_timeout
-from logicpwn.core.logging import log_error, log_info, log_request, log_response
+from logicpwn.core.config.config_utils import get_max_retries, get_timeout
+from logicpwn.core.logging import log_error, log_info, log_request, log_response, log_warning
+from logicpwn.core.middleware import MiddlewareContext, RetryException, middleware_manager
 from logicpwn.core.performance import monitor_performance
+from logicpwn.core.utils import prepare_request_kwargs, validate_config
 from logicpwn.exceptions import (
     NetworkError,
     RequestExecutionError,
+    ResponseError,
     TimeoutError,
     ValidationError,
 )
@@ -68,7 +71,6 @@ from logicpwn.models.request_result import RequestMetadata, RequestResult
 
 class RateLimitAlgorithm(Enum):
     """Available rate limiting algorithms."""
-
     SIMPLE = "simple"
     TOKEN_BUCKET = "token_bucket"
     SLIDING_WINDOW = "sliding_window"
@@ -76,16 +78,14 @@ class RateLimitAlgorithm(Enum):
 
 class SSLVerificationLevel(Enum):
     """SSL verification levels."""
-
-    STRICT = "strict"  # Full verification
-    RELAXED = "relaxed"  # Verification with warnings
+    STRICT = "strict"      # Full verification
+    RELAXED = "relaxed"    # Verification with warnings
     DISABLED = "disabled"  # No verification
 
 
 @dataclass
 class RateLimitConfig:
     """Rate limiting configuration."""
-
     algorithm: RateLimitAlgorithm = RateLimitAlgorithm.SIMPLE
     requests_per_second: float = 10.0
     burst_size: int = 5
@@ -97,7 +97,6 @@ class RateLimitConfig:
 @dataclass
 class SSLConfig:
     """SSL/TLS configuration."""
-
     verification_level: SSLVerificationLevel = SSLVerificationLevel.STRICT
     custom_ca_bundle: Optional[str] = None
     client_cert: Optional[str] = None
@@ -109,7 +108,6 @@ class SSLConfig:
 @dataclass
 class SessionConfig:
     """Session management configuration."""
-
     max_connections: int = 100
     max_connections_per_host: int = 30
     connection_timeout: float = 10.0
@@ -124,7 +122,6 @@ class SessionConfig:
 @dataclass
 class RunnerConfig:
     """Comprehensive configuration for HTTP runner."""
-
     rate_limit: RateLimitConfig = field(default_factory=RateLimitConfig)
     ssl: SSLConfig = field(default_factory=SSLConfig)
     session: SessionConfig = field(default_factory=SessionConfig)
@@ -239,9 +236,7 @@ class SlidingWindowRateLimiter:
         async with self._lock:
             now = time.time()
             cutoff = now - self.window_size
-            self.requests = [
-                req_time for req_time in self.requests if req_time > cutoff
-            ]
+            self.requests = [req_time for req_time in self.requests if req_time > cutoff]
 
             max_requests = int(self.rate * self.window_size)
             if len(self.requests) < max_requests:
@@ -434,12 +429,10 @@ class HttpRunner:
             if self.session is None:
                 self.session = requests.Session()
                 self.session.verify = verify_ssl
-                self.session.headers.update(
-                    {
-                        "User-Agent": self.config.user_agent,
-                        **self.config.default_headers,
-                    }
-                )
+                self.session.headers.update({
+                    "User-Agent": self.config.user_agent,
+                    **self.config.default_headers,
+                })
             session = self.session
 
         # Prepare request
@@ -466,16 +459,7 @@ class HttpRunner:
         start_time = time.time()
         try:
             # Prepare kwargs
-            kwargs = {
-                "method": request_config.method,
-                "url": request_config.url,
-                "headers": request_config.headers,
-                "params": request_config.params,
-                "data": request_config.data,
-                "json": request_config.json_data,
-                "timeout": request_config.timeout,
-                "verify": request_config.verify_ssl,
-            }
+            kwargs = prepare_request_kwargs(request_config)
 
             # Execute request
             response = session.request(**kwargs)
@@ -505,28 +489,25 @@ class HttpRunner:
 
             # Cache GET responses
             if method.upper() == "GET" and response.status_code == 200:
-                response_cache.set_response(url, method, response, params, headers)
+                response_cache.set_response(
+                    url, method, response, params, headers
+                )
 
             return result
 
         except requests.exceptions.Timeout as e:
             duration = time.time() - start_time
-            logger.error(f"Request timeout: {method} {url} (duration: {duration})")
+            log_error(f"Request timeout: {method} {url}", {"duration": duration})
             raise TimeoutError(f"Request timeout after {duration:.2f}s") from e
 
         except requests.exceptions.ConnectionError as e:
             duration = time.time() - start_time
-            logger.error(
-                f"Connection error: {method} {url} "
-                f"(error: {str(e)}, duration: {duration})"
-            )
+            log_error(f"Connection error: {method} {url}", {"error": str(e), "duration": duration})
             raise NetworkError(f"Connection error: {str(e)}") from e
 
         except requests.exceptions.RequestException as e:
             duration = time.time() - start_time
-            logger.error(
-                f"Request error: {method} {url} (error: {str(e)}, duration: {duration})"
-            )
+            log_error(f"Request error: {method} {url}", {"error": str(e), "duration": duration})
             raise RequestExecutionError(f"Request execution error: {str(e)}") from e
 
     async def __aenter__(self):
@@ -589,54 +570,6 @@ class HttpRunner:
             except Exception as e:
                 log_error(e, {"component": "TCPConnector", "action": "cleanup"})
 
-    async def _process_async_response(
-        self, response, url: str, method: str, start_time: float
-    ) -> RequestResult:
-        """Process async response and create RequestResult."""
-        duration = time.time() - start_time
-
-        # Read response
-        content = await response.read()
-        text = content.decode("utf-8", errors="ignore")
-
-        # Parse JSON if applicable
-        body = text
-        try:
-            if "application/json" in response.headers.get("content-type", ""):
-                body = await response.json()
-        except Exception:
-            pass
-
-        # Create result
-        result = RequestResult.from_response(
-            url=url,
-            method=method,
-            response=type(
-                "MockResponse",
-                (),
-                {
-                    "status_code": response.status,
-                    "headers": dict(response.headers),
-                    "text": text,
-                    "content": content,
-                    "json": lambda: body if isinstance(body, dict) else None,
-                },
-            )(),
-            duration=duration,
-        )
-
-        # Log response details
-        log_info(
-            f"Async request completed: {method} {url}",
-            {
-                "status_code": response.status,
-                "duration": duration,
-                "response_size": len(content),
-            },
-        )
-
-        return result
-
     async def send_request_async(
         self,
         url: str,
@@ -669,12 +602,10 @@ class HttpRunner:
             TimeoutError: If request times out
         """
         if self._closed or not self.async_session:
-            raise RuntimeError(
-                "Async session not initialized. Use async context manager."
-            )
+            raise RuntimeError("Async session not initialized. Use async context manager.")
 
         # Apply rate limiting
-        if self.rate_limiter and hasattr(self.rate_limiter, "acquire_async"):
+        if self.rate_limiter and hasattr(self.rate_limiter, 'acquire_async'):
             await self.rate_limiter.acquire_async()
 
         # Merge headers
@@ -694,33 +625,69 @@ class HttpRunner:
         start_time = time.time()
 
         try:
-            async with self.async_session.request(
-                method, url, **request_kwargs
-            ) as response:
-                return await self._process_async_response(
-                    response, url, method, start_time
+            async with self.async_session.request(method, url, **request_kwargs) as response:
+                duration = time.time() - start_time
+
+                # Read response
+                content = await response.read()
+                text = content.decode("utf-8", errors="ignore")
+
+                # Parse JSON if applicable
+                body = text
+                try:
+                    if "application/json" in response.headers.get("content-type", ""):
+                        body = await response.json()
+                except Exception:
+                    pass
+
+                # Create result
+                result = RequestResult.from_response(
+                    url=url,
+                    method=method,
+                    response=type(
+                        "MockResponse",
+                        (),
+                        {
+                            "status_code": response.status,
+                            "headers": dict(response.headers),
+                            "text": text,
+                            "content": content,
+                            "json": lambda: body if isinstance(body, dict) else None,
+                        },
+                    )(),
+                    duration=duration,
                 )
+
+                # Log response details
+                log_info(
+                    f"Async request completed: {method} {url}",
+                    {
+                        "status_code": response.status,
+                        "duration": duration,
+                        "response_size": len(content),
+                    },
+                )
+
+                return result
 
         except asyncio.TimeoutError:
             duration = time.time() - start_time
-            logger.error(
-                f"Async request timeout: {method} {url} (duration: {duration})"
-            )
+            log_error(f"Async request timeout: {method} {url}", {"duration": duration})
             raise TimeoutError(f"Request timeout after {duration:.2f}s")
 
         except aiohttp.ClientError as e:
             duration = time.time() - start_time
-            logger.error(
-                f"Async client error: {method} {url} "
-                f"(error: {str(e)}, duration: {duration})"
+            log_error(
+                f"Async client error: {method} {url}",
+                {"error": str(e), "duration": duration},
             )
             raise NetworkError(f"Client error: {str(e)}")
 
         except Exception as e:
             duration = time.time() - start_time
-            logger.error(
-                f"Async request error: {method} {url} "
-                f"(error: {str(e)}, duration: {duration})"
+            log_error(
+                f"Async request error: {method} {url}",
+                {"error": str(e), "duration": duration},
             )
             raise RequestExecutionError(f"Request execution error: {str(e)}")
 
@@ -728,7 +695,7 @@ class HttpRunner:
         self,
         requests: List[Dict[str, Any]],
         max_concurrent: Optional[int] = None,
-    ) -> List[Union[RequestResult, BaseException]]:
+    ) -> List[RequestResult]:
         """
         Send multiple requests concurrently.
 
@@ -737,15 +704,13 @@ class HttpRunner:
             max_concurrent: Maximum concurrent requests
 
         Returns:
-            List of RequestResult objects or exceptions
+            List of RequestResult objects
 
         Raises:
             RuntimeError: If async session not initialized
         """
         if self._closed or not self.async_session:
-            raise RuntimeError(
-                "Async session not initialized. Use async context manager."
-            )
+            raise RuntimeError("Async session not initialized. Use async context manager.")
 
         semaphore = asyncio.Semaphore(max_concurrent or 10)
 
@@ -754,12 +719,10 @@ class HttpRunner:
                 return await self.send_request_async(**request_config)
 
         tasks = [execute_with_semaphore(req) for req in requests]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        return results
+        return await asyncio.gather(*tasks, return_exceptions=True)
 
 
 # Factory functions for common configurations
-
 
 def create_secure_config() -> RunnerConfig:
     """Create configuration for maximum security."""
@@ -796,66 +759,26 @@ def create_development_config() -> RunnerConfig:
 
 
 # Legacy compatibility exports
-def send_request(session, config):
-    """Legacy compatibility function for send_request."""
-    runner = HttpRunner()
+send_request = lambda session, config: HttpRunner().send_request(
+    url=config.url if hasattr(config, 'url') else config['url'],
+    method=config.method if hasattr(config, 'method') else config.get('method', 'GET'),
+    headers=config.headers if hasattr(config, 'headers') else config.get('headers'),
+    params=config.params if hasattr(config, 'params') else config.get('params'),
+    data=config.data if hasattr(config, 'data') else config.get('data'),
+    json_data=config.json_data if hasattr(config, 'json_data') else config.get('json_data'),
+    session=session,
+)
 
-    if hasattr(config, "url"):
-        # RequestConfig object
-        return runner.send_request(
-            url=config.url,
-            method=config.method,
-            headers=config.headers,
-            params=config.params,
-            data=config.data,
-            json_data=config.json_data,
-            raw_body=config.raw_body,
-            timeout=config.timeout,
-            verify_ssl=config.verify_ssl,
-            session=session,
-        )
-    else:
-        # Dictionary config
-        return runner.send_request(
-            url=config["url"],
-            method=config.get("method", "GET"),
-            headers=config.get("headers"),
-            params=config.get("params"),
-            data=config.get("data"),
-            json_data=config.get("json_data"),
-            raw_body=config.get("raw_body"),
-            timeout=config.get("timeout"),
-            verify_ssl=config.get("verify_ssl", True),
-            session=session,
-        )
+send_request_advanced = lambda **kwargs: HttpRunner().send_request(**kwargs)
 
-
-def send_request_advanced(**kwargs):
-    """Legacy compatibility function for send_request_advanced."""
-    runner = HttpRunner()
-    return runner.send_request(**kwargs)
-
-
-def validate_config(config):
-    """Legacy compatibility function for validate_config."""
-    # Simplified validation for now
-    return True
-
-
-def prepare_request_kwargs(config):
-    """Legacy compatibility function for prepare_request_kwargs."""
-    return {
-        "method": config.method,
-        "url": config.url,
-        "headers": config.headers,
-        "params": config.params,
-        "data": config.data,
-        "json": config.json_data,
-        "timeout": config.timeout,
-        "verify": config.verify_ssl,
-    }
-
-
-def _execute_request(session, config, kwargs):
-    """Legacy compatibility function for _execute_request."""
-    return session.request(**kwargs)
+validate_config = lambda config: True  # Simplified for now
+prepare_request_kwargs = lambda config: {
+    'method': config.method,
+    'url': config.url,
+    'headers': config.headers,
+    'params': config.params,
+    'data': config.data,
+    'json': config.json_data,
+    'timeout': config.timeout,
+    'verify': config.verify_ssl,
+}

@@ -11,18 +11,15 @@ Security Features:
 import asyncio
 import ssl
 import warnings
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional
 
 import aiohttp
-from loguru import logger
 
 from logicpwn.core.config.config_utils import get_timeout
 from logicpwn.core.logging import log_error, log_info, log_warning
 from logicpwn.exceptions import (
     NetworkError,
     RequestExecutionError,
-    ResponseError,
-    TimeoutError,
     ValidationError,
 )
 from logicpwn.models.request_result import RequestResult
@@ -67,7 +64,8 @@ class AsyncSessionManager:
         if not self.verify_ssl:
             if self.warn_on_ssl_disabled:
                 warnings.warn(
-                    "SSL verification is disabled. This allows man-in-the-middle attacks. "
+                    "SSL verification is disabled. This allows "
+                    "man-in-the-middle attacks. "
                     "Only use this in controlled testing environments.",
                     UserWarning,
                     stacklevel=2,
@@ -253,7 +251,6 @@ class AsyncSessionManager:
         headers.update(self.headers)
         cookies = kwargs.get("cookies", {}).copy()
         cookies.update(self.cookies)
-        import aiohttp
 
         request_kwargs = {
             "method": method,
