@@ -59,7 +59,6 @@ repos:
         files: ^(logicpwn/.*\.py|scripts/.*\.py)$
         pass_filenames: false
         verbose: true
-        stages: [commit]
 
       - id: auto-commit-docs
         name: Auto-commit Documentation Changes
@@ -68,5 +67,4 @@ repos:
         files: ^(doks/.*|docs/.*|.*\.md|.*\.rst)$
         pass_filenames: false
         verbose: true
-        stages: [post-commit]
         always_run: true

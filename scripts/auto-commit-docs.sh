@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Post-commit hook to auto-commit and push documentation changes
-# This script runs after commits to handle documentation updates
+# Pre-commit hook to auto-commit documentation changes
+# This script runs during pre-commit to handle documentation updates
 
 set -e
 
-echo "🤖 Post-commit: Auto-committing documentation changes..."
+echo "🤖 Pre-commit: Checking for documentation changes..."
 
 # Get the current branch name
 CURRENT_BRANCH=$(git branch --show-current)
@@ -54,7 +54,7 @@ if [[ -n "$DOC_FILES" ]] || [[ -n "$SUBMODULE_CHANGES" ]]; then
 
 - Updated API documentation
 - Generated latest docs from source code
-- Auto-commit by post-commit hook"
+- Auto-commit by pre-commit hook"
 
     if [[ -n "$DOC_FILES" ]]; then
         COMMIT_MSG="$COMMIT_MSG
@@ -81,36 +81,9 @@ $(echo "$SUBMODULE_CHANGES" | sed 's/^/  - /')"
     }
 
     echo "✅ Documentation changes committed successfully"
-
-    # Check if remote exists and push
-    if git remote get-url origin >/dev/null 2>&1; then
-        echo "🚀 Pushing documentation changes to remote..."
-
-        # Push with retry logic
-        MAX_RETRIES=3
-        RETRY_COUNT=0
-
-        while [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; do
-            if git push origin "$CURRENT_BRANCH"; then
-                echo "✅ Documentation changes pushed successfully to origin/$CURRENT_BRANCH"
-                break
-            else
-                RETRY_COUNT=$((RETRY_COUNT + 1))
-                if [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; then
-                    echo "⚠️  Push failed, retrying in 5 seconds... (attempt $RETRY_COUNT/$MAX_RETRIES)"
-                    sleep 5
-                else
-                    echo "❌ Failed to push after $MAX_RETRIES attempts"
-                    echo "💡 You can manually push with: git push origin $CURRENT_BRANCH"
-                    exit 1
-                fi
-            fi
-        done
-    else
-        echo "⚠️  No remote origin found, skipping push"
-    fi
+    echo "💡 These changes will be included in the main commit"
 else
     echo "ℹ️  No documentation changes to commit"
 fi
 
-echo "🎉 Post-commit auto-commit process completed!"
+echo "🎉 Pre-commit auto-commit process completed!"
