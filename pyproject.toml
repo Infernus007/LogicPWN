@@ -21,6 +21,7 @@ jsonpath-ng = "^1.7.0"
 cryptography = "^42.0.0"
 qrcode = "^8.2"
 pyyaml = "^6.0.2"
+websockets = "^15.0.1"
 
 [tool.poetry.extras]
 # Authentication module (for selective installations)

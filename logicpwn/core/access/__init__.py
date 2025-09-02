@@ -1,3 +1,10 @@
+# Authentication Integration
+from .auth_integration import (
+    AuthenticatedAccessConfig,
+    AuthenticatedAccessTester,
+    create_authenticated_access_tester,
+    run_authenticated_access_test_suite,
+)
 from .baseline import (
     _check_unauthenticated_baseline,
     _get_unauth_baseline,
@@ -53,6 +60,29 @@ from .privilege_escalation import (
     RoleTestType,
     create_role_test_config,
     run_comprehensive_privilege_escalation_test,
+)
+
+# Enhanced Protocol Support
+from .protocol_support import (
+    GraphQLQuery,
+    GraphQLTester,
+    ProtocolType,
+    WebSocketConfig,
+    WebSocketTester,
+    create_ssl_context,
+    detect_protocol_type,
+)
+
+# Result Streaming and Memory Management
+from .result_streaming import (
+    PaginatedResultManager,
+    ResultStreamer,
+    StreamingConfig,
+    StreamingMode,
+    create_buffered_streamer,
+    create_memory_efficient_streamer,
+    monitor_memory_usage,
+    process_results_in_chunks,
 )
 
 # Tenant Isolation Testing
