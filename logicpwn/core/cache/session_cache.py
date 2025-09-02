@@ -223,7 +223,9 @@ class SessionCache:
         import hashlib
 
         key_string = str(sorted(key_components.items()))
-        session_hash = hashlib.md5(key_string.encode(), usedforsecurity=False).hexdigest()
+        session_hash = hashlib.md5(
+            key_string.encode(), usedforsecurity=False
+        ).hexdigest()
 
         session_id = f"auth_session_{session_hash}"
         logger.debug(

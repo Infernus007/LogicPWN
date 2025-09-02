@@ -16,11 +16,11 @@ from logicpwn.core.reliability import (
 )
 from logicpwn.core.runner.async_runner_core import AsyncRequestRunner
 
-from .models import AccessDetectorConfig, AccessTestResult
 from .core_logic import (
     _test_single_id_with_baselines,
     _test_single_id_with_baselines_async,
 )
+from .models import AccessDetectorConfig, AccessTestResult
 from .validation import _sanitize_test_id, _validate_inputs
 
 

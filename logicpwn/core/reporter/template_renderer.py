@@ -18,8 +18,7 @@ class TemplateRenderer:
             from jinja2 import Environment, FileSystemLoader
 
             self.env = Environment(
-                loader=FileSystemLoader(self.template_dir),
-                autoescape=True
+                loader=FileSystemLoader(self.template_dir), autoescape=True
             )
         except ImportError:
             self.env = None

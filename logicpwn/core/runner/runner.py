@@ -936,6 +936,40 @@ def load_config_from_env() -> RunnerConfig:
 
 
 # Legacy compatibility exports
+def _execute_request(session, config):
+    """Internal function to execute HTTP requests."""
+    if hasattr(config, "url"):
+        # RequestConfig object
+        kwargs = {
+            "method": config.method,
+            "url": config.url,
+            "headers": config.headers,
+            "params": config.params,
+            "data": config.data,
+            "json": config.json_data,
+            "timeout": config.timeout,
+            "verify": config.verify_ssl,
+        }
+    elif isinstance(config, dict):
+        # Dictionary config
+        kwargs = {
+            "method": config.get("method", "GET"),
+            "url": config["url"],
+            "headers": config.get("headers"),
+            "params": config.get("params"),
+            "data": config.get("data"),
+            "json": config.get("json_data"),
+            "timeout": config.get("timeout"),
+            "verify": config.get("verify_ssl", True),
+        }
+    else:
+        raise ValueError(
+            f"Configuration must be dict or RequestConfig, got {type(config)}"
+        )
+
+    return session.request(**kwargs)
+
+
 def send_request(session, config):
     """Legacy compatibility function for send_request."""
     runner = HttpRunner()

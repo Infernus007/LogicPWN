@@ -208,10 +208,14 @@ class HashIDGenerator(IDGenerator):
         for i in range(min(config.random_sample_size, config.max_generated_ids // 3)):
             # MD5-like (32 chars)
             if hash_length == 32:
-                ids.append(hashlib.md5(f"test{i}".encode(), usedforsecurity=False).hexdigest())
+                ids.append(
+                    hashlib.md5(f"test{i}".encode(), usedforsecurity=False).hexdigest()
+                )
             # SHA1-like (40 chars)
             elif hash_length == 40:
-                ids.append(hashlib.sha1(f"test{i}".encode(), usedforsecurity=False).hexdigest())
+                ids.append(
+                    hashlib.sha1(f"test{i}".encode(), usedforsecurity=False).hexdigest()
+                )
             # SHA256-like (64 chars)
             elif hash_length == 64:
                 ids.append(hashlib.sha256(f"test{i}".encode()).hexdigest())
@@ -224,9 +228,13 @@ class HashIDGenerator(IDGenerator):
         common_inputs = ["admin", "user", "guest", "test", "demo", "root", "1", "0"]
         for input_val in common_inputs:
             if hash_length == 32:
-                ids.append(hashlib.md5(input_val.encode(), usedforsecurity=False).hexdigest())
+                ids.append(
+                    hashlib.md5(input_val.encode(), usedforsecurity=False).hexdigest()
+                )
             elif hash_length == 40:
-                ids.append(hashlib.sha1(input_val.encode(), usedforsecurity=False).hexdigest())
+                ids.append(
+                    hashlib.sha1(input_val.encode(), usedforsecurity=False).hexdigest()
+                )
             elif hash_length == 64:
                 ids.append(hashlib.sha256(input_val.encode()).hexdigest())
 

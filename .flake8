@@ -1,19 +1,12 @@
 [flake8]
-# Maximum line length
 max-line-length = 88
 
-# Ignore specific error codes
 ignore =
-    # E203: whitespace before ':' (conflicts with black)
     E203,
-    # W503: line break before binary operator (conflicts with black)
     W503,
-    # E133: closing bracket is missing indentation (conflicts with black)
     E133,
-    # E501: line too long (handled by black mostly, but some exceptions)
-    # Note: We don't ignore E501 to catch genuine long lines
+    E501
 
-# Exclude certain directories
 exclude =
     .git,
     __pycache__,
@@ -27,39 +20,11 @@ exclude =
     doks,
     scripts
 
-# Enable specific warnings
-select =
-    # Pyflakes errors
-    F,
-    # Pycodestyle errors
-    E,
-    # Pycodestyle warnings
-    W,
-    # Complexity warnings
-    C90
+select = F, E, W
 
-# Maximum complexity
 max-complexity = 10
 
-# Per-file-ignores for specific cases
 per-file-ignores =
-    # Test files can have longer lines for test data
     tests/*:E501
-    # Examples can have longer lines for readability
     examples/*:E501
-    # Allow unused imports in __init__.py files
     __init__.py:F401
-
-# Import order
-import-order-style = google
-
-# Docstring conventions
-docstring-convention = google
-
-# Unused variable detection
-warn-symbols =
-    deprecated_module,
-    deprecated_function
-
-# Line break settings
-hang-closing = True
