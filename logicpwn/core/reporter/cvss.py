@@ -1,10 +1,9 @@
-from typing import Optional
-
 class CVSSCalculator:
     """
     Utility for calculating CVSS v3.1 scores based on vulnerability characteristics.
     Extensible for custom scoring logic and integration with reporting.
     """
+
     @staticmethod
     def calculate_cvss_score(
         attack_vector: str = "Network",
@@ -17,7 +16,7 @@ class CVSSCalculator:
         availability: str = "High",
         exploit_success: bool = True,
         authentication_required: bool = False,
-        data_impact: str = "High"
+        data_impact: str = "High",
     ) -> float:
         """
         Calculate a CVSS v3.1 score based on vulnerability characteristics.
@@ -37,11 +36,17 @@ class CVSSCalculator:
         # Simple mapping for demo; replace with full CVSS logic as needed
         base_score = 0.0
         vector_weights = {
-            "Network": 1.0, "Adjacent": 0.85, "Local": 0.62, "Physical": 0.2,
-            "Low": 0.77, "High": 0.44,
-            "None": 0.85, "Required": 0.62,
-            "Unchanged": 1.0, "Changed": 1.2,
-            "High": 0.56, "Medium": 0.22, "Low": 0.0
+            "Network": 1.0,
+            "Adjacent": 0.85,
+            "Local": 0.62,
+            "Physical": 0.2,
+            "None": 0.85,
+            "Required": 0.62,
+            "Unchanged": 1.0,
+            "Changed": 1.2,
+            "High": 0.56,
+            "Medium": 0.22,
+            "Low": 0.0,
         }
         base_score += vector_weights.get(attack_vector, 1.0)
         base_score += vector_weights.get(attack_complexity, 0.77)
@@ -61,4 +66,4 @@ class CVSSCalculator:
             base_score += 0.5
         elif data_impact == "Low":
             base_score += 0.1
-        return min(round(base_score, 1), 10.0) 
+        return min(round(base_score, 1), 10.0)

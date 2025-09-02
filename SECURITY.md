@@ -142,4 +142,4 @@ LogicPwn is provided "as is" without warranty. Users are responsible for:
 - Following security best practices
 - Obtaining proper permissions
 
-The LogicPwn team is not responsible for misuse of this tool. 
+The LogicPwn team is not responsible for misuse of this tool.

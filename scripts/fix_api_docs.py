@@ -6,23 +6,24 @@ Fix Astro API documentation by:
 3. Adding better examples throughout
 """
 
-import os
 import re
 from pathlib import Path
+
 
 def remove_source_code_sections(content: str) -> str:
     """Remove source code tip sections from MDX content"""
     # Pattern to match the source code tip blocks
-    pattern = r':::tip\[Source Code\].*?:::\n\n'
-    return re.sub(pattern, '', content, flags=re.DOTALL)
+    pattern = r":::tip\[Source Code\].*?:::\n\n"
+    return re.sub(pattern, "", content, flags=re.DOTALL)
+
 
 def fix_exploit_engine_examples(content: str) -> str:
     """Fix exploit engine examples to match the corrected YAML"""
-    
+
     # Replace outdated exploit chain examples with corrected ones
-    old_example = r'```yaml\nexploit_chain:.*?```'
-    
-    new_example = '''```yaml
+    old_example = r"```yaml\nexploit_chain:.*?```"
+
+    new_example = """```yaml
 # LogicPWN Simple Prototype Pollution → SSTI Exploit Chain
 name: "Simple Prototype Pollution → SSTI Chain"
 description: "Basic exploit chain demonstrating prototype pollution leading to SSTI injection"
@@ -78,18 +79,19 @@ steps:
       - "404"
       - "500"
     retry_count: 2
-```'''
-    
+```"""
+
     return re.sub(old_example, new_example, content, flags=re.DOTALL)
+
 
 def add_better_examples(content: str) -> str:
     """Add better examples throughout the documentation"""
-    
+
     # Add practical examples after import sections
-    if '## Import' in content and 'from logicpwn' in content:
-        import_section = re.search(r'## Import.*?```\n', content, re.DOTALL)
+    if "## Import" in content and "from logicpwn" in content:
+        import_section = re.search(r"## Import.*?```\n", content, re.DOTALL)
         if import_section:
-            practical_examples = '''
+            practical_examples = """
 
 ## Quick Examples
 
@@ -136,53 +138,65 @@ results = detect_idor_flaws(
 )
 ```
 
-'''
-            content = content.replace(import_section.group(), import_section.group() + practical_examples)
-    
+"""
+            content = content.replace(
+                import_section.group(), import_section.group() + practical_examples
+            )
+
     return content
+
 
 def process_mdx_file(file_path: Path) -> None:
     """Process a single MDX file"""
     print(f"Processing {file_path}...")
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
+
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
-    
+
     original_content = content
-    
+
     # Apply fixes
     content = remove_source_code_sections(content)
     content = fix_exploit_engine_examples(content)
     content = add_better_examples(content)
-    
+
     # Only write if content changed
     if content != original_content:
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
         print(f"  ✓ Updated {file_path.name}")
     else:
         print(f"  - No changes needed for {file_path.name}")
 
+
 def main():
     """Main function to fix all API documentation"""
     print("🔧 Fixing Astro API Documentation")
     print("=" * 50)
-    
+
     # API reference directory
-    api_docs_dir = Path(__file__).parent.parent / "doks" / "purple-atmosphere" / "src" / "content" / "docs" / "api-reference"
-    
+    api_docs_dir = (
+        Path(__file__).parent.parent
+        / "doks"
+        / "purple-atmosphere"
+        / "src"
+        / "content"
+        / "docs"
+        / "api-reference"
+    )
+
     if not api_docs_dir.exists():
         print(f"❌ Error: API docs directory not found: {api_docs_dir}")
         return
-    
+
     # Process all MDX files
     mdx_files = list(api_docs_dir.rglob("*.mdx"))
     print(f"Found {len(mdx_files)} MDX files to process")
     print()
-    
+
     for mdx_file in mdx_files:
         process_mdx_file(mdx_file)
-    
+
     print()
     print("✅ API documentation fixes completed!")
     print()
@@ -191,6 +205,7 @@ def main():
     print("  • Updated exploit engine examples")
     print("  • Added practical usage examples")
     print("  • Improved documentation quality")
+
 
 if __name__ == "__main__":
     main()

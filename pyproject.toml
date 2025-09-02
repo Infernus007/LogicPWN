@@ -19,10 +19,8 @@ sphinx-autodoc-typehints = "^1.22.0"
 pytest-asyncio = "<1.0"
 tenacity = "^9.1.2"
 jsonpath-ng = "^1.7.0"
-# Enhanced auth dependencies
 cryptography = "^42.0.0"
 qrcode = {extras = ["pil"], version = "^7.4.2"}
-# Optional dependencies for providers
 twilio = {version = "^9.0.0", optional = true}
 boto3 = {version = "^1.34.0", optional = true}
 sendgrid = {version = "^6.11.0", optional = true}
@@ -37,10 +35,64 @@ providers = ["twilio", "boto3", "sendgrid"]
 pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
 twine = "^6.1.0"
-sphinx = "^7.2.0"
-sphinx-rtd-theme = "^3.0.2"
-sphinx-autodoc-typehints = "^1.22.0"
 pre-commit = "^4.3.0"
+black = "^25.1.0"
+isort = "^6.0.1"
+flake8 = "^7.3.0"
+autoflake = "^2.3.1"
+bandit = "^1.8.6"
+
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | doks
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+src_paths = ["logicpwn", "tests", "examples"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --tb=short"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["logicpwn"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+]
 
 [build-system]
 requires = ["poetry-core"]

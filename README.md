@@ -10,7 +10,7 @@ A comprehensive Python framework for advanced business logic vulnerability testi
 ## Features
 
 - **IDOR Detection**: Intelligent enumeration and cross-user testing
-- **Multi-Step Exploit Chains**: Automated complex attack scenarios  
+- **Multi-Step Exploit Chains**: Automated complex attack scenarios
 - **High-Performance Async**: Concurrent testing with intelligent rate limiting
 - **Enterprise Authentication**: OAuth 2.0, SAML, JWT, MFA support
 - **Stress Testing**: Performance validation with security monitoring
@@ -85,12 +85,12 @@ async def run_stress_test():
         duration=30,
         memory_monitoring=True
     )
-    
+
     async with StressTester(config) as tester:
         metrics = await tester.run_stress_test([
             {"url": "https://target.com/api/endpoint", "method": "GET"}
         ])
-    
+
     print(f"Requests/sec: {metrics.requests_per_second:.1f}")
     print(f"Error rate: {metrics.error_rate:.1f}%")
 
@@ -110,7 +110,7 @@ Real-world performance metrics from comprehensive testing:
 
 **Overall Averages:**
 - **4.3 requests/second** average throughput
-- **67.7 MB** average memory usage  
+- **67.7 MB** average memory usage
 - **26.2%** average CPU utilization
 - **Excellent reliability** with minimal error rates
 
@@ -175,7 +175,7 @@ poetry install
 ## Documentation
 
 - **[API Reference](docs/api/)** - Complete API documentation
-- **[User Guide](docs/guide/)** - Comprehensive usage guide  
+- **[User Guide](docs/guide/)** - Comprehensive usage guide
 - **[Examples](examples/)** - Real-world usage examples
 - **[Performance Analysis](docs/performance/)** - Detailed benchmark results
 
@@ -242,7 +242,7 @@ A comprehensive Python framework for advanced business logic vulnerability testi
 ## Features
 
 - **IDOR Detection**: Intelligent enumeration and cross-user testing
-- **Multi-Step Exploit Chains**: Automated complex attack scenarios  
+- **Multi-Step Exploit Chains**: Automated complex attack scenarios
 - **High-Performance Async**: Concurrent testing with intelligent rate limiting
 - **Enterprise Authentication**: OAuth 2.0, SAML, JWT, MFA support
 - **Stress Testing**: Performance validation with security monitoring
@@ -317,12 +317,12 @@ async def run_stress_test():
         duration=30,
         memory_monitoring=True
     )
-    
+
     async with StressTester(config) as tester:
         metrics = await tester.run_stress_test([
             {"url": "https://target.com/api/endpoint", "method": "GET"}
         ])
-    
+
     print(f"Requests/sec: {metrics.requests_per_second:.1f}")
     print(f"Error rate: {metrics.error_rate:.1f}%")
 
@@ -342,7 +342,7 @@ performance metrics from comprehensive testing:
 
 **Overall Averages:**
 - **4.3 requests/second** average throughput
-- **67.7 MB** average memory usage  
+- **67.7 MB** average memory usage
 - **26.2%** average CPU utilization
 - **Excellent reliability** with minimal error rates
 
@@ -407,7 +407,7 @@ poetry install
 ## Documentation
 
 - **[API Reference](docs/api/)** - Complete API documentation
-- **[User Guide](docs/guide/)** - Comprehensive usage guide  
+- **[User Guide](docs/guide/)** - Comprehensive usage guide
 - **[Examples](examples/)** - Real-world usage examples
 - **[Performance Analysis](docs/performance/)** - Detailed benchmark results
 

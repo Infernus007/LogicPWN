@@ -1,60 +1,47 @@
 #!/bin/bash
 
-# Documentation Update Hook
-# This script runs when documentation-related files change
+# Pre-commit hook to update API documentation
+# This script runs before commits to ensure documentation is up to date
 
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+echo "📚 Updating API documentation..."
 
-echo -e "${BLUE}🔄 Pre-commit: Checking for documentation updates...${NC}"
-
-# Check if any Python files in logicpwn/ have changed
-CHANGED_PY_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^logicpwn/.*\.py$' || true)
-CHANGED_SCRIPT_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^scripts/.*\.py$' || true)
-
-if [[ -n "$CHANGED_PY_FILES" ]] || [[ -n "$CHANGED_SCRIPT_FILES" ]]; then
-    echo -e "${YELLOW}📝 Python files changed, updating API documentation...${NC}"
-
-    # Run the documentation update script
-    if ./scripts/update_api_docs.sh --quiet; then
-        echo -e "${GREEN}✅ Documentation updated successfully${NC}"
-
-        # Check if documentation files were generated/changed
-        GENERATED_DOCS=$(git status --porcelain doks/purple-atmosphere/src/content/docs/api-reference/ 2>/dev/null || true)
-
-        if [[ -n "$GENERATED_DOCS" ]]; then
-            echo -e "${BLUE}📄 Generated documentation files:${NC}"
-            echo "$GENERATED_DOCS" | sed 's/^/  /'
-
-            # Add the generated files to the commit
-            cd doks
-            git add purple-atmosphere/src/content/docs/api-reference/
-
-            # Check if there are changes to commit in the submodule
-            if ! git diff --cached --quiet; then
-                git commit -m "Auto-update API documentation from main repository changes"
-                echo -e "${GREEN}✅ Documentation changes committed to submodule${NC}"
-            fi
-            cd ..
-
-            # Update the submodule reference in the main repo
-            git add doks
-            echo -e "${GREEN}✅ Submodule reference updated${NC}"
-        else
-            echo -e "${BLUE}ℹ️ No documentation changes generated${NC}"
-        fi
-    else
-        echo -e "${RED}❌ Documentation update failed${NC}"
-        exit 1
-    fi
-else
-    echo -e "${BLUE}ℹ️ No Python files changed, skipping documentation update${NC}"
+# Check if we're on a protected branch
+CURRENT_BRANCH=$(git branch --show-current)
+if [[ "$CURRENT_BRANCH" == "main" || "$CURRENT_BRANCH" == "master" ]]; then
+    echo "⚠️  On protected branch ($CURRENT_BRANCH), skipping documentation update"
+    exit 0
 fi
 
-echo -e "${GREEN}✅ Documentation check completed${NC}"
+# Check if we're on a valid branch (not detached HEAD)
+if [[ "$CURRENT_BRANCH" == "" ]]; then
+    echo "⚠️  Not on a valid branch, skipping documentation update"
+    exit 0
+fi
+
+# Generate API documentation
+echo "🔧 Generating API documentation..."
+python3 scripts/generate_simple_api_docs.py
+
+# Fix API documentation structure
+echo "🔧 Fixing API documentation structure..."
+python3 scripts/fix_api_docs.py
+
+# Check for documentation changes
+DOC_FILES=$(git diff --name-only | grep -E '\.(md|rst|html|css|js|yaml|yml|json)$' || true)
+
+if [[ -n "$DOC_FILES" ]]; then
+    echo "📝 Staging documentation changes..."
+    echo "$DOC_FILES" | sed 's/^/  - /'
+
+    # Stage all documentation files
+    echo "$DOC_FILES" | xargs -r git add
+
+    echo "✅ Documentation changes staged successfully"
+    echo "💡 Changes will be auto-committed after the main commit completes"
+else
+    echo "ℹ️  No documentation changes detected"
+fi
+
+echo "✅ API documentation update completed!"

@@ -64,7 +64,7 @@ def fix_navigation_breadcrumb(file_path: Path) -> str:
         return "**Navigation:** [API Reference](../)"
 
     # Get path components after api-reference
-    path_parts = parts[api_ref_index + 1:]
+    path_parts = parts[api_ref_index + 1 :]
 
     # Remove file extension
     if path_parts and path_parts[-1].endswith(".mdx"):

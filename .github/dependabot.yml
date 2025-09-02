@@ -100,4 +100,4 @@ updates:
     # Only security updates
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-minor", "version-update:semver-major"] 
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]

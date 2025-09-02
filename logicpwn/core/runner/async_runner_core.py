@@ -15,7 +15,7 @@ import ssl
 import time
 import warnings
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import aiohttp
 from loguru import logger
@@ -26,12 +26,10 @@ from logicpwn.core.logging import (
     log_info,
     log_request,
     log_response,
-    log_warning,
 )
 from logicpwn.exceptions import (
     NetworkError,
     RequestExecutionError,
-    ResponseError,
     TimeoutError,
     ValidationError,
 )
@@ -273,7 +271,8 @@ class AsyncRequestRunner:
         if not self.security_config.verify_ssl:
             if self.security_config.warn_on_ssl_disabled:
                 warnings.warn(
-                    "SSL verification is disabled. This allows man-in-the-middle attacks. "
+                    "SSL verification is disabled. This allows "
+                    "man-in-the-middle attacks. "
                     "Only use this in controlled testing environments.",
                     UserWarning,
                     stacklevel=2,
@@ -434,9 +433,7 @@ class AsyncRequestRunner:
     ) -> RequestResult:
         """Execute a single async request with comprehensive error handling."""
         import time
-        import uuid
 
-        request_id = str(uuid.uuid4())
         start_time = time.time()
         try:
             # Prepare request data
@@ -456,7 +453,8 @@ class AsyncRequestRunner:
             # Add specific logging for HEAD requests
             if method.upper() == "HEAD":
                 log_info(
-                    f"HEAD request to {url} - will return headers only, no body expected"
+                    f"HEAD request to {url} - "
+                    f"will return headers only, no body expected"
                 )
             # Execute request
             async with self.session.request(method, url, **request_kwargs) as response:

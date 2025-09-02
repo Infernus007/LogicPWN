@@ -1,1 +1,1 @@
-from .middleware import middleware_manager, MiddlewareContext, RetryException 
+from .middleware import MiddlewareContext, RetryException, middleware_manager

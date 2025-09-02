@@ -48,4 +48,4 @@ from logicpwn.core import NewFeature
 
 result = NewFeature().execute()
 print(f"Result: {result}")
-``` 
+```

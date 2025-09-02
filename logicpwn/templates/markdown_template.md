@@ -37,4 +37,4 @@
 ## Appendix
 - **Scan Duration:** {{scan_duration}}
 - **LogicPwn Version:** {{logicpwn_version}}
-- **Authentication:** {{authenticated_user}} 
+- **Authentication:** {{authenticated_user}}
