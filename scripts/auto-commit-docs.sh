@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Auto-commit and push documentation changes
-# This script runs after pre-commit hooks to automatically commit and push docs
+# Post-commit hook to auto-commit and push documentation changes
+# This script runs after commits to handle documentation updates
 
 set -e
 
-echo "🤖 Auto-committing documentation changes..."
+echo "🤖 Post-commit: Auto-committing documentation changes..."
 
 # Get the current branch name
 CURRENT_BRANCH=$(git branch --show-current)
@@ -23,69 +23,94 @@ if [[ "$CURRENT_BRANCH" == "main" || "$CURRENT_BRANCH" == "master" ]]; then
     exit 0
 fi
 
-# Check if there are any staged changes
-if ! git diff --cached --quiet; then
-    echo "📝 Found staged changes, committing documentation updates..."
+# Check if there are any unstaged documentation changes
+DOC_FILES=$(git diff --name-only | grep -E '\.(md|rst|html|css|js|yaml|yml|json)$' || true)
+SUBMODULE_CHANGES=$(git diff --name-only | grep -E '^(doks|docs)/' || true)
 
-    # Get list of changed documentation files
-    DOC_FILES=$(git diff --cached --name-only | grep -E '\.(md|rst|html|css|js|yaml|yml|json)$' || true)
+if [[ -n "$DOC_FILES" ]] || [[ -n "$SUBMODULE_CHANGES" ]]; then
+    echo "📚 Documentation changes detected:"
+    if [[ -n "$DOC_FILES" ]]; then
+        echo "  - Direct documentation files:"
+        echo "$DOC_FILES" | sed 's/^/    - /'
+    fi
+    if [[ -n "$SUBMODULE_CHANGES" ]]; then
+        echo "  - Submodule changes:"
+        echo "$SUBMODULE_CHANGES" | sed 's/^/    - /'
+    fi
+
+    # Stage all documentation changes
+    if [[ -n "$DOC_FILES" ]]; then
+        echo "📝 Staging documentation files..."
+        echo "$DOC_FILES" | xargs -r git add
+    fi
+
+    if [[ -n "$SUBMODULE_CHANGES" ]]; then
+        echo "📝 Staging submodule changes..."
+        echo "$SUBMODULE_CHANGES" | xargs -r git add
+    fi
+
+    # Create commit message
+    COMMIT_MSG="📚 Auto-update documentation
+
+- Updated API documentation
+- Generated latest docs from source code
+- Auto-commit by post-commit hook"
 
     if [[ -n "$DOC_FILES" ]]; then
-        echo "📚 Documentation files changed:"
-        echo "$DOC_FILES" | sed 's/^/  - /'
+        COMMIT_MSG="$COMMIT_MSG
 
-        # Create commit message
-        COMMIT_MSG="📚 Auto-update documentation
+Files changed:
+$(echo "$DOC_FILES" | sed 's/^/  - /')"
+    fi
 
-        - Updated API documentation
-        - Generated latest docs from source code
-        - Auto-commit by pre-commit hook
+    if [[ -n "$SUBMODULE_CHANGES" ]]; then
+        COMMIT_MSG="$COMMIT_MSG
 
-        Files changed:
-        $(echo "$DOC_FILES" | sed 's/^/  - /')
+Submodule changes:
+$(echo "$SUBMODULE_CHANGES" | sed 's/^/  - /')"
+    fi
 
-        [skip ci]"
+    COMMIT_MSG="$COMMIT_MSG
 
-        # Commit the changes
-        git commit -m "$COMMIT_MSG" || {
-            echo "❌ Failed to commit documentation changes"
-            exit 1
-        }
+[skip ci]"
 
-        echo "✅ Documentation changes committed successfully"
+    # Commit the changes (bypass pre-commit hooks to avoid loops)
+    git commit --no-verify -m "$COMMIT_MSG" || {
+        echo "❌ Failed to commit documentation changes"
+        exit 1
+    }
 
-        # Check if remote exists and push
-        if git remote get-url origin >/dev/null 2>&1; then
-            echo "🚀 Pushing documentation changes to remote..."
+    echo "✅ Documentation changes committed successfully"
 
-            # Push with retry logic
-            MAX_RETRIES=3
-            RETRY_COUNT=0
+    # Check if remote exists and push
+    if git remote get-url origin >/dev/null 2>&1; then
+        echo "🚀 Pushing documentation changes to remote..."
 
-            while [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; do
-                if git push origin "$CURRENT_BRANCH"; then
-                    echo "✅ Documentation changes pushed successfully to origin/$CURRENT_BRANCH"
-                    break
+        # Push with retry logic
+        MAX_RETRIES=3
+        RETRY_COUNT=0
+
+        while [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; do
+            if git push origin "$CURRENT_BRANCH"; then
+                echo "✅ Documentation changes pushed successfully to origin/$CURRENT_BRANCH"
+                break
+            else
+                RETRY_COUNT=$((RETRY_COUNT + 1))
+                if [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; then
+                    echo "⚠️  Push failed, retrying in 5 seconds... (attempt $RETRY_COUNT/$MAX_RETRIES)"
+                    sleep 5
                 else
-                    RETRY_COUNT=$((RETRY_COUNT + 1))
-                    if [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; then
-                        echo "⚠️  Push failed, retrying in 5 seconds... (attempt $RETRY_COUNT/$MAX_RETRIES)"
-                        sleep 5
-                    else
-                        echo "❌ Failed to push after $MAX_RETRIES attempts"
-                        echo "💡 You can manually push with: git push origin $CURRENT_BRANCH"
-                        exit 1
-                    fi
+                    echo "❌ Failed to push after $MAX_RETRIES attempts"
+                    echo "💡 You can manually push with: git push origin $CURRENT_BRANCH"
+                    exit 1
                 fi
-            done
-        else
-            echo "⚠️  No remote origin found, skipping push"
-        fi
+            fi
+        done
     else
-        echo "ℹ️  No documentation files in staged changes"
+        echo "⚠️  No remote origin found, skipping push"
     fi
 else
-    echo "ℹ️  No staged changes to commit"
+    echo "ℹ️  No documentation changes to commit"
 fi
 
-echo "🎉 Auto-commit process completed!"
+echo "🎉 Post-commit auto-commit process completed!"
