@@ -23,33 +23,99 @@ if [[ "$CURRENT_BRANCH" == "main" || "$CURRENT_BRANCH" == "master" ]]; then
     exit 0
 fi
 
-# Check if there are any unstaged documentation changes
+# Check if there are any unstaged or staged documentation changes
 DOC_FILES=$(git diff --name-only | grep -E '\.(md|rst|html|css|js|yaml|yml|json)$' || true)
 SUBMODULE_CHANGES=$(git diff --name-only | grep -E '^(doks|docs)/' || true)
+SUBMODULE_DIR=$(git diff --name-only | grep -E '^(doks|docs)$' || true)
 
-if [[ -n "$DOC_FILES" ]] || [[ -n "$SUBMODULE_CHANGES" ]]; then
+# Also check staged changes
+STAGED_DOC_FILES=$(git diff --cached --name-only | grep -E '\.(md|rst|html|css|js|yaml|yml|json)$' || true)
+STAGED_SUBMODULE_CHANGES=$(git diff --cached --name-only | grep -E '^(doks|docs)/' || true)
+STAGED_SUBMODULE_DIR=$(git diff --cached --name-only | grep -E '^(doks|docs)$' || true)
+
+if [[ -n "$DOC_FILES" ]] || [[ -n "$SUBMODULE_CHANGES" ]] || [[ -n "$SUBMODULE_DIR" ]] || \
+   [[ -n "$STAGED_DOC_FILES" ]] || [[ -n "$STAGED_SUBMODULE_CHANGES" ]] || [[ -n "$STAGED_SUBMODULE_DIR" ]]; then
+
     echo "📚 Documentation changes detected:"
     if [[ -n "$DOC_FILES" ]]; then
-        echo "  - Direct documentation files:"
+        echo "  - Unstaged documentation files:"
         echo "$DOC_FILES" | sed 's/^/    - /'
     fi
     if [[ -n "$SUBMODULE_CHANGES" ]]; then
-        echo "  - Submodule changes:"
+        echo "  - Unstaged submodule file changes:"
         echo "$SUBMODULE_CHANGES" | sed 's/^/    - /'
     fi
+    if [[ -n "$SUBMODULE_DIR" ]]; then
+        echo "  - Unstaged submodule directory changes:"
+        echo "$SUBMODULE_DIR" | sed 's/^/    - /'
+    fi
+    if [[ -n "$STAGED_DOC_FILES" ]]; then
+        echo "  - Staged documentation files:"
+        echo "$STAGED_DOC_FILES" | sed 's/^/    - /'
+    fi
+    if [[ -n "$STAGED_SUBMODULE_CHANGES" ]]; then
+        echo "  - Staged submodule file changes:"
+        echo "$STAGED_SUBMODULE_CHANGES" | sed 's/^/    - /'
+    fi
+    if [[ -n "$STAGED_SUBMODULE_DIR" ]]; then
+        echo "  - Staged submodule directory changes:"
+        echo "$STAGED_SUBMODULE_DIR" | sed 's/^/    - /'
+    fi
 
-    # Stage all documentation changes
+    # Handle unstaged submodule changes first
+    if [[ -n "$SUBMODULE_DIR" ]]; then
+        echo "📝 Handling unstaged submodule changes..."
+        for submodule in $SUBMODULE_DIR; do
+            if [[ -d "$submodule" ]] && [[ -f "$submodule/.git" ]]; then
+                echo "  - Processing submodule: $submodule"
+
+                # Go into submodule and commit changes
+                cd "$submodule"
+                if git diff --quiet; then
+                    echo "    - No changes in $submodule"
+                    cd ..
+                    continue
+                fi
+
+                # Stage all changes in submodule
+                git add .
+
+                # Commit changes in submodule
+                SUBMODULE_COMMIT_MSG="📚 Auto-update documentation from main repository
+
+- Generated latest API documentation
+- Auto-commit by pre-commit hook
+- [skip ci]"
+
+                git commit --no-verify -m "$SUBMODULE_COMMIT_MSG" || {
+                    echo "❌ Failed to commit changes in submodule $submodule"
+                    cd ..
+                    exit 1
+                }
+
+                echo "    - ✅ Committed changes in $submodule"
+                cd ..
+            fi
+        done
+    fi
+
+    # Stage all remaining documentation changes in main repository
     if [[ -n "$DOC_FILES" ]]; then
-        echo "📝 Staging documentation files..."
+        echo "📝 Staging unstaged documentation files..."
         echo "$DOC_FILES" | xargs -r git add
     fi
 
     if [[ -n "$SUBMODULE_CHANGES" ]]; then
-        echo "📝 Staging submodule changes..."
+        echo "📝 Staging unstaged submodule file changes..."
         echo "$SUBMODULE_CHANGES" | xargs -r git add
     fi
 
-    # Create commit message
+    if [[ -n "$SUBMODULE_DIR" ]]; then
+        echo "📝 Staging unstaged submodule directory changes..."
+        echo "$SUBMODULE_DIR" | xargs -r git add
+    fi
+
+    # Create commit message for main repository
     COMMIT_MSG="📚 Auto-update documentation
 
 - Updated API documentation
@@ -59,15 +125,43 @@ if [[ -n "$DOC_FILES" ]] || [[ -n "$SUBMODULE_CHANGES" ]]; then
     if [[ -n "$DOC_FILES" ]]; then
         COMMIT_MSG="$COMMIT_MSG
 
-Files changed:
+Unstaged files changed:
 $(echo "$DOC_FILES" | sed 's/^/  - /')"
     fi
 
     if [[ -n "$SUBMODULE_CHANGES" ]]; then
         COMMIT_MSG="$COMMIT_MSG
 
-Submodule changes:
+Unstaged submodule file changes:
 $(echo "$SUBMODULE_CHANGES" | sed 's/^/  - /')"
+    fi
+
+    if [[ -n "$SUBMODULE_DIR" ]]; then
+        COMMIT_MSG="$COMMIT_MSG
+
+Unstaged submodule directory changes:
+$(echo "$SUBMODULE_DIR" | sed 's/^/  - /')"
+    fi
+
+    if [[ -n "$STAGED_DOC_FILES" ]]; then
+        COMMIT_MSG="$COMMIT_MSG
+
+Already staged files:
+$(echo "$STAGED_DOC_FILES" | sed 's/^/  - /')"
+    fi
+
+    if [[ -n "$STAGED_SUBMODULE_CHANGES" ]]; then
+        COMMIT_MSG="$COMMIT_MSG
+
+Already staged submodule file changes:
+$(echo "$STAGED_SUBMODULE_CHANGES" | sed 's/^/  - /')"
+    fi
+
+    if [[ -n "$STAGED_SUBMODULE_DIR" ]]; then
+        COMMIT_MSG="$COMMIT_MSG
+
+Already staged submodule directory changes:
+$(echo "$STAGED_SUBMODULE_DIR" | sed 's/^/  - /')"
     fi
 
     COMMIT_MSG="$COMMIT_MSG
