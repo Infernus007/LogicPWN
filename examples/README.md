@@ -84,7 +84,7 @@ The examples demonstrate a complete security testing workflow:
 
 ```
 1. Reconnaissance → 01_basic_example.py
-2. Authentication → 02_dvwa_complete.py  
+2. Authentication → 02_dvwa_complete.py
 3. Vulnerability Testing → 03_simple_exploits.py
 4. Analysis & Reporting → Built into all examples
 ```
@@ -131,7 +131,7 @@ After running these examples:
 ## 🎯 Learning Path
 
 **Beginner**: Start with `01_basic_example.py`
-**Intermediate**: Progress to `02_dvwa_complete.py` 
+**Intermediate**: Progress to `02_dvwa_complete.py`
 **Advanced**: Study `03_simple_exploits.py` and build custom chains
 
 Each example includes detailed comments and error handling to help understand LogicPWN's capabilities.

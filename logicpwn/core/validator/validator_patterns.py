@@ -3,9 +3,10 @@ Vulnerability patterns and regexes for LogicPwn response validation.
 Enhanced with critical security vulnerability detection patterns.
 """
 
+
 class VulnerabilityPatterns:
     """Pre-defined patterns for common vulnerability detection."""
-    
+
     # SQL Injection patterns (Enhanced)
     SQL_INJECTION = [
         r"SQL syntax.*MySQL",
@@ -22,9 +23,9 @@ class VulnerabilityPatterns:
         r"sqlite3\.OperationalError",
         r"ORA-00933",
         r"syntax error.*near",
-        r"quoted string not properly terminated"
+        r"quoted string not properly terminated",
     ]
-    
+
     # XSS patterns (Enhanced)
     XSS_INDICATORS = [
         r"<script[^>]*>.*?</script>",
@@ -41,9 +42,9 @@ class VulnerabilityPatterns:
         r"window\.location",
         r"alert\s*\(",
         r"confirm\s*\(",
-        r"prompt\s*\("
+        r"prompt\s*\(",
     ]
-    
+
     # Directory traversal patterns (Enhanced)
     DIRECTORY_TRAVERSAL = [
         r"root:.*:0:0:",
@@ -58,9 +59,9 @@ class VulnerabilityPatterns:
         r"windows[\\/]system32",
         r"proc[\\/]version",
         r"\.\.[\\/]\.\.[\\/]",
-        r"php\.ini"
+        r"php\.ini",
     ]
-    
+
     # SSRF (Server-Side Request Forgery) patterns
     SSRF_INDICATORS = [
         r"localhost",
@@ -85,13 +86,13 @@ class VulnerabilityPatterns:
         r"dict://",
         r"gopher://",
         r"ldap://",
-        r"ftp://"
+        r"ftp://",
     ]
-    
+
     # Command Injection patterns
     COMMAND_INJECTION = [
         r"uid=\d+.*gid=\d+",  # Unix id command output
-        r"root:.*:0:0:",      # /etc/passwd content
+        r"root:.*:0:0:",  # /etc/passwd content
         r"bin[\\/]sh",
         r"cmd\.exe",
         r"powershell",
@@ -112,9 +113,9 @@ class VulnerabilityPatterns:
         r"command not found",
         r"No such file or directory",
         r"Permission denied",
-        r"cannot execute"
+        r"cannot execute",
     ]
-    
+
     # CSRF (Cross-Site Request Forgery) detection patterns
     CSRF_INDICATORS = [
         r"csrf[_\-]?token",
@@ -128,9 +129,9 @@ class VulnerabilityPatterns:
         r"state[_\-]?token",
         r"nonce",
         r"challenge",
-        r"verification[_\-]?code"
+        r"verification[_\-]?code",
     ]
-    
+
     # Authentication bypass patterns (Enhanced)
     AUTH_BYPASS = [
         r"admin.*panel",
@@ -142,9 +143,9 @@ class VulnerabilityPatterns:
         r"super.*user",
         r"elevated.*privileges",
         r"admin.*console",
-        r"management.*interface"
+        r"management.*interface",
     ]
-    
+
     # Information disclosure patterns (Enhanced)
     INFO_DISCLOSURE = [
         r"stack trace",
@@ -166,9 +167,9 @@ class VulnerabilityPatterns:
         r"System\.Exception",
         r"NullPointerException",
         r"ArrayIndexOutOfBounds",
-        r"ClassNotFoundException"
+        r"ClassNotFoundException",
     ]
-    
+
     # Local File Inclusion (LFI) patterns
     LFI_INDICATORS = [
         r"include\s*\(",
@@ -179,9 +180,9 @@ class VulnerabilityPatterns:
         r"Warning.*require",
         r"failed to open stream",
         r"No such file or directory.*include",
-        r"Permission denied.*include"
+        r"Permission denied.*include",
     ]
-    
+
     # Remote File Inclusion (RFI) patterns
     RFI_INDICATORS = [
         r"allow_url_include",
@@ -189,9 +190,9 @@ class VulnerabilityPatterns:
         r"Warning.*URL file-access",
         r"failed to open stream.*HTTP",
         r"getaddrinfo failed",
-        r"Connection refused.*include"
+        r"Connection refused.*include",
     ]
-    
+
     # XXE (XML External Entity) patterns
     XXE_INDICATORS = [
         r"<!DOCTYPE.*\[",
@@ -200,9 +201,9 @@ class VulnerabilityPatterns:
         r"xml.*entity",
         r"SimpleXML.*Entity",
         r"libxml.*entity",
-        r"Entity.*not defined"
+        r"Entity.*not defined",
     ]
-    
+
     # Business Logic patterns
     BUSINESS_LOGIC = [
         r"negative.*price",
@@ -214,9 +215,9 @@ class VulnerabilityPatterns:
         r"payment.*failed",
         r"transaction.*declined",
         r"order.*limit.*exceeded",
-        r"discount.*invalid"
+        r"discount.*invalid",
     ]
-    
+
     # Timing Attack indicators
     TIMING_ATTACK = [
         r"sleep\s*\(",
@@ -225,14 +226,14 @@ class VulnerabilityPatterns:
         r"pg_sleep\s*\(",
         r"dbms_pipe\.receive_message",
         r"setTimeout\s*\(",
-        r"time\.sleep\s*\("
+        r"time\.sleep\s*\(",
     ]
-    
+
     # Open Redirect patterns
     OPEN_REDIRECT = [
         r"Location:\s*https?://",
         r"redirect.*url=https?://",
         r"Location:\s*/\/",
         r"window\.location.*=.*http",
-        r"document\.location.*=.*http"
-    ] 
+        r"document\.location.*=.*http",
+    ]

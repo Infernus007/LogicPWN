@@ -36,7 +36,7 @@ if [[ -n "$CHANGED_PY_FILES" ]] || [[ -n "$CHANGED_SCRIPT_FILES" ]]; then
             cd doks
             git add purple-atmosphere/src/content/docs/api-reference/
 
-            # Check if there are changes to commit in the submodule
+            # Commit docs changes in the submodule if needed
             if ! git diff --cached --quiet; then
                 git commit -m "Auto-update API documentation from main repository changes"
                 echo -e "${GREEN}✅ Documentation changes committed to submodule${NC}"
@@ -45,7 +45,12 @@ if [[ -n "$CHANGED_PY_FILES" ]] || [[ -n "$CHANGED_SCRIPT_FILES" ]]; then
 
             # Update the submodule reference in the main repo
             git add doks
-            echo -e "${GREEN}✅ Submodule reference updated${NC}"
+            if ! git diff --cached --quiet doks; then
+                git commit -m "Update docs submodule after API docs generation"
+                echo -e "${GREEN}✅ Submodule reference committed in main repo${NC}"
+            else
+                echo -e "${BLUE}ℹ️ No submodule reference changes to commit${NC}"
+            fi
         else
             echo -e "${BLUE}ℹ️ No documentation changes generated${NC}"
         fi

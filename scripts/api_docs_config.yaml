@@ -3,7 +3,7 @@
 # Modules to include/exclude
 include_modules:
   - "logicpwn.core.auth"
-  - "logicpwn.core.access" 
+  - "logicpwn.core.access"
   - "logicpwn.core.exploit_engine"
   - "logicpwn.core.async_runner"
   - "logicpwn.core.utils"
@@ -28,27 +28,27 @@ categories:
   "Authentication & Sessions":
     - "logicpwn.core.auth"
     - "logicpwn.core.auth.*"
-  
+
   "Access Control & Detection":
     - "logicpwn.core.access"
     - "logicpwn.core.access.*"
-  
+
   "Exploit Engine":
     - "logicpwn.core.exploit_engine"
     - "logicpwn.core.async_runner"
     - "logicpwn.core.runner"
-  
+
   "Configuration & Utils":
     - "logicpwn.core.config"
     - "logicpwn.core.utils"
     - "logicpwn.core.performance"
     - "logicpwn.core.cache"
     - "logicpwn.core.logging"
-  
+
   "Validation & Reporting":
     - "logicpwn.core.validator"
     - "logicpwn.core.reporter"
-  
+
   "Exceptions":
     - "logicpwn.exceptions"
 
@@ -69,34 +69,34 @@ templates:
     title: {title}
     description: {description}
     ---
-    
+
     import {{ Code, Aside }} from '@astrojs/starlight/components';
-    
+
     # {title}
-    
+
     {docstring}
-    
+
     {content}
-  
+
   class_template: |
     ### {name}
-    
+
     ```python
     class {name}{inheritance}:
         """{short_docstring}"""
     ```
-    
+
     {docstring}
-    
+
     {content}
-  
+
   function_template: |
     ### {name}
-    
+
     ```python
     {signature}
     ```
-    
+
     {docstring}
 
 # Navigation settings

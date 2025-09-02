@@ -1,13 +1,16 @@
 """
 Performance metrics dataclass and helpers for LogicPwn performance monitoring.
 """
+
 import time
-from typing import Dict, Any
 from dataclasses import dataclass, field
+from typing import Any
+
 
 @dataclass
 class PerformanceMetrics:
     """Performance metrics for a single operation."""
+
     operation_name: str
     duration: float
     memory_before: float
@@ -15,7 +18,7 @@ class PerformanceMetrics:
     memory_peak: float
     cpu_percent: float
     timestamp: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def memory_delta(self) -> float:
@@ -25,4 +28,4 @@ class PerformanceMetrics:
     @property
     def memory_usage_mb(self) -> float:
         """Memory usage in MB."""
-        return self.memory_after / 1024 / 1024 
+        return self.memory_after / 1024 / 1024

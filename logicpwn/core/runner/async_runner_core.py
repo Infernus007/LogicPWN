@@ -219,9 +219,7 @@ class AsyncRequestRunner:
         # Handle backward compatibility for rate limiting
         if rate_limit_config is None and rate_limit is not None:
             rate_limit_config = RateLimitConfig(
-                enabled=True,
-                requests_per_second=rate_limit,
-                algorithm="simple"
+                enabled=True, requests_per_second=rate_limit, algorithm="simple"
             )
         self.rate_limit_config = rate_limit_config or RateLimitConfig()
 
@@ -266,9 +264,7 @@ class AsyncRequestRunner:
                 window_size=self.rate_limit_config.window_size,
             )
         else:
-            return SimpleRateLimiter(
-                rate=self.rate_limit_config.requests_per_second
-            )
+            return SimpleRateLimiter(rate=self.rate_limit_config.requests_per_second)
 
     def _create_ssl_context(self) -> Optional[ssl.SSLContext]:
         """Create SSL context with security warnings."""

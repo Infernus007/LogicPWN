@@ -76,4 +76,4 @@ Any other relevant information about the vulnerability.
 - [ ] I have included a proof of concept
 - [ ] I have assessed the potential impact
 - [ ] I have considered responsible disclosure
-- [ ] I have not included real credentials or sensitive data 
+- [ ] I have not included real credentials or sensitive data

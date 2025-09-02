@@ -1,23 +1,12 @@
 """
 Core stress testing logic for LogicPwn.
 """
+
 import asyncio
-import time
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
-from .async_runner import AsyncSessionManager, AsyncRequestRunner
-from logicpwn.core.performance import PerformanceMonitor, PerformanceBenchmark
-from logicpwn.models.request_result import RequestResult
-from logicpwn.exceptions import (
-    RequestExecutionError,
-    NetworkError,
-    ValidationError,
-    TimeoutError,
-    ResponseError
-)
-from logicpwn.core.logging import log_info, log_warning, log_error
-from .stress_utils import monitor_system_resources, calculate_metrics, generate_report
+from typing import Any, Optional
+
 
 @dataclass
 class StressTestConfig:
@@ -30,6 +19,7 @@ class StressTestConfig:
     cpu_monitoring: bool = True
     error_threshold: float = 0.1
     warmup_duration: int = 30
+
 
 @dataclass
 class StressTestMetrics:
@@ -47,10 +37,11 @@ class StressTestMetrics:
     cpu_usage_percent: float = 0.0
     peak_memory_mb: float = 0.0
     peak_cpu_percent: float = 0.0
-    status_code_distribution: Dict[int, int] = field(default_factory=dict)
-    error_distribution: Dict[str, int] = field(default_factory=dict)
+    status_code_distribution: dict[int, int] = field(default_factory=dict)
+    error_distribution: dict[str, int] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
-    def to_dict(self) -> Dict[str, Any]:
+
+    def to_dict(self) -> dict[str, Any]:
         return {
             "total_requests": self.total_requests,
             "successful_requests": self.successful_requests,
@@ -68,26 +59,33 @@ class StressTestMetrics:
             "peak_cpu_percent": self.peak_cpu_percent,
             "status_code_distribution": self.status_code_distribution,
             "error_distribution": self.error_distribution,
-            "timestamp": self.timestamp.isoformat()
+            "timestamp": self.timestamp.isoformat(),
         }
+
     def __str__(self) -> str:
-        return (f"StressTestMetrics(" f"requests={self.total_requests}, "
-                f"rps={self.requests_per_second:.2f}, "
-                f"error_rate={self.error_rate:.2f}%, "
-                f"avg_time={self.average_response_time:.3f}s)")
+        return (
+            f"StressTestMetrics("
+            f"requests={self.total_requests}, "
+            f"rps={self.requests_per_second:.2f}, "
+            f"error_rate={self.error_rate:.2f}%, "
+            f"avg_time={self.average_response_time:.3f}s)"
+        )
+
 
 class StressTester:
     def __init__(self, config: Optional[StressTestConfig] = None):
         self.config = config or StressTestConfig()
         self.metrics = StressTestMetrics()
-        self.response_times: List[float] = []
-        self.memory_samples: List[float] = []
-        self.cpu_samples: List[float] = []
+        self.response_times: list[float] = []
+        self.memory_samples: list[float] = []
+        self.cpu_samples: list[float] = []
         self.start_time: Optional[float] = None
         self.end_time: Optional[float] = None
         self._monitoring_task: Optional[asyncio.Task] = None
+
     async def __aenter__(self):
         return self
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self._monitoring_task:
             self._monitoring_task.cancel()
@@ -95,4 +93,5 @@ class StressTester:
                 await self._monitoring_task
             except asyncio.CancelledError:
                 pass
-    # ... (move all main orchestration and request methods here, except scenario helpers) 
+
+    # ... (move all main orchestration and request methods here, except scenario helpers)

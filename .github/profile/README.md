@@ -100,4 +100,4 @@ This project is licensed under the MIT License - see the [LICENSE](https://githu
   <img src="https://img.shields.io/badge/Security-FF6B6B?style=for-the-badge&logo=security&logoColor=white" alt="Security">
   <img src="https://img.shields.io/badge/Testing-4CAF50?style=for-the-badge&logo=testing-library&logoColor=white" alt="Testing">
   <img src="https://img.shields.io/badge/Documentation-2196F3?style=for-the-badge&logo=read-the-docs&logoColor=white" alt="Documentation">
-</div> 
+</div>

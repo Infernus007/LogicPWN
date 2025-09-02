@@ -10,7 +10,7 @@ Removed source code sections from **all 26 API reference files**:
 
 #### Core Modules Fixed:
 - ✅ `utils.mdx` - Removed GitHub source link
-- ✅ `auth.mdx` - Removed GitHub source link  
+- ✅ `auth.mdx` - Removed GitHub source link
 - ✅ `validator.mdx` - Removed GitHub source link
 - ✅ `reporter.mdx` - Removed GitHub source link
 - ✅ `runner.mdx` - Removed GitHub source link

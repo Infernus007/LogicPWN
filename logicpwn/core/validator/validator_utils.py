@@ -1,11 +1,15 @@
 """
 Helper functions for LogicPwn response validation.
 """
+
 import re
 
 MAX_RESPONSE_TEXT_LENGTH = 500
 
-def _sanitize_response_text(text: str, max_length: int = MAX_RESPONSE_TEXT_LENGTH) -> str:
+
+def _sanitize_response_text(
+    text: str, max_length: int = MAX_RESPONSE_TEXT_LENGTH
+) -> str:
     """Sanitize response text for secure logging."""
     if not text:
         return ""
@@ -19,4 +23,4 @@ def _sanitize_response_text(text: str, max_length: int = MAX_RESPONSE_TEXT_LENGT
     ]
     for pattern, replacement in sensitive_patterns:
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-    return text 
+    return text

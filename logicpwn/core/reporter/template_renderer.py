@@ -1,11 +1,13 @@
-from typing import Dict, Any
 import os
+from typing import Any
+
 
 class TemplateRenderer:
     """
     Utility for rendering report templates using Jinja2 if available, or string replacement fallback.
     Supports custom template directories for branding and localization.
     """
+
     def __init__(self, template_dir: str = "logicpwn/templates"):
         """
         Initialize the template renderer.
@@ -14,11 +16,15 @@ class TemplateRenderer:
         self.template_dir = template_dir
         try:
             from jinja2 import Environment, FileSystemLoader
-            self.env = Environment(loader=FileSystemLoader(self.template_dir))
+
+            self.env = Environment(
+                loader=FileSystemLoader(self.template_dir),
+                autoescape=True
+            )
         except ImportError:
             self.env = None
 
-    def render(self, template_name: str, context: Dict[str, Any]) -> str:
+    def render(self, template_name: str, context: dict[str, Any]) -> str:
         """
         Render a template with the given context.
         Uses Jinja2 if available, otherwise falls back to string replacement.
@@ -32,8 +38,8 @@ class TemplateRenderer:
         else:
             # Fallback: simple string replacement
             path = os.path.join(self.template_dir, template_name)
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 content = f.read()
             for k, v in context.items():
                 content = content.replace(f"{{{{{k}}}}}", str(v))
-            return content 
+            return content

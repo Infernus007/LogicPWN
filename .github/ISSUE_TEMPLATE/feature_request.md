@@ -39,4 +39,4 @@ Add any other context or screenshots about the feature request here.
 - [ ] I have searched existing issues to avoid duplicates
 - [ ] I have provided a clear use case
 - [ ] I have considered security implications
-- [ ] I have provided implementation ideas if possible 
+- [ ] I have provided implementation ideas if possible

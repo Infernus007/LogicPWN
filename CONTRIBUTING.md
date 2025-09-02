@@ -147,7 +147,7 @@ def test_send_request_success():
 async def test_async_request():
     """Test async request execution."""
     from logicpwn.core import AsyncRequestRunner
-    
+
     async with AsyncRequestRunner() as runner:
         result = await runner.send_request(
             url="https://httpbin.org/get",
@@ -184,7 +184,7 @@ def test_sensitive_data_redaction():
         method="POST",
         data={"username": "admin", "password": "secret123"}
     )
-    
+
     # Verify password is redacted in logs
     log_output = capture_logs()
     assert "secret123" not in log_output
@@ -199,18 +199,18 @@ def test_sensitive_data_redaction():
 def authenticate_session(auth_config: AuthConfig) -> Session:
     """
     Authenticate with a target system and return a persistent session.
-    
+
     Args:
         auth_config: Authentication configuration containing credentials and settings
-        
+
     Returns:
         Session: Authenticated session for making requests
-        
+
     Raises:
         AuthenticationError: If authentication fails
         ValidationError: If auth_config is invalid
         NetworkError: If network connection fails
-        
+
     Example:
         >>> auth_config = AuthConfig(
         ...     login_url="https://target.com/login",
@@ -280,4 +280,4 @@ We follow [Semantic Versioning](https://semver.org/):
 - **Discussions**: [GitHub Discussions](https://github.com/logicpwn/logicpwn/discussions)
 - **Security**: security@logicpwn.org
 
-Thank you for contributing to LogicPwn! 🚀 
+Thank you for contributing to LogicPwn! 🚀
