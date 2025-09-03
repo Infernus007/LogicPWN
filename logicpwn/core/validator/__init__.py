@@ -1,4 +1,20 @@
 # Validator module exports - Enhanced with critical vulnerability presets
+# Security enhancements
+from .regex_security import (
+    RegexComplexityError,
+    RegexSecurityValidator,
+    RegexTimeoutError,
+    SafeRegexMatcher,
+    safe_regex_findall,
+    safe_regex_search,
+    validate_regex_pattern,
+)
+from .response_handler import (
+    ResponseProcessor,
+    ResponseSizeConfig,
+    create_response_processor,
+    process_response_safely,
+)
 from .validation_presets import (
     VALIDATION_PRESETS,
     ValidationPresets,
@@ -23,6 +39,7 @@ from .validator_checks import (
     _calculate_confidence_score,
     _check_headers_criteria,
     _check_regex_patterns,
+    _check_response_size_safely,
     _check_status_codes,
 )
 from .validator_models import (
@@ -68,4 +85,16 @@ __all__ = [
     "VALIDATION_PRESETS",
     "list_critical_presets",
     "list_all_presets",
+    # Security enhancements
+    "RegexSecurityValidator",
+    "RegexTimeoutError",
+    "RegexComplexityError",
+    "SafeRegexMatcher",
+    "safe_regex_search",
+    "safe_regex_findall",
+    "validate_regex_pattern",
+    "ResponseProcessor",
+    "ResponseSizeConfig",
+    "create_response_processor",
+    "process_response_safely",
 ]

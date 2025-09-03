@@ -165,3 +165,77 @@ class AccessDetectorConfig:
                 len(self.baseline_sessions) if self.baseline_sessions else 0
             ),
         }
+
+
+@dataclass
+class EnhancedAccessTestConfig:
+    """Comprehensive configuration for enhanced access testing."""
+
+    # Basic IDOR testing
+    basic_idor_config: Optional[AccessDetectorConfig] = None
+
+    # ID generation and fuzzing
+    enable_smart_id_generation: bool = True
+    max_generated_ids: int = 1000
+    include_privilege_escalation_ids: bool = True
+    include_tenant_testing_ids: bool = True
+
+    # Tenant isolation testing
+    enable_tenant_isolation: bool = True
+    tenant_test_config: Optional["TenantTestConfig"] = None
+    current_tenant_id: Optional[str] = None
+
+    # Role and privilege testing
+    enable_privilege_escalation: bool = True
+    role_test_config: Optional["RoleTestConfig"] = None
+    current_role_name: Optional[str] = None
+
+    # Admin function discovery
+    enable_admin_discovery: bool = True
+    admin_discovery_depth: int = 3
+
+    # Performance and safety
+    max_concurrent_tests: int = 20
+    request_timeout: int = 30
+
+    # Output and reporting
+    detailed_reporting: bool = True
+    include_evidence: bool = True
+
+
+@dataclass
+class EnhancedAccessTestResults:
+    """Comprehensive results from enhanced access testing."""
+
+    # Basic IDOR results
+    idor_results: list[AccessTestResult] = field(default_factory=list)
+
+    # Tenant isolation results
+    tenant_isolation_results: list["TenantTestResult"] = field(default_factory=list)
+
+    # Privilege escalation results
+    privilege_escalation_results: list["PrivilegeTestResult"] = field(
+        default_factory=list
+    )
+
+    # Summary statistics
+    total_tests_executed: int = 0
+    vulnerabilities_found: int = 0
+    critical_vulnerabilities: int = 0
+    high_risk_vulnerabilities: int = 0
+
+    # Generated data
+    generated_ids: list[str] = field(default_factory=list)
+    discovered_tenants: list[str] = field(default_factory=list)
+    discovered_roles: list[str] = field(default_factory=list)
+    discovered_admin_functions: list[str] = field(default_factory=list)
+
+    # Metadata
+    test_duration: float = 0.0
+    test_config: Optional[EnhancedAccessTestConfig] = None
+
+
+# Forward references for type hints
+TenantTestConfig = "TenantTestConfig"
+PrivilegeTestResult = "PrivilegeTestResult"
+RoleTestConfig = "RoleTestConfig"

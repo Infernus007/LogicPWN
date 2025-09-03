@@ -18,6 +18,7 @@ from .validator_checks import (
     _calculate_confidence_score,
     _check_headers_criteria,
     _check_regex_patterns,
+    _check_response_size_safely,
     _check_status_codes,
 )
 from .validator_models import (
@@ -26,7 +27,6 @@ from .validator_models import (
     ValidationResult,
     ValidationType,
 )
-from .validator_utils import _sanitize_response_text
 
 
 @monitor_performance("enhanced_response_validation")
@@ -80,13 +80,19 @@ def validate_response(
         }
         config = validate_config(config_dict, ValidationConfig)
 
-        # Extract response text safely
-        try:
-            response_text = response.text
-        except Exception:
-            response_text = ""
+        # Process response with size and security handling
+        response_data = _check_response_size_safely(
+            response, config.regex_patterns, config.max_response_size
+        )
 
-        _sanitize_response_text(response_text)
+        # Extract response text from processed data
+        if "content" in response_data and isinstance(response_data["content"], dict):
+            response_text = response_data["content"].get("raw_content", "")
+        else:
+            try:
+                response_text = response.text
+            except Exception:
+                response_text = ""
 
         # Perform validation checks
         success_match, success_matches = check_indicators(
@@ -96,7 +102,10 @@ def validate_response(
             response_text, config.failure_criteria, "failure"
         )
         regex_match, regex_matches, extracted_data = _check_regex_patterns(
-            response_text, config.regex_patterns
+            response_text,
+            config.regex_patterns,
+            timeout=getattr(config, "regex_timeout", 2.0),
+            enable_security=getattr(config, "enable_regex_security", True),
         )
         status_match = _check_status_codes(response, config.status_codes)
         headers_match, header_matches = _check_headers_criteria(
@@ -108,6 +117,9 @@ def validate_response(
             config, success_match, failure_match, status_match, headers_match
         )
 
+        # Extract security warnings if present
+        security_warnings = extracted_data.get("_security_warnings", [])
+
         # Calculate adaptive confidence score
         confidence_score = _calculate_adaptive_confidence_score(
             config,
@@ -118,6 +130,7 @@ def validate_response(
             status_match,
             headers_match,
             response_time,
+            security_warnings,
         )
 
         # Check confidence threshold
@@ -134,8 +147,12 @@ def validate_response(
             success_matches, failure_matches, regex_matches, header_matches, response
         )
 
-        # Enhanced metadata
+        # Enhanced metadata including response processing info
         metadata = _create_enhanced_metadata(response, config, response_time)
+        if "size_info" in response_data:
+            metadata.update(response_data["size_info"])
+        if security_warnings:
+            metadata["security_warnings"] = security_warnings
 
         # Create enhanced validation result
         result = ValidationResult(
@@ -208,6 +225,7 @@ def _calculate_adaptive_confidence_score(
     status_match: bool,
     headers_match: bool,
     response_time: Optional[float] = None,
+    security_warnings: Optional[list[str]] = None,
 ) -> float:
     """Calculate adaptive confidence score based on multiple factors."""
 
@@ -276,6 +294,10 @@ def _calculate_adaptive_confidence_score(
     # Apply vulnerability-specific multipliers
     if config.vulnerability_type in ["sql_injection", "command_injection", "ssrf"]:
         base_score *= weights.critical_vuln_multiplier
+
+    # Reduce score for security warnings
+    if security_warnings:
+        base_score *= 1.0 - len(security_warnings) * 0.1  # 10% reduction per warning
 
     return min(1.0, base_score)
 
@@ -453,7 +475,10 @@ def validate_with_preset(
             response_text, config.failure_criteria, "failure"
         )
         regex_match, regex_matches, extracted_data = _check_regex_patterns(
-            response_text, config.regex_patterns
+            response_text,
+            config.regex_patterns,
+            timeout=getattr(config, "regex_timeout", 2.0),
+            enable_security=getattr(config, "enable_regex_security", True),
         )
         status_match = _check_status_codes(response, config.status_codes)
         headers_match, header_matches = _check_headers_criteria(

@@ -9,6 +9,8 @@ from typing import Any, Callable, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from .response_handler import ResponseSizeConfig
+
 
 class ValidationType(Enum):
     """Types of validation criteria."""
@@ -253,6 +255,37 @@ class ValidationConfig(BaseModel):
     )
     whitelist_patterns: list[str] = Field(
         default_factory=list, description="Patterns that should be ignored"
+    )
+
+    # Performance and security settings
+    regex_timeout: float = Field(
+        default=2.0,
+        ge=0.1,
+        le=30.0,
+        description="Timeout for regex operations in seconds",
+    )
+    max_regex_complexity: float = Field(
+        default=10.0,
+        ge=1.0,
+        le=50.0,
+        description="Maximum allowed regex complexity score",
+    )
+    enable_regex_security: bool = Field(
+        default=True, description="Enable regex security validation and timeouts"
+    )
+
+    # Response size handling
+    response_size_config: Optional[ResponseSizeConfig] = Field(
+        default=None, description="Configuration for response size handling"
+    )
+    max_response_size: Optional[int] = Field(
+        default=None, description="Maximum response size to process (bytes)"
+    )
+    preserve_evidence: bool = Field(
+        default=True, description="Preserve evidence chunks in large responses"
+    )
+    sanitize_response_data: bool = Field(
+        default=True, description="Sanitize sensitive data in responses"
     )
 
     @field_validator("regex_patterns")

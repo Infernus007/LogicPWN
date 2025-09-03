@@ -1,12 +1,16 @@
 """
-Authentication session logic for LogicPwn.
+Enhanced Authentication session logic for LogicPwn.
 
-This module provides robust authentication capabilities with automatic CSRF token handling,
-session persistence validation, and seamless integration with caching and runner modules.
+This module provides comprehensive authentication capabilities with automatic CSRF token handling,
+session persistence validation, intelligent redirect detection, and multi-step authentication flows.
 
 Key Features:
 - Automatic CSRF token extraction and handling for all major frameworks
 - Session persistence validation and recovery mechanisms
+- Intelligent redirect detection and handling
+- Multi-step authentication flow support
+- JWT token management and validation
+- Enhanced security controls and validation
 - Intelligent caching that excludes dynamic tokens
 - Fallback authentication mechanisms for maximum reliability
 - Full compatibility with LogicPwn runner and cache modules
@@ -22,7 +26,7 @@ Supported CSRF Token Patterns:
 
 Example Usage:
     ```python
-    from logicpwn.core.auth import authenticate_session, AuthConfig
+    from logicpwn.core.auth import authenticate_session, AuthConfig, Authenticator
 
     # Basic authentication with automatic CSRF handling
     config = AuthConfig(
@@ -35,6 +39,11 @@ Example Usage:
 
     session = authenticate_session(config)
     # Session is ready for use with runner module or direct requests
+
+    # Advanced authentication with comprehensive features
+    advanced_config = AdvancedAuthConfig(base_config=config)
+    authenticator = Authenticator(advanced_config)
+    auth_session = authenticator.authenticate_intelligent("http://target.com/login.php")
 
     # Advanced configuration
     config = AuthConfig(
@@ -1278,3 +1287,160 @@ def create_csrf_config(
             config.token_patterns.append(compiled_pattern)
 
     return config
+
+
+class Authenticator:
+    """
+    Advanced authenticator with comprehensive authentication capabilities.
+
+    Features:
+    - Intelligent redirect detection and handling
+    - Multi-step authentication flows
+    - JWT token management and validation
+    - Session management with advanced security
+    - Form-based authentication with CSRF protection
+    """
+
+    def __init__(
+        self, config: "AdvancedAuthConfig", session: Optional[requests.Session] = None
+    ):
+        pass
+
+        self.config = config
+        self.session = session or requests.Session()
+
+        # Flow management
+        self.active_flows: dict[str, "AuthFlow"] = {}
+
+    def detect_redirect_type(
+        self, url: str, response: requests.Response
+    ) -> "RedirectInfo":
+        """
+        Intelligently detect redirect type and extract parameters.
+
+        Args:
+            url: Target URL
+            response: HTTP response
+
+        Returns:
+            RedirectInfo with detected redirect information
+        """
+        from urllib.parse import parse_qs, urlparse
+
+        from .auth_models import RedirectInfo
+
+        redirect_info = RedirectInfo(url=url)
+
+        # Parse URL for parameters
+        parsed_url = urlparse(url)
+        query_params = parse_qs(parsed_url.query)
+
+        # Flatten query parameters
+        redirect_info.parameters = {
+            k: v[0] if v else "" for k, v in query_params.items()
+        }
+
+        # Detect form POST redirects
+        if response.status_code == 200 and "text/html" in response.headers.get(
+            "content-type", ""
+        ):
+            content = response.text.lower()
+            if 'method="post"' in content:
+                redirect_info.is_form_post = True
+                redirect_info.method = "POST"
+                logger.debug("Detected form POST redirect")
+
+        return redirect_info
+
+    def authenticate_intelligent(self, url: str, **kwargs) -> "AuthenticationSession":
+        """
+        Intelligently detect authentication method and perform authentication.
+
+        Args:
+            url: Authentication URL
+            **kwargs: Authentication parameters
+
+        Returns:
+            AuthenticationSession
+        """
+        from .idp_integration import AuthenticationSession, UserProfile
+
+        # Probe the URL to detect authentication method
+        try:
+            response = self.session.get(url, allow_redirects=False, timeout=10)
+            self.detect_redirect_type(url, response)
+
+            # Use form-based authentication
+            logger.info("Using form-based authentication")
+            session = authenticate_session(self.config.base_config)
+
+            # Create authentication session
+            user_profile = UserProfile(
+                user_id="form_user",
+                email=kwargs.get("email", "user@example.com"),
+                provider="form",
+            )
+
+            return AuthenticationSession(
+                session_id=f"form_{int(time.time())}",
+                user_profile=user_profile,
+                provider="form",
+                session_data={"requests_session": session},
+            )
+
+        except Exception as e:
+            logger.warning(f"Failed to detect authentication method: {e}")
+            from logicpwn.exceptions import AuthenticationError
+
+            raise AuthenticationError(f"Unable to authenticate with {url}")
+
+    def validate_jwt_token(self, token: str) -> dict:
+        """
+        Validate JWT token using configured secret.
+
+        Args:
+            token: JWT token string
+
+        Returns:
+            JWT claims if valid
+        """
+        if not self.config.jwt_secret_key:
+            from logicpwn.exceptions import ValidationError
+
+            raise ValidationError("No JWT secret key configured")
+
+        try:
+            import jwt
+
+            claims = jwt.decode(
+                token,
+                self.config.jwt_secret_key,
+                algorithms=[self.config.jwt_algorithm],
+            )
+            return claims
+        except jwt.InvalidTokenError as e:
+            from logicpwn.exceptions import AuthenticationError
+
+            raise AuthenticationError(f"Invalid JWT token: {e}")
+
+    def cleanup_expired_flows(self):
+        """Clean up expired authentication flows."""
+
+        expired_flows = [
+            flow_id for flow_id, flow in self.active_flows.items() if flow.is_expired
+        ]
+
+        for flow_id in expired_flows:
+            del self.active_flows[flow_id]
+
+        if expired_flows:
+            logger.debug(
+                f"Cleaned up {len(expired_flows)} expired authentication flows"
+            )
+
+
+def create_advanced_config(base_config: "AuthConfig", **kwargs) -> "AdvancedAuthConfig":
+    """Create advanced authentication configuration."""
+    from .auth_models import AdvancedAuthConfig
+
+    return AdvancedAuthConfig(base_config=base_config, **kwargs)

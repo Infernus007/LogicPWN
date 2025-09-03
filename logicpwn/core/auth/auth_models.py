@@ -1,8 +1,15 @@
 """
 Authentication models for LogicPwn.
+
+Enhanced authentication capabilities including:
+- Advanced redirect handling
+- Multi-step authentication flows
+- JWT token management
+- Session management with enhanced security
 """
 
 import re
+import time
 from dataclasses import dataclass, field
 from re import Pattern
 from typing import Any, Callable, Optional
@@ -121,3 +128,75 @@ class AuthConfig(BaseModel):
         if v_up not in HTTP_METHODS:
             raise ValueError(f"method must be one of {HTTP_METHODS}")
         return v_up
+
+
+@dataclass
+class RedirectInfo:
+    """Information about authentication redirects."""
+
+    url: str
+    method: str = "GET"
+    parameters: dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict)
+    is_form_post: bool = False
+
+    def __post_init__(self):
+        if self.parameters is None:
+            self.parameters = {}
+        if self.headers is None:
+            self.headers = {}
+
+
+@dataclass
+class AuthFlow:
+    """Authentication flow state for multi-step authentication."""
+
+    flow_id: str
+    flow_type: str  # form, jwt, multi_step
+    current_step: int
+    total_steps: int
+    state_data: dict[str, Any]
+    started_at: float
+    expires_at: float
+
+    @property
+    def is_expired(self) -> bool:
+        return time.time() >= self.expires_at
+
+    @property
+    def is_complete(self) -> bool:
+        return self.current_step >= self.total_steps
+
+
+class AdvancedAuthConfig(BaseModel):
+    """Advanced authentication configuration with comprehensive features."""
+
+    # Basic auth config
+    base_config: AuthConfig = Field(
+        ..., description="Base authentication configuration"
+    )
+
+    # JWT configuration
+    jwt_secret_key: Optional[str] = Field(
+        default=None, description="JWT secret key for token validation"
+    )
+    jwt_algorithm: str = Field(default="HS256", description="JWT algorithm")
+    jwt_expiry_seconds: int = Field(
+        default=3600, description="JWT token expiry in seconds"
+    )
+
+    # Flow settings
+    enable_redirect_detection: bool = Field(
+        default=True, description="Enable intelligent redirect detection"
+    )
+    max_redirects: int = Field(default=10, description="Maximum redirects to follow")
+    flow_timeout: int = Field(
+        default=1800, description="Authentication flow timeout in seconds"
+    )
+
+    # Security settings
+    require_https: bool = Field(
+        default=True, description="Require HTTPS for auth endpoints"
+    )
+    validate_state: bool = Field(default=True, description="Validate state parameters")
+    csrf_protection: bool = Field(default=True, description="Enable CSRF protection")

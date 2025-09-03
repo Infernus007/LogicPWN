@@ -3,25 +3,24 @@ from .auth_constants import (
     HTTP_METHODS,
     MAX_RESPONSE_TEXT_LENGTH,
 )
-from .auth_models import AuthConfig, CSRFConfig, SessionState
+from .auth_models import (
+    AdvancedAuthConfig,
+    AuthConfig,
+    AuthFlow,
+    CSRFConfig,
+    RedirectInfo,
+    SessionState,
+)
 from .auth_session import (
+    Authenticator,
     authenticate_session,
     authenticate_session_advanced,
+    create_advanced_config,
     create_csrf_config,
     logout_session,
     validate_session,
 )
 from .auth_utils import _sanitize_credentials
-from .enhanced_auth import (
-    AuthFlow,
-    EnhancedAuthConfig,
-    EnhancedAuthenticator,
-    RedirectInfo,
-    create_enhanced_config,
-    create_mfa_enhanced_config,
-    create_oauth_enhanced_config,
-    create_saml_enhanced_config,
-)
 from .http_client import LogicPwnHTTPClient, create_authenticated_client
 from .idp_integration import (
     AttributeMapping,
@@ -43,40 +42,6 @@ from .jwt_handler import (
     JWTHeader,
     create_jwt_config_from_well_known,
 )
-from .mfa_handler import (
-    BackupCodeHandler,
-    EmailHandler,
-    MFAChallenge,
-    MFAConfig,
-    MFAManager,
-    SMSHandler,
-    TOTPHandler,
-    TOTPSecret,
-    create_totp_qr_code,
-    validate_totp_code,
-)
-
-# Enhanced authentication modules
-from .oauth_handler import (
-    OAuthConfig,
-    OAuthHandler,
-    OAuthToken,
-    PKCEChallenge,
-    create_github_oauth_config,
-    create_google_oauth_config,
-    create_microsoft_oauth_config,
-    create_oauth_config_from_well_known,
-)
-from .saml_handler import (
-    IdPMetadata,
-    SAMLAssertion,
-    SAMLConfig,
-    SAMLHandler,
-    create_azure_saml_config,
-    create_okta_saml_config,
-    create_saml_config_from_metadata,
-    load_idp_metadata_from_url,
-)
 
 __all__ = [
     # Core authentication functions
@@ -92,24 +57,6 @@ __all__ = [
     "SessionState",
     "CSRFConfig",
     "LogicPwnHTTPClient",
-    # OAuth 2.0 Support
-    "OAuthHandler",
-    "OAuthConfig",
-    "OAuthToken",
-    "PKCEChallenge",
-    "create_oauth_config_from_well_known",
-    "create_google_oauth_config",
-    "create_microsoft_oauth_config",
-    "create_github_oauth_config",
-    # SAML SSO Support
-    "SAMLHandler",
-    "SAMLConfig",
-    "SAMLAssertion",
-    "IdPMetadata",
-    "load_idp_metadata_from_url",
-    "create_saml_config_from_metadata",
-    "create_okta_saml_config",
-    "create_azure_saml_config",
     # JWT Token Management
     "JWTHandler",
     "JWTConfig",
@@ -117,17 +64,6 @@ __all__ = [
     "JWTHeader",
     "JWK",
     "create_jwt_config_from_well_known",
-    # Multi-Factor Authentication
-    "MFAManager",
-    "MFAConfig",
-    "MFAChallenge",
-    "TOTPHandler",
-    "SMSHandler",
-    "EmailHandler",
-    "BackupCodeHandler",
-    "TOTPSecret",
-    "create_totp_qr_code",
-    "validate_totp_code",
     # Identity Provider Integration
     "IdPManager",
     "IdPConfig",
@@ -139,15 +75,12 @@ __all__ = [
     "create_google_idp_config",
     "create_microsoft_idp_config",
     "create_okta_idp_config",
-    # Enhanced Authentication
-    "EnhancedAuthenticator",
-    "EnhancedAuthConfig",
+    # Advanced Authentication
+    "Authenticator",
+    "AdvancedAuthConfig",
     "RedirectInfo",
     "AuthFlow",
-    "create_enhanced_config",
-    "create_oauth_enhanced_config",
-    "create_saml_enhanced_config",
-    "create_mfa_enhanced_config",
+    "create_advanced_config",
     # Utilities and constants
     "_sanitize_credentials",
     "HTTP_METHODS",

@@ -19,6 +19,7 @@ pytest-asyncio = "<1.0"
 tenacity = "^9.1.2"
 jsonpath-ng = "^1.7.0"
 cryptography = "^42.0.0"
+regex = "^2023.12.25"
 qrcode = "^8.2"
 pyyaml = "^6.0.2"
 websockets = "^15.0.1"
@@ -54,7 +55,8 @@ validator = [
     "requests",
     "pydantic",
     "loguru",
-    "jsonpath-ng"
+    "jsonpath-ng",
+    "regex"
 ]
 
 # Reporter module (for selective installations)

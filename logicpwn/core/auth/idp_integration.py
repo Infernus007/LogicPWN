@@ -32,8 +32,10 @@ from logicpwn.core.performance import monitor_performance
 from logicpwn.exceptions import AuthenticationError, NetworkError, ValidationError
 
 from .jwt_handler import JWTClaims, JWTConfig, JWTHandler
-from .oauth_handler import OAuthConfig, OAuthHandler, OAuthToken
-from .saml_handler import SAMLConfig, SAMLHandler
+
+# OAuth and SAML handlers removed - functionality not fully implemented
+# from .oauth_handler import OAuthConfig, OAuthHandler, OAuthToken
+# from .saml_handler import SAMLConfig, SAMLHandler
 
 
 @dataclass
@@ -270,8 +272,8 @@ class OIDCProvider(BaseIdPProvider):
         super().__init__(config, session)
 
         # Initialize OAuth handler
-        oauth_config = self._create_oauth_config()
-        self.oauth_handler = OAuthHandler(oauth_config, session)
+        self._create_oauth_config()
+        # self.oauth_handler = OAuthHandler(oauth_config, session)  # OAuth not implemented
 
         # Initialize JWT handler if needed
         if config.provider_config.get("validate_id_token", True):
@@ -280,7 +282,7 @@ class OIDCProvider(BaseIdPProvider):
         else:
             self.jwt_handler = None
 
-    def _create_oauth_config(self) -> OAuthConfig:
+    def _create_oauth_config(self):  # -> OAuthConfig:  # OAuth not implemented
         """Create OAuth configuration from IdP config."""
         # Auto-discover endpoints if discovery URL provided
         if self.config.discovery_url:
@@ -289,29 +291,30 @@ class OIDCProvider(BaseIdPProvider):
                 authorization_url = discovery.get(
                     "authorization_endpoint", self.config.authorization_url
                 )
-                token_url = discovery.get("token_endpoint", self.config.token_url)
+                discovery.get("token_endpoint", self.config.token_url)
                 userinfo_url = discovery.get(
                     "userinfo_endpoint", self.config.userinfo_url
                 )
             except Exception as e:
                 logger.warning(f"Failed to fetch discovery document: {e}")
-                authorization_url = self.config.authorization_url
-                token_url = self.config.token_url
-                userinfo_url = self.config.userinfo_url
+                self.config.authorization_url
+                self.config.token_url
+                self.config.userinfo_url
         else:
-            authorization_url = self.config.authorization_url
-            token_url = self.config.token_url
-            userinfo_url = self.config.userinfo_url
+            self.config.authorization_url
+            self.config.token_url
+            self.config.userinfo_url
 
-        return OAuthConfig(
-            client_id=self.config.client_id,
-            client_secret=self.config.client_secret,
-            authorization_url=authorization_url,
-            token_url=token_url,
-            userinfo_url=userinfo_url,
-            scope=self.config.scope or ["openid", "profile", "email"],
-            **self.config.provider_config,
-        )
+        # return OAuthConfig(  # OAuth not implemented
+        #     client_id=self.config.client_id,
+        #     client_secret=self.config.client_secret,
+        #     authorization_url=authorization_url,
+        #     token_url=token_url,
+        #     userinfo_url=userinfo_url,
+        #     scope=self.config.scope or ["openid", "profile", "email"],
+        #     **self.config.provider_config,
+        # )
+        return None  # Placeholder
 
     def _create_jwt_config(self) -> JWTConfig:
         """Create JWT configuration for ID token validation."""
@@ -354,13 +357,14 @@ class OIDCProvider(BaseIdPProvider):
         self, state: Optional[str] = None, **kwargs
     ) -> tuple[str, str]:
         """Get OIDC authorization URL."""
-        return self.oauth_handler.get_authorization_url()
+        # return self.oauth_handler.get_authorization_url()  # OAuth not implemented
+        raise NotImplementedError("OAuth not implemented")
 
     @monitor_performance("oidc_callback_handling")
     def handle_callback(self, callback_data: dict[str, Any]) -> AuthenticationSession:
         """Handle OIDC callback."""
         code = callback_data.get("code")
-        state = callback_data.get("state")
+        callback_data.get("state")
 
         if not code:
             error = callback_data.get("error", "unknown_error")
@@ -370,7 +374,8 @@ class OIDCProvider(BaseIdPProvider):
             raise AuthenticationError(f"OIDC error: {error} - {error_description}")
 
         # Exchange code for tokens
-        token = self.oauth_handler.exchange_code_for_token(code, state)
+        # token = self.oauth_handler.exchange_code_for_token(code, state)  # OAuth not implemented
+        raise NotImplementedError("OAuth not implemented")
 
         # Validate ID token if present
         id_token_claims = None
@@ -399,7 +404,9 @@ class OIDCProvider(BaseIdPProvider):
         return session
 
     def _get_user_profile_from_token(
-        self, token: OAuthToken, id_token_claims: Optional[JWTClaims] = None
+        self,
+        token,
+        id_token_claims: Optional[JWTClaims] = None,  # OAuthToken not implemented
     ) -> UserProfile:
         """Get user profile from token and claims."""
         # Start with ID token claims if available
@@ -410,12 +417,13 @@ class OIDCProvider(BaseIdPProvider):
                 profile_data["sub"] = id_token_claims.sub
 
         # Fetch additional data from UserInfo endpoint if available
-        if self.oauth_handler.config.userinfo_url:
-            try:
-                userinfo = self.oauth_handler.get_user_info()
-                profile_data.update(userinfo)
-            except Exception as e:
-                logger.warning(f"Failed to fetch UserInfo: {e}")
+        # if self.oauth_handler.config.userinfo_url:  # OAuth not implemented
+        #     try:
+        #         userinfo = self.oauth_handler.get_user_info()
+        #         profile_data.update(userinfo)
+        #     except Exception as e:
+        #         logger.warning(f"Failed to fetch UserInfo: {e}")
+        # OAuth not implemented
 
         return self._map_attributes(profile_data)
 
@@ -429,8 +437,9 @@ class OIDCProvider(BaseIdPProvider):
             raise AuthenticationError("No refresh token available")
 
         # Refresh OAuth token
-        self.oauth_handler.token = session.session_data.get("token")
-        new_token = self.oauth_handler.refresh_access_token()
+        # self.oauth_handler.token = session.session_data.get("token")  # OAuth not implemented
+        # new_token = self.oauth_handler.refresh_access_token()  # OAuth not implemented
+        raise NotImplementedError("OAuth not implemented")
 
         # Update session
         session.access_token = new_token.access_token
@@ -449,8 +458,10 @@ class OIDCProvider(BaseIdPProvider):
         """Logout OIDC session."""
         # Revoke tokens
         if session.access_token:
-            self.oauth_handler.token = session.session_data.get("token")
-            self.oauth_handler.revoke_token(session.access_token)
+            # self.oauth_handler.token = session.session_data.get("token")  # OAuth not implemented
+            # self.oauth_handler.revoke_token(session.access_token)  # OAuth not implemented
+            # OAuth not implemented
+            pass
 
         # Perform end session if endpoint available
         if self.config.logout_url:
@@ -481,42 +492,45 @@ class SAMLIdPProvider(BaseIdPProvider):
         super().__init__(config, session)
 
         # Create SAML configuration
-        saml_config = self._create_saml_config()
-        self.saml_handler = SAMLHandler(saml_config, session)
+        self._create_saml_config()
+        # self.saml_handler = SAMLHandler(saml_config, session)  # SAML not implemented
 
-    def _create_saml_config(self) -> SAMLConfig:
+    def _create_saml_config(self):  # -> SAMLConfig:  # SAML not implemented
         """Create SAML configuration from IdP config."""
-        provider_config = self.config.provider_config
+        self.config.provider_config
 
-        return SAMLConfig(
-            sp_entity_id=provider_config["sp_entity_id"],
-            sp_acs_url=provider_config["sp_acs_url"],
-            idp_entity_id=provider_config["idp_entity_id"],
-            idp_sso_url=self.config.authorization_url,
-            idp_slo_url=self.config.logout_url,
-            **{
-                k: v
-                for k, v in provider_config.items()
-                if k not in ["sp_entity_id", "sp_acs_url", "idp_entity_id"]
-            },
-        )
+        # return SAMLConfig(  # SAML not implemented
+        #     sp_entity_id=provider_config["sp_entity_id"],
+        #     sp_acs_url=provider_config["sp_entity_id"],
+        #     idp_entity_id=provider_config["idp_entity_id"],
+        #     idp_sso_url=self.config.authorization_url,
+        #     idp_slo_url=self.config.logout_url,
+        #     **{
+        #         k: v
+        #         for k, v in provider_config.items()
+        #         if k not in ["sp_entity_id", "sp_acs_url", "idp_entity_id"]
+        #     },
+        # )
+        return None  # Placeholder
 
     def get_authorization_url(
         self, state: Optional[str] = None, **kwargs
     ) -> tuple[str, str]:
         """Get SAML authorization URL."""
-        return self.saml_handler.create_auth_request()
+        # return self.saml_handler.create_auth_request()  # SAML not implemented
+        raise NotImplementedError("SAML not implemented")
 
     def handle_callback(self, callback_data: dict[str, Any]) -> AuthenticationSession:
         """Handle SAML callback."""
         saml_response = callback_data.get("SAMLResponse")
-        relay_state = callback_data.get("RelayState")
+        callback_data.get("RelayState")
 
         if not saml_response:
             raise AuthenticationError("No SAML response received")
 
         # Process SAML response
-        assertion = self.saml_handler.process_saml_response(saml_response, relay_state)
+        # assertion = self.saml_handler.process_saml_response(saml_response, relay_state)  # SAML not implemented
+        raise NotImplementedError("SAML not implemented")
 
         # Map attributes to user profile
         profile_data = {"sub": assertion.subject_name_id, **assertion.attributes}
@@ -554,9 +568,10 @@ class SAMLIdPProvider(BaseIdPProvider):
 
         assertion = session.session_data.get("assertion")
         if assertion:
-            logout_url, relay_state = self.saml_handler.create_logout_request(
-                assertion.subject_name_id, assertion.session_index
-            )
+            # logout_url, relay_state = self.saml_handler.create_logout_request(  # SAML not implemented
+            #     assertion.subject_name_id, assertion.session_index
+            # )
+            raise NotImplementedError("SAML not implemented")
 
             # TODO: Implement proper SAML logout redirection for production use
             # This placeholder just logs the URL instead of performing actual logout

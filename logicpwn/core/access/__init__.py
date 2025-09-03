@@ -19,14 +19,13 @@ from .core_logic import (
     _test_single_id_with_baselines,
     _test_single_id_with_baselines_async,
 )
-from .detector import detect_idor_flaws, detect_idor_flaws_async
-
-# Enhanced access detection capabilities
-from .enhanced_detector import (
+from .detector import (  # Enhanced access detection capabilities
     EnhancedAccessTestConfig,
     EnhancedAccessTester,
     EnhancedAccessTestResults,
     create_enhanced_access_config,
+    detect_idor_flaws,
+    detect_idor_flaws_async,
     privilege_escalation_test_only,
     quick_idor_with_smart_ids,
     run_enhanced_access_detection,
@@ -46,7 +45,12 @@ from .id_generation import (
 )
 
 # Logging functions are imported from logicpwn.core.logging in individual modules
-from .models import AccessDetectorConfig, AccessTestResult
+from .models import (
+    AccessDetectorConfig,
+    AccessTestResult,
+    EnhancedAccessTestConfig,
+    EnhancedAccessTestResults,
+)
 
 # Privilege Escalation and Role Testing
 from .privilege_escalation import (

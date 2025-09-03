@@ -8,12 +8,14 @@ from .log_functions import (
     log_warning,
     logger,
 )
-from .logger import LogicPwnLogger
+from .logger import ErrorPattern, ErrorTracker, LogicPwnLogger
 from .redactor import SensitiveDataRedactor
 
 __all__ = [
     "SensitiveDataRedactor",
     "LogicPwnLogger",
+    "ErrorTracker",
+    "ErrorPattern",
     "logger",
     "log_request",
     "log_response",
