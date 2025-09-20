@@ -1,4 +1,4 @@
-.PHONY: help install install-dev check lint format fix test test-coverage clean clean-backups docs-update docs-update-backup docs-force-backup auto-commit docs-workflow auto-commit-push pre-commit-check pre-commit-fix commit-safe docs-force
+.PHONY: help install install-dev check lint format fix test test-coverage clean clean-backups docs-update docs-update-backup docs-force-backup auto-commit docs-workflow auto-commit-push pre-commit-check pre-commit-fix commit-safe docs-force update-docs-submodule docs-submodule-status
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -101,3 +101,11 @@ auto-commit-push: ## Auto-commit and push documentation changes
 docs-workflow: ## Complete documentation workflow
 	@echo "🚀 Running comprehensive documentation workflow..."
 	./scripts/docs-workflow.sh
+
+update-docs-submodule: ## Update doks submodule and commit changes
+	@echo "🔄 Updating doks submodule..."
+	./scripts/auto-update-docs-submodule.sh
+
+docs-submodule-status: ## Show doks submodule status
+	@echo "📊 Doks submodule status:"
+	@git submodule status doks
