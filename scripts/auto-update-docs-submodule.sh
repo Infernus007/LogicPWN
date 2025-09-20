@@ -28,13 +28,21 @@ check_git_repo() {
 # Function to check if doks submodule exists
 check_doks_submodule() {
     if [ ! -d "doks" ]; then
-        print_message "${RED}❌ Error: doks submodule not found${NC}"
+        print_message "${RED}❌ Error: doks directory not found${NC}"
         exit 1
     fi
 
-    if ! git submodule status doks > /dev/null 2>&1; then
-        print_message "${RED}❌ Error: doks is not a git submodule${NC}"
+    # Check if doks is a git repository (either submodule or nested repo)
+    if [ ! -d "doks/.git" ]; then
+        print_message "${RED}❌ Error: doks is not a git repository${NC}"
         exit 1
+    fi
+
+    # Check if it's a submodule or nested repo
+    if git submodule status doks > /dev/null 2>&1; then
+        print_message "${BLUE}ℹ️  Doks is configured as a git submodule${NC}"
+    else
+        print_message "${BLUE}ℹ️  Doks is a nested git repository${NC}"
     fi
 }
 
@@ -42,19 +50,26 @@ check_doks_submodule() {
 update_doks_submodule() {
     print_message "${BLUE}🔄 Updating doks submodule...${NC}"
 
-    # Go into doks directory and pull latest changes
+    # Go into doks directory
     cd doks
+
+    # Check if this is a local nested git repo (no remote)
+    if ! git remote | grep -q origin; then
+        print_message "${BLUE}ℹ️  Doks is a local nested git repository (no remote origin)${NC}"
+        print_message "${GREEN}✅ Local doks repository is up to date${NC}"
+        cd ..
+        return 0
+    fi
 
     # Check if remote repository exists
     if ! git ls-remote origin > /dev/null 2>&1; then
         print_message "${YELLOW}⚠️  Remote repository not found or not accessible${NC}"
-        print_message "${YELLOW}   Please ensure the doks repository exists and is accessible${NC}"
+        print_message "${YELLOW}   Doks is working as a local repository${NC}"
         cd ..
-        return 1
+        return 0
     fi
 
-    # For nested git repos, we need to handle the case where doks is a separate repo
-    # First, try to fetch and pull from origin
+    # For nested git repos with remote, try to fetch and pull
     git fetch origin
 
     # Check if we're ahead of origin (local commits not pushed)
@@ -100,8 +115,15 @@ commit_submodule_changes() {
 
 # Function to show submodule status
 show_submodule_status() {
-    print_message "${BLUE}📊 Doks submodule status:${NC}"
-    git submodule status doks
+    print_message "${BLUE}📊 Doks repository status:${NC}"
+    if git submodule status doks > /dev/null 2>&1; then
+        git submodule status doks
+    else
+        cd doks
+        print_message "  Current commit: $(git rev-parse --short HEAD)"
+        print_message "  Branch: $(git branch --show-current)"
+        cd ..
+    fi
 }
 
 # Main function
