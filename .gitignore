@@ -165,7 +165,6 @@ cython_debug/
 # VS Code
 .vscode/
 
-doks
 
 # Security and sensitive files
 *.key
