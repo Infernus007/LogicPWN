@@ -44,6 +44,15 @@ update_doks_submodule() {
 
     # Go into doks directory and pull latest changes
     cd doks
+
+    # Check if remote repository exists
+    if ! git ls-remote origin > /dev/null 2>&1; then
+        print_message "${YELLOW}⚠️  Remote repository not found or not accessible${NC}"
+        print_message "${YELLOW}   Please ensure the doks repository exists and is accessible${NC}"
+        cd ..
+        return 1
+    fi
+
     git fetch origin
     git checkout main
     git pull origin main
