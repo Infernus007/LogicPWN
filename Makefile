@@ -106,6 +106,10 @@ update-docs-submodule: ## Update doks submodule and commit changes
 	@echo "🔄 Updating doks submodule..."
 	./scripts/auto-update-docs-submodule.sh
 
-docs-submodule-status: ## Show doks submodule status
-	@echo "📊 Doks submodule status:"
-	@git submodule status doks
+docs-submodule-status: ## Show doks repository status
+	@echo "📊 Doks repository status:"
+	@if git submodule status doks > /dev/null 2>&1; then \
+		git submodule status doks; \
+	else \
+		cd doks && echo "  Current commit: $$(git rev-parse --short HEAD)" && echo "  Branch: $$(git branch --show-current)" && cd ..; \
+	fi
