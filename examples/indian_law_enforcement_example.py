@@ -123,7 +123,7 @@ def run_basic_reconnaissance(target_url: str) -> dict:
 
     try:
         # Test basic connectivity
-        response = send_request(target_url, method="GET")
+        response = send_request(None, {"url": target_url, "method": "GET"})
         recon_results["target_accessible"] = True
         recon_results["server_info"] = {
             "status_code": response.status_code,
@@ -152,7 +152,7 @@ def run_basic_reconnaissance(target_url: str) -> dict:
         for path in common_paths:
             test_url = f"{target_url.rstrip('/')}{path}"
             try:
-                test_response = send_request(test_url, method="GET")
+                test_response = send_request(None, {"url": test_url, "method": "GET"})
                 if test_response.status_code != 404:
                     recon_results["endpoints_discovered"].append(
                         {"path": path, "status": test_response.status_code}

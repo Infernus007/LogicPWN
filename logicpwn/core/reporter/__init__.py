@@ -1,12 +1,42 @@
 """
-LogicPWN Reporter Module - Enhanced for Indian Law Enforcement
+LogicPWN Reporfrom .auth_managfrom .security_middleware import (
+    ReportSecurityMiddleware,
+    SecurityPolicy,
+    AuditLogger,
+    require_authentication,
+    validate_input,
+)ort (
+    ReportAuthManager,
+    User,
+    Permission,
+    Role,
+    AuthenticationError,
+    AuthorizationError,
+)e - Enhanced for Indian Law Enforcement
 
 This module provides comprehensive reporting capabilities for LogicPWN
 penetration testing results, with specialized support for Indian law
 enforcement agencies and cybersecurity compliance frameworks.
 """
 
-from .cvss import CVSSCalculator
+from .auth_manager import (
+    AuthenticationError,
+    AuthorizationError,
+    Permission,
+    ReportAuthManager,
+    Role,
+    User,
+)
+from .cvss import (
+    AttackComplexity,
+    AttackVector,
+    CVSSCalculator,
+    CVSSVector,
+    ImpactMetric,
+    PrivilegesRequired,
+    Scope,
+    UserInteraction,
+)
 from .framework_mapper import (
     ComplianceMapping,
     ComplianceStatus,
@@ -33,6 +63,14 @@ from .indian_law_enforcement import (
     IndianLawEnforcementConfig,
     IndianLawEnforcementReportGenerator,
 )
+
+# Security components
+from .input_validator import (
+    InputValidator,
+    ReportConfigInput,
+    ValidationError,
+    VulnerabilityInput,
+)
 from .models import RedactionRule
 
 # Core reporting functionality
@@ -40,9 +78,19 @@ from .orchestrator import (
     ReportConfig,
     ReportGenerator,
     ReportMetadata,
+    SecureReportConfig,
+    SecureReportGenerator,
+    SecureVulnerabilityFinding,
     VulnerabilityFinding,
 )
 from .redactor import AdvancedRedactor
+from .security_middleware import (
+    AuditLogger,
+    ReportSecurityMiddleware,
+    SecurityPolicy,
+    require_authentication,
+    validate_input,
+)
 from .template_renderer import TemplateRenderer
 
 __all__ = [
@@ -53,8 +101,34 @@ __all__ = [
     "ReportGenerator",
     "RedactionRule",
     "CVSSCalculator",
+    "CVSSVector",
+    "AttackVector",
+    "AttackComplexity",
+    "PrivilegesRequired",
+    "UserInteraction",
+    "Scope",
+    "ImpactMetric",
     "TemplateRenderer",
     "AdvancedRedactor",
+    # Security components
+    "SecureReportGenerator",
+    "SecureVulnerabilityFinding",
+    "SecureReportConfig",
+    "InputValidator",
+    "ValidationError",
+    "VulnerabilityInput",
+    "ReportConfigInput",
+    "ReportAuthManager",
+    "User",
+    "Permission",
+    "Role",
+    "AuthenticationError",
+    "AuthorizationError",
+    "ReportSecurityMiddleware",
+    "SecurityPolicy",
+    "AuditLogger",
+    "require_authentication",
+    "validate_input",
     # Indian compliance
     "IndianComplianceFramework",
     "ThreatClassification",

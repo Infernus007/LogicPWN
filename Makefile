@@ -1,4 +1,4 @@
-.PHONY: help install install-dev check lint format fix test test-coverage clean docs-update auto-commit docs-workflow auto-commit-push pre-commit-check pre-commit-fix commit-safe docs-force
+.PHONY: help install install-dev check lint format fix test test-coverage clean clean-backups docs-update docs-update-backup docs-force-backup auto-commit docs-workflow auto-commit-push pre-commit-check pre-commit-fix commit-safe docs-force
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -35,6 +35,11 @@ clean: ## Clean up generated files
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
 
+clean-backups: ## Clean up API documentation backup folders
+	@echo "🧹 Cleaning up API documentation backup folders..."
+	find . -name "*.backup.*" -type d -exec rm -rf {} + 2>/dev/null || true
+	@echo "✅ Backup folders cleaned up!"
+
 # Pre-commit workflow commands
 pre-commit-check: ## Check if pre-commit hooks pass (dry run)
 	@echo "🔍 Running pre-commit hooks check..."
@@ -57,17 +62,33 @@ commit-safe: ## Safe commit workflow - format first, then commit
 	@echo "   git commit -m \"your message\""
 
 # Documentation commands
-docs-update: ## Update API documentation (respects branch restrictions)
-	@echo "📚 Updating API documentation..."
+docs-update: ## Update API documentation (no backup, respects branch restrictions)
+	@echo "📚 Updating API documentation (no backup)..."
 	./scripts/pre-commit-docs-update.sh
 
-docs-force: ## Force update API documentation (ignores branch restrictions)
-	@echo "🚀 Force updating API documentation..."
+docs-update-backup: ## Update API documentation with backup (respects branch restrictions)
+	@echo "📚 Updating API documentation with backup..."
+	@echo "🔧 Generating API documentation with backup..."
+	./scripts/update_api_docs.sh --backup
+	@echo "🔧 Fixing API documentation structure..."
+	python3 scripts/fix_api_docs.py
+	@echo "✅ Documentation generated successfully with backup!"
+
+docs-force: ## Force update API documentation (no backup, ignores branch restrictions)
+	@echo "🚀 Force updating API documentation (no backup)..."
 	@echo "🔧 Generating API documentation..."
-	python3 scripts/generate_simple_api_docs.py
+	./scripts/update_api_docs.sh
 	@echo "🔧 Fixing API documentation structure..."
 	python3 scripts/fix_api_docs.py
 	@echo "✅ Documentation generated successfully!"
+
+docs-force-backup: ## Force update API documentation with backup (ignores branch restrictions)
+	@echo "🚀 Force updating API documentation with backup..."
+	@echo "🔧 Generating API documentation with backup..."
+	./scripts/update_api_docs.sh --backup
+	@echo "🔧 Fixing API documentation structure..."
+	python3 scripts/fix_api_docs.py
+	@echo "✅ Documentation generated successfully with backup!"
 
 auto-commit: ## Auto-commit documentation changes
 	@echo "🤖 Running auto-commit for documentation changes..."

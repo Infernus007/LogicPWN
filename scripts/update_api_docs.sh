@@ -9,10 +9,15 @@ set -e
 
 # Parse command line arguments
 QUIET=false
+CREATE_BACKUP=false
 for arg in "$@"; do
     case $arg in
         --quiet)
             QUIET=true
+            shift
+            ;;
+        --backup)
+            CREATE_BACKUP=true
             shift
             ;;
         *)
@@ -73,12 +78,15 @@ if [ ! -f "$GENERATOR_SCRIPT" ]; then
     exit 1
 fi
 
-# Backup existing docs if they exist
-if [ -d "$API_DOCS_DIR" ]; then
+# Backup existing docs if they exist and backup is requested
+if [ -d "$API_DOCS_DIR" ] && [ "$CREATE_BACKUP" = true ]; then
     print_message "${YELLOW}📋 Backing up existing API docs...${NC}"
     BACKUP_DIR="$API_DOCS_DIR.backup.$(date +%Y%m%d_%H%M%S)"
     cp -r "$API_DOCS_DIR" "$BACKUP_DIR"
     print_message "${GREEN}✅ Backup created: ${BACKUP_DIR}${NC}"
+    print_message ""
+elif [ -d "$API_DOCS_DIR" ] && [ "$CREATE_BACKUP" = false ]; then
+    print_message "${BLUE}ℹ️  Skipping backup creation (use --backup to enable)${NC}"
     print_message ""
 fi
 
@@ -154,12 +162,14 @@ else
     echo ""
     echo -e "${RED}❌ Error: API documentation generation failed${NC}"
 
-    # Restore backup if it exists
-    if [ -d "$BACKUP_DIR" ]; then
+    # Restore backup if it exists and was created
+    if [ "$CREATE_BACKUP" = true ] && [ -d "$BACKUP_DIR" ]; then
         echo -e "${YELLOW}🔄 Restoring backup...${NC}"
         rm -rf "$API_DOCS_DIR"
         mv "$BACKUP_DIR" "$API_DOCS_DIR"
         echo -e "${GREEN}✅ Backup restored${NC}"
+    elif [ "$CREATE_BACKUP" = false ]; then
+        echo -e "${YELLOW}ℹ️  No backup available to restore (backup creation was disabled)${NC}"
     fi
 
     exit 1

@@ -231,6 +231,7 @@ Thumbs.db
 # Backup files
 *.bak
 *.backup
+*.backup.*
 *.old
 
 # Logs

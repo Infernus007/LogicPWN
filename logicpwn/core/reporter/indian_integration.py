@@ -9,8 +9,8 @@ import asyncio
 from datetime import datetime
 from typing import Any, Optional
 
+from logicpwn.core.access import EnhancedAccessTester
 from logicpwn.core.access.detector import detect_idor_flaws
-from logicpwn.core.access.enhanced_detector import EnhancedAccessTester
 from logicpwn.core.auth import AuthConfig, authenticate_session
 from logicpwn.core.reporter.framework_mapper import IndianFrameworkMapper
 from logicpwn.core.reporter.indian_compliance import IndianComplianceFramework

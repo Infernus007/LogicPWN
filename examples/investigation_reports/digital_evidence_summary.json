@@ -1,0 +1,10 @@
+{
+  "case_reference": "TEST001",
+  "total_vulnerabilities": 0,
+  "evidence_items": {},
+  "chain_of_custody_maintained": true,
+  "forensic_integrity": "All evidence integrity verified",
+  "collection_officer": "Investigating Officer",
+  "collection_timestamp": "2025-09-03 14:22:26.870168",
+  "legal_admissibility": "Evidence collected as per IT Act Section 65B requirements"
+}

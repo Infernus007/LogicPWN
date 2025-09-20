@@ -11,6 +11,8 @@ This file demonstrates the new functionality added to the access module:
 
 import asyncio
 
+import requests
+
 from logicpwn.core.access import (  # Enhanced protocol support; Authentication integration; Result streaming; Core functionality
     AccessDetectorConfig,
     AuthenticatedAccessTester,

@@ -1,0 +1,302 @@
+{
+  "executive_summary": {
+    "incident_overview": {
+      "total_vulnerabilities": 0,
+      "critical_issues": 0,
+      "high_priority_issues": 0,
+      "potential_data_breach": false,
+      "national_security_implications": false
+    },
+    "legal_implications": {
+      "it_act_violations": [],
+      "potential_penalties": "As per Information Technology Act 2000 and applicable sections",
+      "criminal_provisions": "May invoke relevant sections of IT Act 2000 and IPC"
+    },
+    "immediate_actions_required": [
+      "Secure and preserve all digital evidence",
+      "Report incident to CERT-In within 6 hours",
+      "Initiate chain of custody procedures",
+      "Begin impact assessment and victim notification"
+    ],
+    "compliance_status": {
+      "cert_in_guidelines": "Investigation initiated as per CERT-In protocols",
+      "it_act_compliance": "Evidence handling follows IT Act Section 65B requirements",
+      "digital_forensics": "Standard digital forensics procedures applied"
+    }
+  },
+  "incident_details": {
+    "case_information": {
+      "case_reference": "TEST001",
+      "fir_number": null,
+      "investigating_agency": "Cyber Crime Investigation Cell",
+      "investigating_officer": "Investigating Officer",
+      "jurisdiction": "India",
+      "incident_classification": "cyber_crime",
+      "priority_level": "high"
+    },
+    "timeline": {
+      "incident_discovery": "2025-09-03 14:22:26.867885",
+      "investigation_started": "2025-09-03 14:22:26.867890",
+      "evidence_collection_started": "2025-09-03 14:22:26.867891",
+      "preliminary_analysis_completed": "2025-09-03 20:22:26.867893"
+    },
+    "affected_systems": {
+      "target_systems": [],
+      "vulnerability_types": [],
+      "threat_classifications": []
+    }
+  },
+  "technical_findings": [],
+  "legal_analysis": {
+    "applicable_laws": {
+      "primary_legislation": "Information Technology Act 2000",
+      "secondary_legislation": [
+        "Indian Penal Code 1860",
+        "Indian Evidence Act 1872"
+      ],
+      "relevant_sections": []
+    },
+    "legal_implications": [],
+    "prosecution_prospects": "Moderate prospects depending on impact assessment and evidence quality",
+    "evidence_admissibility": {
+      "digital_evidence_standards": "As per IT Act Section 65B requirements",
+      "chain_of_custody": "Maintained as per legal standards",
+      "expert_testimony": "Technical expert testimony available",
+      "forensic_reports": "Digital forensics reports prepared"
+    },
+    "recommended_charges": []
+  },
+  "digital_evidence": {
+    "evidence_summary": {
+      "total_evidence_items": 0,
+      "evidence_types": [],
+      "collection_period": {
+        "start": "2025-09-03 14:22:26.867925",
+        "end": "2025-09-03 14:22:26.867927"
+      }
+    },
+    "evidence_catalog": {},
+    "integrity_verification": {
+      "hash_algorithm": "SHA-256",
+      "verification_status": "All evidence items verified",
+      "chain_of_custody_status": "Maintained"
+    },
+    "storage_information": {
+      "secure_storage": "Digital evidence locker",
+      "access_controls": "Multi-factor authentication required",
+      "backup_status": "Evidence backed up to secure secondary location"
+    }
+  },
+  "investigation_recommendations": {
+    "immediate_actions": [
+      "Preserve all system logs and evidence",
+      "Interview relevant personnel",
+      "Secure affected systems",
+      "Document incident timeline",
+      "Notify stakeholders as required"
+    ],
+    "detailed_investigation": [
+      "Conduct comprehensive forensic analysis",
+      "Analyze attack vectors and methodologies",
+      "Identify potential suspects or sources",
+      "Assess full scope of compromise",
+      "Document financial or other damages"
+    ],
+    "legal_proceedings": [
+      "Prepare comprehensive case file",
+      "Coordinate with public prosecutor",
+      "Arrange expert witness testimony",
+      "Ensure evidence admissibility",
+      "Follow up on remediation compliance"
+    ],
+    "stakeholder_coordination": {
+      "internal": [
+        "Investigation team",
+        "Digital forensics",
+        "Legal counsel"
+      ],
+      "external": [
+        "CERT-In",
+        "Local cyber crime cell",
+        "Affected organizations"
+      ],
+      "regulatory": [
+        "Data protection authorities",
+        "Sector regulators"
+      ]
+    }
+  },
+  "compliance_assessment": {
+    "overall_compliance": {
+      "cert_in": {
+        "framework_name": "cert_in",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [
+          "Incident reporting within 6 hours",
+          "Vulnerability assessment documentation",
+          "Security control implementation",
+          "Digital forensics evidence preservation"
+        ],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "it_act_2000": {
+        "framework_name": "it_act_2000",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "digital_india": {
+        "framework_name": "digital_india",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "nciipc": {
+        "framework_name": "nciipc",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "cdac": {
+        "framework_name": "cdac",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "meity": {
+        "framework_name": "meity",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "rbi_cyber": {
+        "framework_name": "rbi_cyber",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [
+          "Board-approved cyber security policy",
+          "Baseline cyber security controls",
+          "Advanced monitoring and controls",
+          "Incident reporting to RBI within 2-6 hours",
+          "Third-party risk management"
+        ],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      },
+      "icert": {
+        "framework_name": "icert",
+        "compliance_status": "Under Investigation",
+        "applicable_requirements": [],
+        "compliance_gaps": [
+          "Inadequate security controls implementation",
+          "Insufficient incident response procedures",
+          "Lack of proper access controls"
+        ],
+        "remediation_required": [
+          "Implement required security controls",
+          "Establish incident response procedures",
+          "Conduct regular security assessments"
+        ]
+      }
+    },
+    "critical_gaps": [
+      "Failure to implement reasonable security practices as required by IT Act 2000",
+      "Inadequate protection of personal data",
+      "Insufficient incident reporting and response procedures"
+    ],
+    "regulatory_reporting": {
+      "cert_in_reported": true,
+      "timeline_compliance": "Within required timeframes",
+      "documentation_status": "Complete"
+    }
+  },
+  "remediation_plan": {
+    "immediate_remediation": [],
+    "medium_term_remediation": [],
+    "long_term_remediation": [],
+    "compliance_verification": {
+      "follow_up_required": true,
+      "verification_timeline": "30-90 days post remediation",
+      "compliance_certification": "Required for case closure"
+    }
+  },
+  "chain_of_custody": [],
+  "appendices": {
+    "technical_appendix": {
+      "vulnerability_details": "Detailed technical analysis of each vulnerability",
+      "network_diagrams": "System architecture and attack paths",
+      "log_analysis": "Relevant system and application logs"
+    },
+    "legal_appendix": {
+      "relevant_statutes": "Complete text of applicable legal sections",
+      "case_precedents": "Similar cases and legal precedents",
+      "expert_opinions": "Technical and legal expert assessments"
+    },
+    "compliance_appendix": {
+      "framework_requirements": "Detailed compliance framework requirements",
+      "gap_analysis": "Comprehensive compliance gap analysis",
+      "best_practices": "Industry best practices and recommendations"
+    }
+  }
+}

@@ -28,7 +28,7 @@ python3 scripts/generate_simple_api_docs.py
 
 A wrapper script that automates the documentation update process:
 
-- **Backup creation**: Creates backups before updates
+- **Optional backup creation**: Creates backups before updates (disabled by default)
 - **Dependency check**: Ensures required packages are installed
 - **Documentation generation**: Runs the API generator
 - **Status reporting**: Shows generated files and stats
@@ -36,7 +36,17 @@ A wrapper script that automates the documentation update process:
 **Usage:**
 
 ```bash
+# Default: no backup creation
 ./scripts/update_api_docs.sh
+
+# With backup creation
+./scripts/update_api_docs.sh --backup
+
+# Quiet mode (no backup)
+./scripts/update_api_docs.sh --quiet
+
+# Quiet mode with backup
+./scripts/update_api_docs.sh --quiet --backup
 ```
 
 ### `fix_api_docs.py` - Documentation Post-Processor
