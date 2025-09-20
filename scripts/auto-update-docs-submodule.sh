@@ -53,12 +53,25 @@ update_doks_submodule() {
         return 1
     fi
 
+    # For nested git repos, we need to handle the case where doks is a separate repo
+    # First, try to fetch and pull from origin
     git fetch origin
-    git checkout main
-    git pull origin main
-    cd ..
 
-    print_message "${GREEN}✅ Doks submodule updated${NC}"
+    # Check if we're ahead of origin (local commits not pushed)
+    if git status --porcelain=v1 | grep -q "ahead"; then
+        print_message "${YELLOW}ℹ️  Doks submodule has local commits ahead of origin${NC}"
+        print_message "${YELLOW}   Consider pushing local changes first${NC}"
+    fi
+
+    # Try to pull latest changes
+    if git pull origin main; then
+        print_message "${GREEN}✅ Doks submodule updated from remote${NC}"
+    else
+        print_message "${YELLOW}⚠️  Could not pull from remote, keeping local changes${NC}"
+    fi
+
+    cd ..
+    print_message "${GREEN}✅ Doks submodule update completed${NC}"
 }
 
 # Function to check if submodule has changes
