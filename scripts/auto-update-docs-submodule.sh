@@ -25,38 +25,38 @@ check_git_repo() {
     fi
 }
 
-# Function to check if doks submodule exists
-check_doks_submodule() {
-    if [ ! -d "doks" ]; then
-        print_message "${RED}❌ Error: doks directory not found${NC}"
+# Function to check if docs submodule exists
+check_docs_submodule() {
+    if [ ! -d "docs" ]; then
+        print_message "${RED}❌ Error: docs directory not found${NC}"
         exit 1
     fi
 
-    # Check if doks is a git repository (either submodule or nested repo)
-    if [ ! -d "doks/.git" ]; then
-        print_message "${RED}❌ Error: doks is not a git repository${NC}"
+    # Check if docs is a git repository (either submodule or nested repo)
+    if [ ! -d "docs/.git" ]; then
+        print_message "${RED}❌ Error: docs is not a git repository${NC}"
         exit 1
     fi
 
     # Check if it's a submodule or nested repo
-    if git submodule status doks > /dev/null 2>&1; then
-        print_message "${BLUE}ℹ️  Doks is configured as a git submodule${NC}"
+    if git submodule status docs > /dev/null 2>&1; then
+        print_message "${BLUE}ℹ️  Docs is configured as a git submodule${NC}"
     else
-        print_message "${BLUE}ℹ️  Doks is a nested git repository${NC}"
+        print_message "${BLUE}ℹ️  Docs is a nested git repository${NC}"
     fi
 }
 
-# Function to update doks submodule
-update_doks_submodule() {
-    print_message "${BLUE}🔄 Updating doks submodule...${NC}"
+# Function to update docs submodule
+update_docs_submodule() {
+    print_message "${BLUE}🔄 Updating docs submodule...${NC}"
 
-    # Go into doks directory
-    cd doks
+    # Go into docs directory
+    cd docs
 
     # Check if this is a local nested git repo (no remote)
     if ! git remote | grep -q origin; then
-        print_message "${BLUE}ℹ️  Doks is a local nested git repository (no remote origin)${NC}"
-        print_message "${GREEN}✅ Local doks repository is up to date${NC}"
+        print_message "${BLUE}ℹ️  Docs is a local nested git repository (no remote origin)${NC}"
+        print_message "${GREEN}✅ Local docs repository is up to date${NC}"
         cd ..
         return 0
     fi
@@ -64,7 +64,7 @@ update_doks_submodule() {
     # Check if remote repository exists
     if ! git ls-remote origin > /dev/null 2>&1; then
         print_message "${YELLOW}⚠️  Remote repository not found or not accessible${NC}"
-        print_message "${YELLOW}   Doks is working as a local repository${NC}"
+        print_message "${YELLOW}   Docs is working as a local repository${NC}"
         cd ..
         return 0
     fi
@@ -74,28 +74,28 @@ update_doks_submodule() {
 
     # Check if we're ahead of origin (local commits not pushed)
     if git status --porcelain=v1 | grep -q "ahead"; then
-        print_message "${YELLOW}ℹ️  Doks submodule has local commits ahead of origin${NC}"
+        print_message "${YELLOW}ℹ️  Docs submodule has local commits ahead of origin${NC}"
         print_message "${YELLOW}   Consider pushing local changes first${NC}"
     fi
 
     # Try to pull latest changes
     if git pull origin main; then
-        print_message "${GREEN}✅ Doks submodule updated from remote${NC}"
+        print_message "${GREEN}✅ Docs submodule updated from remote${NC}"
     else
         print_message "${YELLOW}⚠️  Could not pull from remote, keeping local changes${NC}"
     fi
 
     cd ..
-    print_message "${GREEN}✅ Doks submodule update completed${NC}"
+    print_message "${GREEN}✅ Docs submodule update completed${NC}"
 }
 
 # Function to check if submodule has changes
 check_submodule_changes() {
-    if git diff --quiet doks; then
-        print_message "${YELLOW}ℹ️  No changes in doks submodule${NC}"
+    if git diff --quiet docs; then
+        print_message "${YELLOW}ℹ️  No changes in docs submodule${NC}"
         return 1
     else
-        print_message "${BLUE}📝 Changes detected in doks submodule${NC}"
+        print_message "${BLUE}📝 Changes detected in docs submodule${NC}"
         return 0
     fi
 }
@@ -104,22 +104,22 @@ check_submodule_changes() {
 commit_submodule_changes() {
     local commit_message="$1"
 
-    print_message "${BLUE}📦 Staging doks submodule changes...${NC}"
-    git add doks
+    print_message "${BLUE}📦 Staging docs submodule changes...${NC}"
+    git add docs
 
-    print_message "${BLUE}💾 Committing doks submodule changes...${NC}"
+    print_message "${BLUE}💾 Committing docs submodule changes...${NC}"
     git commit -m "$commit_message"
 
-    print_message "${GREEN}✅ Doks submodule changes committed${NC}"
+    print_message "${GREEN}✅ Docs submodule changes committed${NC}"
 }
 
 # Function to show submodule status
 show_submodule_status() {
-    print_message "${BLUE}📊 Doks repository status:${NC}"
-    if git submodule status doks > /dev/null 2>&1; then
-        git submodule status doks
+    print_message "${BLUE}📊 Docs repository status:${NC}"
+    if git submodule status docs > /dev/null 2>&1; then
+        git submodule status docs
     else
-        cd doks
+        cd docs
         print_message "  Current commit: $(git rev-parse --short HEAD)"
         print_message "  Branch: $(git branch --show-current)"
         cd ..
@@ -128,17 +128,17 @@ show_submodule_status() {
 
 # Main function
 main() {
-    print_message "${BLUE}🚀 Starting doks submodule auto-update...${NC}"
+    print_message "${BLUE}🚀 Starting docs submodule auto-update...${NC}"
 
     # Check prerequisites
     check_git_repo
-    check_doks_submodule
+    check_docs_submodule
 
     # Show current status
     show_submodule_status
 
     # Update submodule
-    update_doks_submodule
+    update_docs_submodule
 
     # Check for changes
     if check_submodule_changes; then

@@ -102,14 +102,14 @@ docs-workflow: ## Complete documentation workflow
 	@echo "🚀 Running comprehensive documentation workflow..."
 	./scripts/docs-workflow.sh
 
-update-docs-submodule: ## Update doks submodule and commit changes
-	@echo "🔄 Updating doks submodule..."
+update-docs-submodule: ## Update docs submodule and commit changes
+	@echo "🔄 Updating docs submodule..."
 	./scripts/auto-update-docs-submodule.sh
 
-docs-submodule-status: ## Show doks repository status
-	@echo "📊 Doks repository status:"
-	@if git submodule status doks > /dev/null 2>&1; then \
-		git submodule status doks; \
+docs-submodule-status: ## Show docs repository status
+	@echo "📊 Docs repository status:"
+	@if git submodule status docs > /dev/null 2>&1; then \
+		git submodule status docs; \
 	else \
-		cd doks && echo "  Current commit: $$(git rev-parse --short HEAD)" && echo "  Branch: $$(git branch --show-current)" && cd ..; \
+		cd docs && echo "  Current commit: $$(git rev-parse --short HEAD)" && echo "  Branch: $$(git branch --show-current)" && cd ..; \
 	fi

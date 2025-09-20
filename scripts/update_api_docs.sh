@@ -65,7 +65,7 @@ if ! command -v python3 &> /dev/null; then
 fi
 
 # Set up paths
-API_DOCS_DIR="$PROJECT_ROOT/doks/purple-atmosphere/src/content/docs/api-reference"
+API_DOCS_DIR="$PROJECT_ROOT/docs/src/content/docs/api-reference"
 GENERATOR_SCRIPT="$SCRIPT_DIR/generate_simple_api_docs.py"
 
 print_message "${BLUE}📖 API Docs Directory: ${API_DOCS_DIR}${NC}"

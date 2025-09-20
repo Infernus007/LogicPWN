@@ -692,15 +692,7 @@ def main():
     ]
 
     # Output directory
-    output_dir = (
-        project_root
-        / "doks"
-        / "purple-atmosphere"
-        / "src"
-        / "content"
-        / "docs"
-        / "api-reference"
-    )
+    output_dir = project_root / "docs" / "src" / "content" / "docs" / "api-reference"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Generating API documentation in {output_dir}")

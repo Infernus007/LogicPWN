@@ -177,8 +177,7 @@ def main():
     # API reference directory
     api_docs_dir = (
         Path(__file__).parent.parent
-        / "doks"
-        / "purple-atmosphere"
+        / "docs"
         / "src"
         / "content"
         / "docs"
