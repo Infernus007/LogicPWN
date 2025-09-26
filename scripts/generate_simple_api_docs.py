@@ -117,6 +117,9 @@ def clean_docstring(docstring: str) -> str:
     factory_pattern = r"([^`\n])(<factory>)([^`\n])"
     cleaned = re.sub(factory_pattern, r"\1```python\n\2\n```\3", cleaned)
 
+    # Convert Args: sections to proper bullet points
+    cleaned = format_args_section(cleaned)
+
     # Clean up any malformed code blocks that might have been created
     # Remove any ```python\n<factory>\n``` patterns that are inside other code blocks
     cleaned = re.sub(r"```python\n<factory>\n```", "<factory>", cleaned)
@@ -161,6 +164,100 @@ def format_signature(obj) -> str:
         return str(sig)
     except (ValueError, TypeError):
         return "()"
+
+
+def format_args_section(docstring: str) -> str:
+    """Format Args:, Returns:, Raises: sections in docstrings to proper bullet points."""
+    if not docstring:
+        return docstring
+
+    lines = docstring.split("\n")
+    formatted_lines = []
+    in_section = False
+    current_section = None
+    current_param = None
+
+    for line in lines:
+        # Check if we're starting a documented section
+        section_headers = [
+            "Args:",
+            "Returns:",
+            "Raises:",
+            "Yields:",
+            "Note:",
+            "Warning:",
+            "Example:",
+        ]
+        section_found = None
+        for header in section_headers:
+            if line.strip().startswith(header):
+                section_found = header
+                break
+
+        if section_found:
+            formatted_lines.append(f"**{section_found}**")
+            in_section = True
+            current_section = section_found
+            continue
+
+        # Check if we're starting a different section (end current section)
+        if (
+            in_section
+            and line.strip()
+            and not line.startswith(" ")
+            and not line.startswith("\t")
+            and ":" in line
+            and not line.strip().startswith("*")
+        ):
+            in_section = False
+            current_section = None
+            formatted_lines.append("")  # Add blank line before next section
+            formatted_lines.append(line)
+            continue
+
+        if in_section:
+            if current_section in ["Args:", "Returns:", "Raises:", "Yields:"]:
+                # These sections should be formatted as bullet points
+                if line.strip() and ":" in line:
+                    # This is a new parameter/return/exception (even if indented)
+                    if current_param:
+                        formatted_lines.append("")  # Add blank line between items
+
+                    # Extract name and description
+                    param_parts = line.split(":", 1)
+                    if len(param_parts) == 2:
+                        param_name = param_parts[0].strip()
+                        param_desc = param_parts[1].strip()
+                        formatted_lines.append(f"- **{param_name}**: {param_desc}")
+                        current_param = param_name
+                    else:
+                        formatted_lines.append(f"- {line.strip()}")
+                elif (
+                    line.strip()
+                    and (line.startswith(" ") or line.startswith("\t"))
+                    and ":" not in line
+                ):
+                    # This is a continuation of the current item description
+                    if current_param:
+                        # Add to the previous line
+                        if formatted_lines and formatted_lines[-1].startswith(
+                            f"- **{current_param}**:"
+                        ):
+                            formatted_lines[-1] += f" {line.strip()}"
+                        else:
+                            formatted_lines.append(f"  {line.strip()}")
+                    else:
+                        formatted_lines.append(f"  {line.strip()}")
+                else:
+                    # Empty line or other content
+                    formatted_lines.append(line)
+            else:
+                # For Note:, Warning:, Example: sections, keep as-is but add proper formatting
+                formatted_lines.append(line)
+        else:
+            formatted_lines.append(line)
+
+    return "\n".join(formatted_lines)
 
 
 def extract_module_info(module_name: str) -> dict[str, Any]:
@@ -279,10 +376,18 @@ def generate_placeholder_mdx(module_name: str) -> str:
         parts[-1] = parts[-1][7:]  # Remove "indian_" prefix
         display_name = ".".join(parts)
 
-    title = display_name.replace("_", " ").replace(".", " ").title()
+    # Handle duplicate names and improve title generation
+    if len(parts) > 1 and parts[-1] == parts[-2]:
+        # Remove duplicate part
+        title = " ".join(parts[:-1]).replace("_", " ").title()
+    elif len(parts) > 1 and parts[-1] in parts[:-1]:
+        # If last part appears earlier, use just the last part
+        title = parts[-1].replace("_", " ").title()
+    else:
+        title = display_name.replace("_", " ").replace(".", " ").title()
 
     # Determine module category for better navigation
-    category = ""
+    category = "Core"  # Default category
     if "auth" in module_name:
         category = "Authentication"
     elif "access" in module_name:
@@ -297,6 +402,16 @@ def generate_placeholder_mdx(module_name: str) -> str:
         category = "Utilities"
     elif "exceptions" in module_name:
         category = "Exceptions"
+    elif "exploit" in module_name:
+        category = "Exploit Engine"
+    elif "stress" in module_name:
+        category = "Stress Testing"
+    elif "reliability" in module_name:
+        category = "Reliability"
+    elif "middleware" in module_name:
+        category = "Middleware"
+    elif "logging" in module_name:
+        category = "Logging"
 
     # Create consistent breadcrumb navigation
     parts = clean_name.split(".")
@@ -364,10 +479,18 @@ def generate_module_mdx(module_info: dict[str, Any]) -> str:
         parts[-1] = parts[-1][7:]  # Remove "indian_" prefix
         display_name = ".".join(parts)
 
-    title = display_name.replace("_", " ").replace(".", " ").title()
+    # Handle duplicate names and improve title generation
+    if len(parts) > 1 and parts[-1] == parts[-2]:
+        # Remove duplicate part
+        title = " ".join(parts[:-1]).replace("_", " ").title()
+    elif len(parts) > 1 and parts[-1] in parts[:-1]:
+        # If last part appears earlier, use just the last part
+        title = parts[-1].replace("_", " ").title()
+    else:
+        title = display_name.replace("_", " ").replace(".", " ").title()
 
     # Determine module category for better navigation
-    category = ""
+    category = "Core"  # Default category
     if "auth" in name:
         category = "Authentication"
     elif "access" in name:
@@ -382,6 +505,16 @@ def generate_module_mdx(module_info: dict[str, Any]) -> str:
         category = "Utilities"
     elif "exceptions" in name:
         category = "Exceptions"
+    elif "exploit" in name:
+        category = "Exploit Engine"
+    elif "stress" in name:
+        category = "Stress Testing"
+    elif "reliability" in name:
+        category = "Reliability"
+    elif "middleware" in name:
+        category = "Middleware"
+    elif "logging" in name:
+        category = "Logging"
 
     # Generate consistent navigation breadcrumbs
     parts = clean_name.split(".")
@@ -629,6 +762,38 @@ def generate_related_modules_section(module_name: str, category: str) -> str:
             ("reporter/law-enforcement", "Law enforcement reports"),
             ("reporter/framework-mapper", "Compliance framework mapping"),
             ("reporter/integration", "Integration utilities"),
+        ],
+        "Exploit Engine": [
+            ("exploit-engine", "Core exploit engine functionality"),
+            ("exploit-engine/exploit-engine", "Main exploit engine orchestrator"),
+            ("exploit-engine/security-validator", "Security validation utilities"),
+            ("exploit-engine/validation-engine", "Validation engine for exploits"),
+            ("exploit-engine/payload-generator", "Payload generation utilities"),
+            ("exploit-engine/models", "Exploit engine data models"),
+        ],
+        "Logging": [
+            ("logging", "Core logging functionality"),
+            ("logging/logger", "Main logger implementation"),
+            ("logging/redactor", "Sensitive data redaction"),
+        ],
+        "Stress Testing": [
+            ("stress", "Core stress testing functionality"),
+            ("stress/stress-tester", "Main stress tester"),
+            ("stress/stress-core", "Core stress testing engine"),
+        ],
+        "Reliability": [
+            ("reliability", "Core reliability functionality"),
+            ("reliability/circuit-breaker", "Circuit breaker implementation"),
+            ("reliability/adaptive-rate-limiter", "Adaptive rate limiting"),
+            ("reliability/security-metrics", "Security metrics collection"),
+        ],
+        "Middleware": [
+            ("middleware", "Core middleware functionality"),
+            ("middleware/middleware", "Main middleware implementation"),
+            ("middleware/circuit-breaker", "Middleware circuit breaker"),
+        ],
+        "Exceptions": [
+            ("exceptions", "Core exception handling"),
         ],
     }
 
@@ -879,6 +1044,11 @@ def main():
         "logicpwn.core.logging.logger",
         "logicpwn.core.logging.redactor",
         "logicpwn.core.integration_utils",
+        "logicpwn.core.reporter",
+        "logicpwn.core.reporter.compliance",
+        "logicpwn.core.reporter.law_enforcement",
+        "logicpwn.core.reporter.framework_mapper",
+        "logicpwn.core.reporter.integration",
         "logicpwn.exceptions",
     ]
 
