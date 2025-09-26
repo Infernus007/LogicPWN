@@ -778,15 +778,13 @@ results = detect_idor_flaws(
 
 ```python
 from logicpwn.core.runner.async_runner import AsyncTestRunner
-from logicpwn.core.access.enhanced_detector import EnhancedAccessDetector
 
 # Setup async testing
 runner = AsyncTestRunner(max_concurrent=5)
-detector = EnhancedAccessDetector()
 
 # Run tests asynchronously
 results = await runner.run_tests([
-    detector.create_test_case(endpoint, test_data)
+    {"endpoint": endpoint, "test_data": test_data}
     for endpoint in endpoints
 ])
 ```
