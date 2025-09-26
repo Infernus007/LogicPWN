@@ -57,6 +57,96 @@ def clean_docstring(docstring: str) -> str:
     for pattern in problematic_patterns:
         cleaned = re.sub(pattern, "", cleaned, flags=re.IGNORECASE)
 
+    # Fix Python REPL syntax issues
+    # Replace unescaped Python REPL syntax with proper code blocks
+    lines = cleaned.split("\n")
+    fixed_lines = []
+    in_code_block = False
+    code_block_content = []
+
+    for line in lines:
+        # Check if this line starts a Python REPL session
+        if line.strip().startswith(">>> ") or line.strip().startswith("... "):
+            if not in_code_block:
+                # Start a new code block
+                in_code_block = True
+                code_block_content = []
+            code_block_content.append(line)
+        elif (
+            line.strip().startswith("<")
+            and ">" in line
+            and not line.strip().startswith("```")
+        ) or (
+            line.strip().startswith("[")
+            and "]" in line
+            and "<" in line
+            and ">" in line
+            and not line.strip().startswith("```")
+        ):
+            # This is likely a Python REPL output line
+            if in_code_block:
+                code_block_content.append(line)
+            else:
+                # Single output line, wrap it in a code block
+                fixed_lines.append("```python")
+                fixed_lines.append(line)
+                fixed_lines.append("```")
+        else:
+            # Regular line
+            if in_code_block:
+                # End the current code block
+                if code_block_content:
+                    fixed_lines.append("```python")
+                    fixed_lines.extend(code_block_content)
+                    fixed_lines.append("```")
+                in_code_block = False
+                code_block_content = []
+            fixed_lines.append(line)
+
+    # Handle any remaining code block
+    if in_code_block and code_block_content:
+        fixed_lines.append("```python")
+        fixed_lines.extend(code_block_content)
+        fixed_lines.append("```")
+
+    cleaned = "\n".join(fixed_lines)
+
+    # Fix <factory> syntax issues by wrapping in code blocks
+    # This handles cases where <factory> appears outside of code blocks
+    # But avoid creating malformed code blocks
+    factory_pattern = r"([^`\n])(<factory>)([^`\n])"
+    cleaned = re.sub(factory_pattern, r"\1```python\n\2\n```\3", cleaned)
+
+    # Clean up any malformed code blocks that might have been created
+    # Remove any ```python\n<factory>\n``` patterns that are inside other code blocks
+    cleaned = re.sub(r"```python\n<factory>\n```", "<factory>", cleaned)
+
+    # Fix standalone function signatures and class definitions that contain <factory>
+    # These often appear as standalone lines outside code blocks
+    standalone_factory_pattern = r"^([A-Za-z_][A-Za-z0-9_]*\([^)]*<factory>[^)]*\))$"
+    cleaned = re.sub(
+        standalone_factory_pattern, r"```python\n\1\n```", cleaned, flags=re.MULTILINE
+    )
+
+    # Fix standalone class definitions with <factory>
+    standalone_class_pattern = r"^([A-Za-z_][A-Za-z0-9_]*\([^)]*<factory>[^)]*\))$"
+    cleaned = re.sub(
+        standalone_class_pattern, r"```python\n\1\n```", cleaned, flags=re.MULTILINE
+    )
+
+    # Fix f-string expressions that might cause parsing issues
+    # Look for lines that contain f-strings with curly braces outside code blocks
+    f_string_pattern = r'^([^`]*f"[^"]*\{[^}]*\}[^"]*"[^`]*)$'
+    cleaned = re.sub(
+        f_string_pattern, r"```python\n\1\n```", cleaned, flags=re.MULTILINE
+    )
+
+    # Fix any remaining Python code that starts with # or import that's not in code blocks
+    python_code_pattern = r"^((?:#|import|from|async def|def|class|if|for|while|try|except|with|await|return|yield|break|continue|pass|raise|assert|del|global|nonlocal|lambda)[^`]*)$"
+    cleaned = re.sub(
+        python_code_pattern, r"```python\n\1\n```", cleaned, flags=re.MULTILINE
+    )
+
     # Clean up any remaining double spaces or empty lines
     cleaned = re.sub(r"\n\s*\n\s*\n", "\n\n", cleaned)
     cleaned = re.sub(r"  +", " ", cleaned)
@@ -178,6 +268,90 @@ def extract_function_info(func, is_method=False) -> dict[str, Any]:
         return None
 
 
+def generate_placeholder_mdx(module_name: str) -> str:
+    """Generate placeholder MDX content for modules that failed to import."""
+    clean_name = module_name.replace("logicpwn.core.", "").replace("logicpwn.", "")
+
+    # Create a display title that removes indian_ prefix for better readability
+    display_name = clean_name
+    parts = display_name.split(".")
+    if len(parts) > 1 and parts[-1].startswith("indian_"):
+        parts[-1] = parts[-1][7:]  # Remove "indian_" prefix
+        display_name = ".".join(parts)
+
+    title = display_name.replace("_", " ").replace(".", " ").title()
+
+    # Determine module category for better navigation
+    category = ""
+    if "auth" in module_name:
+        category = "Authentication"
+    elif "access" in module_name:
+        category = "Access Control"
+    elif any(x in module_name for x in ["runner", "async"]):
+        category = "Test Runner"
+    elif "validator" in module_name:
+        category = "Validation"
+    elif "reporter" in module_name or "reporting" in module_name:
+        category = "Reporting & Compliance"
+    elif any(x in module_name for x in ["utils", "config", "performance", "cache"]):
+        category = "Utilities"
+    elif "exceptions" in module_name:
+        category = "Exceptions"
+
+    # Create consistent breadcrumb navigation
+    parts = clean_name.split(".")
+
+    # For nested modules, show parent navigation
+    if len(parts) > 1:
+        parent_title = parts[0].replace("_", " ").title()
+        parent_path = parts[0].replace("_", "-")
+        breadcrumb_nav = f"[{parent_title}](../{parent_path})"
+    else:
+        breadcrumb_nav = ""
+
+    description = f"API documentation for the {title} module in LogicPwn framework"
+
+    # Clean description to avoid YAML issues
+    clean_description = description.replace("`", "").replace("\n", " ").strip()
+
+    content = f"""---
+title: {title}
+description: {clean_description}
+category: {category}
+sidebar:
+  order: {hash(module_name) % 100}
+---
+
+import {{ Code, Aside, Steps }} from '@astrojs/starlight/components';
+
+{f"**Category:** {category}" if category else ""}
+{f"**Navigation:** [API Reference](../) › {breadcrumb_nav}" if breadcrumb_nav else "**Navigation:** [API Reference](../)"}
+
+API documentation for the `{module_name}` module.
+
+:::note[Module Import Error]
+This module could not be imported during documentation generation. This may be due to missing dependencies or import errors. The module may still be available at runtime.
+:::
+
+## Import
+
+```python
+import {module_name}
+# or
+from {module_name} import *
+```
+
+## Related Modules
+
+:::card-grid
+#card-grid
+- **[API Reference](../)** - Complete API documentation
+:::
+"""
+
+    return content
+
+
 def generate_module_mdx(module_info: dict[str, Any]) -> str:
     """Generate MDX content for a module."""
     name = module_info["name"]
@@ -209,34 +383,72 @@ def generate_module_mdx(module_info: dict[str, Any]) -> str:
     elif "exceptions" in name:
         category = "Exceptions"
 
-    # Generate simple navigation breadcrumbs
+    # Generate consistent navigation breadcrumbs
     parts = clean_name.split(".")
 
     # For nested modules (e.g., validator.validator_api), show parent navigation
     if len(parts) > 1:
         parent_title = parts[0].replace("_", " ").title()
-        breadcrumb_nav = f"[{parent_title}](../)"
+        parent_path = parts[0].replace("_", "-")
+        breadcrumb_nav = f"[{parent_title}](../{parent_path})"
     else:
         breadcrumb_nav = ""
 
     # Generate frontmatter with better metadata
+    # Create a more descriptive description from the docstring
+    module_docstring = clean_docstring(module_info["docstring"])
+    if module_docstring:
+        # Extract first sentence or first line as description
+        # Handle multi-line docstrings by taking the first non-empty line
+        lines = [line.strip() for line in module_docstring.split("\n") if line.strip()]
+        if lines:
+            first_line = lines[0]
+            # If it's a sentence, take just the first sentence
+            if "." in first_line:
+                first_sentence = first_line.split(".")[0].strip()
+            else:
+                first_sentence = first_line
+
+            # Truncate if too long
+            if len(first_sentence) > 100:
+                first_sentence = first_sentence[:97] + "..."
+            description = first_sentence
+        else:
+            description = (
+                f"API documentation for the {title} module in LogicPwn framework"
+            )
+    else:
+        description = f"API documentation for the {title} module in LogicPwn framework"
+
+    # Clean description to avoid YAML issues
+    clean_description = description.replace("`", "").replace("\n", " ").strip()
+
+    # Determine which components are actually needed
+    components_needed = ["Code", "Aside", "Steps"]
+
+    # Check if we have classes or functions that would use Tabs
+    has_classes = len(module_info.get("classes", [])) > 0
+    has_functions = len(module_info.get("functions", [])) > 0
+
+    if has_classes or has_functions:
+        components_needed.extend(["Tabs", "TabItem"])
+
+    components_import = ", ".join(components_needed)
+
     content = f"""---
 title: {title}
-description: API documentation for {name}
+description: {clean_description}
 category: {category}
 sidebar:
   order: {hash(name) % 100}
 ---
 
-import {{ Code, Aside, Steps, Tabs, TabItem }} from '@astrojs/starlight/components';
-
-# {title}
+import {{ {components_import} }} from '@astrojs/starlight/components';
 
 {f"**Category:** {category}" if category else ""}
-{f"**Navigation:** [API Reference](../) › {breadcrumb_nav}" if breadcrumb_nav
- else ("**Navigation:** [API Reference](../)" if len(parts) > 1 else "")}
+{f"**Navigation:** [API Reference](../) › {breadcrumb_nav}" if breadcrumb_nav else "**Navigation:** [API Reference](../)"}
 
-{clean_docstring(module_info['docstring']) or f"API documentation for the `{name}` module."}
+{module_docstring or f"API documentation for the `{name}` module."}
 
 """
 
@@ -465,7 +677,10 @@ def generate_api_index(modules: list[str], output_dir: Path) -> None:
     """Generate the main API index page."""
     content = """---
 title: API Reference
-description: Complete API documentation for LogicPwn framework
+description: Complete API documentation for LogicPwn framework - authentication, access control, exploit engine, validation, and reporting modules
+category: Documentation
+sidebar:
+  order: 1
 ---
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
@@ -642,15 +857,10 @@ def main():
     # Define modules to document
     modules_to_document = [
         "logicpwn.core.auth",
-        "logicpwn.core.auth.enhanced_auth",
         "logicpwn.core.auth.idp_integration",
         "logicpwn.core.auth.jwt_handler",
-        "logicpwn.core.auth.mfa_handler",
-        "logicpwn.core.auth.oauth_handler",
-        "logicpwn.core.auth.saml_handler",
         "logicpwn.core.access",
         "logicpwn.core.access.detector",
-        "logicpwn.core.access.enhanced_detector",
         "logicpwn.core.access.result_streaming",
         "logicpwn.core.runner",
         "logicpwn.core.runner.async_runner",
@@ -664,7 +874,6 @@ def main():
         "logicpwn.core.validator.validator_models",
         "logicpwn.core.reporter",
         "logicpwn.core.reporter.indian_compliance",
-        "logicpwn.core.reporter.indian_law_enforcement",
         "logicpwn.core.reporter.framework_mapper",
         "logicpwn.core.reporter.indian_integration",
         "logicpwn.core.exploit_engine",
@@ -684,7 +893,6 @@ def main():
         "logicpwn.core.middleware.middleware",
         "logicpwn.core.middleware.circuit_breaker",
         "logicpwn.core.logging",
-        "logicpwn.core.logging.enhanced_logger",
         "logicpwn.core.logging.logger",
         "logicpwn.core.logging.redactor",
         "logicpwn.core.integration_utils",
@@ -704,10 +912,12 @@ def main():
 
         module_info = extract_module_info(module_name)
         if not module_info:
-            continue
-
-        # Generate MDX content
-        mdx_content = generate_module_mdx(module_info)
+            # Generate placeholder content for failed imports
+            print(f"  ⚠️  Generating placeholder for {module_name}")
+            mdx_content = generate_placeholder_mdx(module_name)
+        else:
+            # Generate MDX content
+            mdx_content = generate_module_mdx(module_info)
 
         # Create output file path
         clean_name = module_name.replace("logicpwn.core.", "").replace("logicpwn.", "")
