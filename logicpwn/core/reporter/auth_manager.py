@@ -67,8 +67,44 @@ class User:
     failed_login_attempts: int = 0
     locked_until: Optional[datetime] = None
 
-    def __post_init__(self):
-        """Update permissions based on roles."""
+    def __init__(
+        self,
+        user_id: str,
+        username: str,
+        email: str,
+        roles: set[Role] = None,
+        role: Role = None,
+        permissions: set[Permission] = None,
+        created_at: datetime = None,
+        last_login: datetime = None,
+        is_active: bool = True,
+        failed_login_attempts: int = 0,
+        locked_until: datetime = None,
+    ):
+        """Initialize User with support for both role and roles parameters."""
+        self.user_id = user_id
+        self.username = username
+        self.email = email
+
+        # Handle both single role and multiple roles
+        if roles is not None:
+            self.roles = roles
+        elif role is not None:
+            if isinstance(role, str):
+                self.roles = {Role(role)}
+            else:
+                self.roles = {role}
+        else:
+            self.roles = set()
+
+        self.permissions = permissions or set()
+        self.created_at = created_at or datetime.utcnow()
+        self.last_login = last_login
+        self.is_active = is_active
+        self.failed_login_attempts = failed_login_attempts
+        self.locked_until = locked_until
+
+        # Update permissions based on roles
         self.update_permissions()
 
     def update_permissions(self):
@@ -366,6 +402,21 @@ class ReportAuthManager:
         logger.info(f"API key generated for: {user.username}")
         return api_key
 
+    def create_session(
+        self, user: User, ip_address: str = None, user_agent: str = None
+    ) -> str:
+        """Create a new session for user."""
+        session = Session(
+            session_id=self._generate_session_id(),
+            user_id=user.user_id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+
+        self.sessions[session.session_id] = session
+        logger.info(f"Session created for user: {user.username} ({session.session_id})")
+        return session.session_id
+
     def validate_session(self, session_id: str) -> Optional[User]:
         """Validate session and return user."""
         session = self.sessions.get(session_id)
@@ -430,6 +481,27 @@ class ReportAuthManager:
         except Exception:
             logger.error("Failed to decrypt sensitive data")
             return "[DECRYPTION_FAILED]"
+
+    def register_user(
+        self,
+        username: str,
+        password: str,
+        email: str = None,
+        roles: set[Role] = None,
+        role: Role = None,
+    ) -> User:
+        """Register a new user (alias for create_user)."""
+        # Handle email parameter - if not provided, use username@test.local
+        if email is None:
+            email = f"{username}@test.local"
+
+        # Handle role vs roles parameter
+        if role is not None:
+            roles = {role}
+        elif roles is None:
+            roles = {Role.VIEWER}
+
+        return self.create_user(username, email, password, roles)
 
     def get_user_summary(self, user: User) -> dict[str, Any]:
         """Get user summary for logging/audit."""
