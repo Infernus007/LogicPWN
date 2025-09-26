@@ -186,7 +186,26 @@ class SecureReportGenerator:
         # Initialize audit logging
         self.audit_log = []
 
+        # Initialize metadata
+        self._initialize_metadata()
+
         logger.info("Secure report generator initialized")
+
+    def _initialize_metadata(self):
+        """Initialize report metadata with default values."""
+        from datetime import datetime
+
+        self.metadata = ReportMetadata(
+            report_id=f"report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}",
+            title="Security Assessment Report",
+            target_url=self.config.target_url or "Unknown",
+            scan_start_time=datetime.utcnow(),
+            scan_end_time=datetime.utcnow(),
+            logicpwn_version="1.0.0",
+            authenticated_user=None,
+            total_requests=0,
+            findings_count={"Critical": 0, "High": 0, "Medium": 0, "Low": 0, "Info": 0},
+        )
 
     def authenticate_user(
         self, auth_token: str = None, api_key: str = None, session_id: str = None

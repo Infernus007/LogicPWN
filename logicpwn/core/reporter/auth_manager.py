@@ -47,6 +47,7 @@ ROLE_PERMISSIONS = {
         Permission.WRITE_REPORTS,
         Permission.DELETE_REPORTS,
         Permission.ADMIN_REPORTS,
+        Permission.AUDIT_LOGS,
     ],
     Role.AUDITOR: [Permission.READ_REPORTS, Permission.AUDIT_LOGS],
 }
@@ -177,8 +178,10 @@ class ReportAuthManager:
         self.enable_encryption = enable_encryption
 
         if enable_encryption:
-            self.cipher = Fernet(Fernet.generate_key())
+            self.encryption_key = Fernet.generate_key()
+            self.cipher = Fernet(self.encryption_key)
         else:
+            self.encryption_key = None
             self.cipher = None
 
         # In-memory storage (replace with database in production)
