@@ -239,21 +239,6 @@ class InputSanitizer:
                 f"Invalid severity level: {severity}. Must be one of: {valid_levels}"
             )
 
-    @staticmethod
-    def validate_report_format(format_type: str) -> str:
-        """Validate report format."""
-        if not isinstance(format_type, str):
-            raise ValidationError(f"Format must be string, got {type(format_type)}")
-
-        try:
-            validated = ReportFormat(format_type.lower())
-            return validated.value
-        except ValueError:
-            valid_formats = [fmt.value for fmt in ReportFormat]
-            raise ValidationError(
-                f"Invalid format: {format_type}. Must be one of: {valid_formats}"
-            )
-
 
 class ValidatedInput(BaseModel):
     """Base model for validated inputs with security constraints."""
@@ -461,3 +446,18 @@ class InputValidator:
                 continue
 
         return sanitized
+
+    @staticmethod
+    def validate_report_format(format_type: str) -> str:
+        """Validate report format."""
+        if not isinstance(format_type, str):
+            raise ValidationError(f"Format must be string, got {type(format_type)}")
+
+        try:
+            validated = ReportFormat(format_type.lower())
+            return validated.value
+        except ValueError:
+            valid_formats = [fmt.value for fmt in ReportFormat]
+            raise ValidationError(
+                f"Invalid format: {format_type}. Must be one of: {valid_formats}"
+            )
