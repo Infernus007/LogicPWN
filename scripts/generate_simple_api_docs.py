@@ -852,28 +852,20 @@ All async functions support standard Python `asyncio` patterns and can be used w
 
 def main():
     """Main function."""
-    # Define modules to document
+    # Define modules to document - only working modules without missing dependencies
     modules_to_document = [
         "logicpwn.core.auth",
         "logicpwn.core.auth.idp_integration",
         "logicpwn.core.auth.jwt_handler",
-        "logicpwn.core.access",
-        "logicpwn.core.access.detector",
-        "logicpwn.core.access.result_streaming",
         "logicpwn.core.runner",
         "logicpwn.core.runner.async_runner",
         "logicpwn.core.runner.async_session_manager",
         "logicpwn.core.utils",
-        "logicpwn.core.performance",
         "logicpwn.core.config",
         "logicpwn.core.cache",
         "logicpwn.core.validator",
         "logicpwn.core.validator.validator_api",
         "logicpwn.core.validator.validator_models",
-        "logicpwn.core.reporter",
-        "logicpwn.core.reporter.indian_compliance",
-        "logicpwn.core.reporter.framework_mapper",
-        "logicpwn.core.reporter.indian_integration",
         "logicpwn.core.exploit_engine",
         "logicpwn.core.exploit_engine.exploit_engine",
         "logicpwn.core.exploit_engine.security_validator",
