@@ -322,7 +322,7 @@ sidebar:
   order: {hash(module_name) % 100}
 ---
 
-import {{ Code, Aside, Steps }} from '@astrojs/starlight/components';
+import {{ Code, Aside, Steps, Tabs, TabItem }} from '@astrojs/starlight/components';
 
 {f"**Category:** {category}" if category else ""}
 {f"**Navigation:** [API Reference](../) › {breadcrumb_nav}" if breadcrumb_nav else "**Navigation:** [API Reference](../)"}
@@ -424,14 +424,7 @@ def generate_module_mdx(module_info: dict[str, Any]) -> str:
     clean_description = description.replace("`", "").replace("\n", " ").strip()
 
     # Determine which components are actually needed
-    components_needed = ["Code", "Aside", "Steps"]
-
-    # Check if we have classes or functions that would use Tabs
-    has_classes = len(module_info.get("classes", [])) > 0
-    has_functions = len(module_info.get("functions", [])) > 0
-
-    if has_classes or has_functions:
-        components_needed.extend(["Tabs", "TabItem"])
+    components_needed = ["Code", "Aside", "Steps", "Tabs", "TabItem"]
 
     components_import = ", ".join(components_needed)
 
