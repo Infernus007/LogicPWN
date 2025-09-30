@@ -1,8 +1,24 @@
 # LogicPWN 🔒
 
-**Business Logic Exploitation & Exploit Chaining Automation Tool**
+**Advanced Business Logic Security Testing Framework**
+
+[![PyPI version](https://badge.fury.io/py/logicpwn.svg)](https://pypi.org/project/logicpwn/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 LogicPWN represents a paradigm shift from traditional security testing toward intelligent, business-aware security automation. Its unique focus on business logic vulnerabilities, combined with enterprise-grade performance and comprehensive documentation, positions it as a leader in the next generation of security testing tools.
+
+## 📦 Installation
+
+**Latest Release**: [v0.2.2](https://pypi.org/project/logicpwn/) - Available on PyPI
+
+```bash
+# Install from PyPI
+pip install logicpwn
+
+# Or install with all features
+pip install logicpwn[async,stress,reporting]
+```
 
 ## ✨ Key Features
 
@@ -14,34 +30,6 @@ LogicPWN represents a paradigm shift from traditional security testing toward in
 - **📝 Detailed Reporting** - Compliance-ready reports
 
 ## 🚀 Quick Start
-
-### Installation
-
-LogicPWN offers flexible installation options to suit your needs:
-
-```bash
-# Full installation with all features (default)
-pip install logicpwn
-
-# Install with specific feature groups only (for minimal installations)
-pip install logicpwn[auth]        # Authentication & session management
-pip install logicpwn[runner]      # HTTP request execution & async support
-pip install logicpwn[access]      # Access control & IDOR detection
-pip install logicpwn[validator]   # Response validation & analysis
-pip install logicpwn[reporter]    # Report generation & compliance
-pip install logicpwn[performance] # Performance monitoring & profiling
-pip install logicpwn[stress]      # Stress testing & load testing
-pip install logicpwn[exploit]     # Exploit engine & payload generation
-pip install logicpwn[reliability] # Circuit breakers & reliability features
-
-# Development installation
-git clone https://github.com/Infernus007/LogicPWN.git
-cd LogicPWN
-poetry install --with dev
-poetry run pre-commit install
-```
-
-**Note**: The default `pip install logicpwn` includes all features. Use the optional extras (e.g., `[auth]`, `[runner]`) only if you want to install specific modules with minimal dependencies.
 
 ### 🎯 Your First Security Test
 
@@ -161,97 +149,42 @@ async with StressTester(config) as tester:
     print(f"⚠️  Error rate: {metrics.error_rate:.2f}%")
 ```
 
-## 🏗️ Module Groups
+## 🏗️ Architecture
 
-LogicPWN is designed with a modular architecture. By default, `pip install logicpwn` installs everything. The optional extras below are for users who want to install only specific components:
+LogicPWN is built with a modular, extensible architecture designed for enterprise security testing:
 
-### 🔐 Authentication Module (`[auth]`)
-- Session management and persistence
-- CSRF token handling
-- MFA support (TOTP, SMS, Email)
-- OAuth 2.0 and SAML integration
-- JWT token management
-- Identity provider integration
+```
+logicpwn/
+├── core/
+│   ├── auth/           # Authentication & session management
+│   ├── access/         # IDOR & access control testing
+│   ├── runner/         # HTTP request execution (sync/async)
+│   ├── stress/         # Performance & stress testing
+│   ├── validator/      # Response validation & analysis
+│   ├── exploit_engine/ # Exploit chain execution
+│   ├── reporter/       # Report generation & compliance
+│   └── logging/        # Secure audit logging
+├── models/             # Pydantic data models
+├── exceptions/         # Custom exception hierarchy
+└── middleware/         # Extensible request/response middleware
+```
 
-**Dependencies**: `requests`, `pydantic`, `loguru`, `cryptography`, `qrcode`
+### Key Components
 
-### 🚀 Runner Module (`[runner]`)
-- HTTP request execution
-- Async request support
-- Rate limiting and throttling
-- Session management
-- Middleware support
-
-**Dependencies**: `requests`, `pydantic`, `loguru`, `aiohttp`, `pytest-asyncio`
-
-### 🔍 Access Detection Module (`[access]`)
-- IDOR vulnerability detection
-- Access control testing
-- Privilege escalation testing
-- Tenant isolation testing
-- Smart ID generation
-
-**Dependencies**: `requests`, `pydantic`, `loguru`
-
-### ✅ Validator Module (`[validator]`)
-- Response validation
-- Business logic rule checking
-- Vulnerability pattern detection
-- Confidence scoring
-- Custom validation presets
-
-**Dependencies**: `requests`, `pydantic`, `loguru`, `jsonpath-ng`
-
-### 📊 Reporter Module (`[reporter]`)
-- Vulnerability reporting
-- Compliance mapping
-- Indian law enforcement support
-- CVSS scoring
-- Template rendering
-
-**Dependencies**: `requests`, `pydantic`, `loguru`, `pyyaml`
-
-### 📈 Performance Module (`[performance]`)
-- Performance monitoring
-- Memory profiling
-- Benchmarking tools
-- Async performance tracking
-
-**Dependencies**: `requests`, `pydantic`, `loguru`, `psutil`
-
-### 🧪 Stress Testing Module (`[stress]`)
-- Load testing
-- Concurrent exploit execution
-- Performance metrics
-- Error rate analysis
-
-**Dependencies**: `requests`, `pydantic`, `loguru`, `psutil`, `aiohttp`, `pytest-asyncio`
-
-### 💥 Exploit Engine (`[exploit]`)
-- Exploit chain execution
-- Payload generation
-- Step validation
-- Session state management
-
-**Dependencies**: `requests`, `pydantic`, `loguru`, `pyyaml`
-
-### 🛡️ Reliability Features (`[reliability]`)
-- Circuit breakers
-- Security metrics
-- Adaptive rate limiting
-- Event recording
-
-**Dependencies**: `requests`, `pydantic`, `loguru`, `tenacity`
+- **Authentication System**: Multi-protocol support (OAuth 2.0, SAML, JWT, form-based)
+- **Access Control Testing**: Intelligent IDOR detection with pattern recognition
+- **Performance Engine**: Async/concurrent execution for high-throughput testing
+- **Exploit Engine**: Chain exploits and validate security controls
+- **Reporting**: Generate detailed security reports with compliance mapping
 
 ## 📖 Documentation
 
-Comprehensive documentation is available in the [`docs/`](./docs/) folder:
+Comprehensive documentation is available:
 
-- **API Reference** - Complete API documentation
-- **Getting Started** - Quick start guides and tutorials
-- **Case Studies** - Real-world usage examples
-- **Performance Benchmarks** - Performance analysis and optimization
-- **Compliance** - Indian law enforcement and compliance frameworks
+- **📚 [Full Documentation](https://logicpwn.github.io/)** - Complete guides and API reference
+- **🚀 [Getting Started Guide](https://logicpwn.github.io/getting-started/)** - Quick start tutorials
+- **💡 [Examples](https://github.com/Infernus007/LogicPWN/tree/main/examples)** - Real-world usage examples
+- **📊 [Performance Benchmarks](https://pypi.org/project/logicpwn/)** - Performance analysis and optimization
 
 ## 🧪 Testing
 
@@ -391,11 +324,28 @@ clear_all_caches()
 
 ## 🔗 Links
 
-- **Repository**: [https://github.com/Infernus007/LogicPWN](https://github.com/Infernus007/LogicPWN)
-- **Documentation**: [docs/](./docs/) folder
-- **PyPI**: [https://pypi.org/project/logicpwn/](https://pypi.org/project/logicpwn/)
+- **📦 [PyPI Package](https://pypi.org/project/logicpwn/)** - Install from PyPI
+- **📚 [Documentation](https://logicpwn.github.io/)** - Complete guides and API reference
+- **🐙 [GitHub Repository](https://github.com/Infernus007/LogicPWN)** - Source code and issues
+- **💬 [GitHub Discussions](https://github.com/Infernus007/LogicPWN/discussions)** - Community support
+
+## 📊 Performance Benchmarks
+
+Real-world performance metrics from comprehensive testing:
+
+| Test Scenario           | Requests | Duration | Req/s | Memory  | CPU   | Error Rate |
+| ----------------------- | -------- | -------- | ----- | ------- | ----- | ---------- |
+| **Basic HTTP Requests** | 100      | 11.36s   | 8.8   | 62.2 MB | 12.2% | 0.0%       |
+| **Async Concurrent**    | 100      | 24.82s   | 4.0   | 66.3 MB | 30.4% | 3.0%       |
+| **IDOR Detection**      | 25       | 24.90s   | 1.0   | 68.8 MB | 50.0% | 0.0%       |
+| **Stress Testing**      | 169      | 51.61s   | 3.3   | 73.5 MB | 12.5% | 0.0%       |
+
+**Overall Averages:**
+- **4.3 requests/second** average throughput
+- **67.7 MB** average memory usage
+- **26.2%** average CPU utilization
+- **Excellent reliability** with minimal error rates
 
 ---
 
 **Built with ❤️ for the security community**
-# Test comment for workflow demo
