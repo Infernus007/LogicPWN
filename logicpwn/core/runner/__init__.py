@@ -1,3 +1,6 @@
+from logicpwn.models.request_config import RequestConfig as _RequestConfig
+from logicpwn.models.request_result import RequestResult as _RequestResult
+
 from .async_request_helpers import (
     async_session_manager,
     send_request_async,
@@ -5,10 +8,17 @@ from .async_request_helpers import (
 )
 from .async_runner_core import AsyncRequestContext, AsyncRequestRunner
 from .async_session_manager import AsyncSessionManager
+from .request_builder import (
+    CommonRequests,
+    RequestBuilder,
+    build_request,
+)
 from .runner import (
     HttpRunner,
     RateLimitAlgorithm,
     RateLimitConfig,
+    RetryConfig,
+    RetryManager,
     RunnerConfig,
     SessionConfig,
     SSLConfig,
@@ -23,5 +33,5 @@ from .runner import (
 )
 
 # Re-export key classes for backward compatibility
-RequestConfig = HttpRunner
-RequestResult = HttpRunner
+RequestConfig = _RequestConfig
+RequestResult = _RequestResult
