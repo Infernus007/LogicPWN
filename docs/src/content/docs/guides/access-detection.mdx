@@ -204,7 +204,7 @@ async def multi_role_testing():
 	<Card title="Test Endpoints" icon="link">
 		Specify the endpoints to test for IDOR vulnerabilities. Supports wildcards and ID placeholders.
 	</Card>
-	<Card title="ID Generation" icon="hash">
+	<Card title="ID Generation" icon="code">
 		Configure how IDs are generated for testing, including sequential, random, and pattern-based IDs.
 	</Card>
 	<Card title="Authentication" icon="key">
@@ -298,15 +298,15 @@ def custom_vulnerability_check(result):
 ## Best Practices
 
 <CardGrid stagger>
-<Card title="Test Multiple User Roles" icon="users">
+<Card title="Test Multiple User Roles" icon="star">
 Always test with different user roles to identify privilege escalation vulnerabilities. Test both authenticated and unauthenticated access patterns.
 </Card>
 
-<Card title="Use Realistic Test Data" icon="database">
+<Card title="Use Realistic Test Data" icon="document">
 Use realistic ID ranges and patterns that match your application's data structure. Avoid testing with obviously invalid data.
 </Card>
 
-<Card title="Test Multiple HTTP Methods" icon="globe">
+<Card title="Test Multiple HTTP Methods" icon="external">
 Test different HTTP methods (GET, POST, PUT, DELETE) as access control might vary by method.
 </Card>
 
