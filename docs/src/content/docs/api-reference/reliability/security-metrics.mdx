@@ -1,0 +1,364 @@
+---
+title: Reliability Security Metrics
+description: Security Metrics and Observability Module for LogicPwn
+category: Reliability
+sidebar:
+  order: 30
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Reliability
+**Navigation:** [API Reference](../) › [Reliability](../reliability)
+
+Security Metrics and Observability Module for LogicPwn
+Provides comprehensive security monitoring, metrics collection, and alerting capabilities.
+
+## Import
+
+```python
+import logicpwn.core.reliability.security_metrics
+# or
+from logicpwn.core.reliability.security_metrics import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 5 class(es) for reliability.
+:::
+
+### SecurityEvent
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SecurityEvent:
+    """
+    Represents a security-related event
+    """
+```
+
+Represents a security-related event.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, timestamp: float, event_type: logicpwn.core.reliability.security_metrics.SecurityEventType, severity: logicpwn.core.reliability.security_metrics.SecuritySeverity, message: str, metadata: dict[str, typing.Any] = <factory>, source_module: Optional[str] = None, user_id: Optional[str] = None, session_id: Optional[str] = None) -> None
+```
+
+Initialize a new instance of `SecurityEvent`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SecurityEventType
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SecurityEventType (Enum):
+    """
+    Types of security events to monitor
+    """
+```
+
+Types of security events to monitor.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `SecurityEventType`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SecurityMetrics
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SecurityMetrics:
+    """
+    Container for security metrics
+    """
+```
+
+Container for security metrics.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, total_events: int = 0, events_by_type: dict[logicpwn.core.reliability.security_metrics.SecurityEventType, int] = <factory>, events_by_severity: dict[logicpwn.core.reliability.security_metrics.SecuritySeverity, int] = <factory>, avg_response_time: float = 0.0, failed_requests: int = 0, successful_requests: int = 0, circuit_breaker_trips: int = 0, rate_limit_violations: int = 0, data_leak_incidents: int = 0, memory_leak_warnings: int = 0, thread_safety_violations: int = 0) -> None
+```
+
+Initialize a new instance of `SecurityMetrics`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SecurityMetricsCollector
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SecurityMetricsCollector:
+    """
+    Collects and analyzes security metrics across LogicPwn components
+    """
+```
+
+Collects and analyzes security metrics across LogicPwn components.
+Thread-safe implementation with configurable retention and alerting.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, max_events: int = 10000, retention_hours: int = 24, enable_alerts: bool = True)
+```
+
+Initialize a new instance of `SecurityMetricsCollector`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### add_alert_handler
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def add_alert_handler(self, handler: Callable[[logicpwn.core.reliability.security_metrics.SecurityEvent], NoneType]) -> None
+```
+
+Add an alert handler function.
+
+**Args:**
+- **handler**: Function to call when security alerts are triggered
+
+##### get_metrics
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_metrics(self) -> logicpwn.core.reliability.security_metrics.SecurityMetrics
+```
+
+Get current security metrics.
+
+##### get_metrics_summary
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_metrics_summary(self) -> dict[str, typing.Any]
+```
+
+Get a comprehensive metrics summary for reporting.
+
+##### get_recent_events
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_recent_events(self, event_type: Optional[logicpwn.core.reliability.security_metrics.SecurityEventType] = None, severity: Optional[logicpwn.core.reliability.security_metrics.SecuritySeverity] = None, limit: int = 100) -> list[logicpwn.core.reliability.security_metrics.SecurityEvent]
+```
+
+Get recent security events with optional filtering.
+
+**Args:**
+- **event_type**: Filter by event type
+
+- **severity**: Filter by severity level
+
+- **limit**: Maximum number of events to return
+
+**Returns:**
+ List of recent security events
+
+##### record_event
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def record_event(self, event: logicpwn.core.reliability.security_metrics.SecurityEvent) -> None
+```
+
+Record a security event.
+
+**Args:**
+- **event**: Security event to record
+
+##### record_request_time
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def record_request_time(self, duration: float) -> None
+```
+
+Record request execution time for performance metrics.
+
+
+---
+
+### SecuritySeverity
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SecuritySeverity (Enum):
+    """
+    Severity levels for security events
+    """
+```
+
+Severity levels for security events.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `SecuritySeverity`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+## Functions
+
+:::note[Available Functions]
+This module provides 2 function(s) for direct use.
+:::
+
+### record_security_event
+
+:::note[Function]
+Module function
+:::
+
+```python
+def record_security_event(event_type: logicpwn.core.reliability.security_metrics.SecurityEventType, severity: logicpwn.core.reliability.security_metrics.SecuritySeverity, message: str, metadata: Optional[dict[str, Any]] = None, source_module: Optional[str] = None) -> None
+```
+
+Convenience function to record a security event.
+
+**Args:**
+- **event_type**: Type of security event
+
+- **severity**: Severity level
+
+- **message**: Human-readable message
+
+- **metadata**: Additional event metadata
+
+- **source_module**: Source module name
+
+### setup_default_alert_handlers
+
+:::note[Function]
+Module function
+:::
+
+```python
+def setup_default_alert_handlers() -> None
+```
+
+Set up default security alert handlers.
+
+
+## Related Modules
+
+:::tip[Reliability Modules]
+Explore other modules in the Reliability category:
+
+- **[Reliability](../reliability)** - Core reliability functionality
+- **[Reliability › Circuit Breaker](../reliability/circuit-breaker)** - Circuit breaker implementation
+- **[Reliability › Adaptive Rate Limiter](../reliability/adaptive-rate-limiter)** - Adaptive rate limiting
+:::

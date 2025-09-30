@@ -1,0 +1,540 @@
+---
+title: Stress Testing & Performance
+description: Comprehensive guide to stress testing, performance monitoring, and load testing in LogicPWN
+category: Guides
+sidebar:
+  order: 3
+---
+import { Card, CardGrid, Steps, TabItem, Tabs } from '@astrojs/starlight/components';
+
+## Overview
+
+LogicPWN provides comprehensive stress testing and performance monitoring capabilities for security testing workflows. This includes concurrent exploit execution, performance metrics, load testing, and system resource monitoring.
+
+<Card title="Key Features" icon="chart">
+- Concurrent exploit chain execution
+- Performance metrics and monitoring
+- Memory and CPU monitoring
+- Rate limiting and throttling
+- Comprehensive reporting
+- Configurable test scenarios
+- Error rate analysis
+</Card>
+
+## Quick Start
+
+<Steps>
+1. **Basic Stress Testing**
+
+   ```python
+   from logicpwn.core.stress import StressTester, StressTestConfig
+
+   # Configure stress test
+   config = StressTestConfig(
+       max_concurrent=50,
+       duration=300,  # 5 minutes
+       error_threshold=0.1
+   )
+
+   tester = StressTester(config)
+   results = await tester.run_stress_test(target_configs)
+   ```
+
+2. **Load Testing with Metrics**
+
+   ```python
+   async with StressTester() as tester:
+       metrics = await tester.run_load_test(
+           target_urls=urls,
+           exploit_chains=chains,
+           max_concurrent=100,
+           duration=600
+       )
+       print(f"Requests/sec: {metrics.requests_per_second}")
+       print(f"Error rate: {metrics.error_rate:.2f}%")
+   ```
+
+3. **Performance Monitoring**
+
+   ```python
+   from logicpwn.core.performance import PerformanceMonitor
+
+   with PerformanceMonitor() as monitor:
+       # Your code here
+       metrics = monitor.get_summary()
+       print(f"Memory usage: {metrics['peak_memory_mb']:.2f} MB")
+   ```
+</Steps>
+
+## Basic Stress Testing
+
+### Simple Stress Test
+
+```python
+from logicpwn.core.stress import StressTester, StressTestConfig
+
+# Configure basic stress test
+config = StressTestConfig(
+    max_concurrent=20,
+    duration=120,  # 2 minutes
+    error_threshold=0.05  # 5% error rate threshold
+)
+
+tester = StressTester(config)
+
+# Define target configurations
+target_configs = [
+    {
+        "url": "https://target.com/api/users/1",
+        "method": "GET",
+        "headers": {"Authorization": "Bearer token"}
+    },
+    {
+        "url": "https://target.com/api/users/2",
+        "method": "GET",
+        "headers": {"Authorization": "Bearer token"}
+    }
+]
+
+# Run stress test
+results = await tester.run_stress_test(target_configs)
+print(f"Total requests: {results.total_requests}")
+print(f"Success rate: {results.successful_requests / results.total_requests * 100:.2f}%")
+```
+
+### Stress Test with Authentication
+
+```python
+from logicpwn.core.auth import AuthConfig
+
+# Configure authentication
+auth_config = AuthConfig(
+    url="https://target.com/login",
+    method="POST",
+    credentials={"username": "user", "password": "password"}
+)
+
+# Run stress test with authentication
+results = await tester.run_stress_test(
+    target_configs=target_configs,
+    auth_config=auth_config
+)
+```
+
+## Advanced Stress Testing
+
+### Load Testing with Exploit Chains
+
+```python
+from logicpwn.core.stress import StressTester
+from logicpwn.core.exploit_engine import ExploitChain
+
+# Create exploit chains
+chains = [
+    ExploitChain(name="IDOR Test")
+        .add_step("GET", "https://target.com/api/users/1")
+        .add_step("GET", "https://target.com/api/users/2"),
+    ExploitChain(name="Access Control Test")
+        .add_step("GET", "https://target.com/api/admin")
+        .add_step("POST", "https://target.com/api/admin/users")
+]
+
+# Run load test
+async with StressTester() as tester:
+    metrics = await tester.run_load_test(
+        target_urls=["https://target.com/api/users/1"],
+        exploit_chains=chains,
+        max_concurrent=50,
+        duration=300
+    )
+
+    print(f"Requests per second: {metrics.requests_per_second}")
+    print(f"Average response time: {metrics.average_response_time:.3f}s")
+    print(f"Error rate: {metrics.error_rate:.2f}%")
+```
+
+### Custom Stress Test Configuration
+
+```python
+from logicpwn.core.stress import StressTestConfig
+
+# Advanced configuration
+config = StressTestConfig(
+    max_concurrent=100,
+    duration=600,  # 10 minutes
+    error_threshold=0.1,
+    memory_monitoring=True,
+    cpu_monitoring=True,
+    warmup_duration=30,  # 30 seconds warmup
+    rate_limit=50  # 50 requests per second
+)
+
+tester = StressTester(config)
+```
+
+## Performance Monitoring
+
+### Basic Performance Monitoring
+
+```python
+from logicpwn.core.performance import PerformanceMonitor, monitor_performance
+
+# Context manager approach
+with PerformanceMonitor() as monitor:
+    # Your code here
+    response = requests.get("https://target.com/api/data")
+
+    # Get metrics
+    metrics = monitor.get_summary()
+    print(f"Duration: {metrics['total_duration']:.3f}s")
+    print(f"Peak memory: {metrics['peak_memory_mb']:.2f} MB")
+    print(f"CPU usage: {metrics['avg_cpu_percent']:.2f}%")
+```
+
+### Decorator-based Monitoring
+
+```python
+from logicpwn.core.performance import monitor_performance
+
+@monitor_performance("api_request")
+def make_api_request(url):
+    return requests.get(url)
+
+# Function will be automatically monitored
+response = make_api_request("https://target.com/api/data")
+```
+
+### Advanced Performance Monitoring
+
+```python
+from logicpwn.core.performance import PerformanceBenchmark
+
+# Run comprehensive benchmark
+benchmark = PerformanceBenchmark()
+results = await benchmark.run_benchmark(
+    target_urls=["https://target.com/api/users/1"],
+    concurrent_users=[10, 25, 50, 100],
+    test_duration=60
+)
+
+print(f"Benchmark results: {results}")
+```
+
+## Memory and CPU Monitoring
+
+### System Resource Monitoring
+
+```python
+from logicpwn.core.stress import StressTester, StressTestConfig
+
+# Enable resource monitoring
+config = StressTestConfig(
+    max_concurrent=50,
+    duration=300,
+    memory_monitoring=True,
+    cpu_monitoring=True
+)
+
+async with StressTester(config) as tester:
+    results = await tester.run_stress_test(target_configs)
+
+    # Access resource metrics
+    print(f"Peak memory usage: {results.peak_memory_mb:.2f} MB")
+    print(f"Peak CPU usage: {results.peak_cpu_percent:.2f}%")
+    print(f"Average memory: {results.memory_usage_mb:.2f} MB")
+    print(f"Average CPU: {results.cpu_usage_percent:.2f}%")
+```
+
+### Custom Resource Monitoring
+
+```python
+import psutil
+import asyncio
+
+async def monitor_resources(duration=60):
+    """Monitor system resources during test execution"""
+    start_time = time.time()
+    memory_samples = []
+    cpu_samples = []
+
+    while time.time() - start_time < duration:
+        memory_samples.append(psutil.virtual_memory().percent)
+        cpu_samples.append(psutil.cpu_percent())
+        await asyncio.sleep(1)
+
+    return {
+        "avg_memory": sum(memory_samples) / len(memory_samples),
+        "peak_memory": max(memory_samples),
+        "avg_cpu": sum(cpu_samples) / len(cpu_samples),
+        "peak_cpu": max(cpu_samples)
+    }
+
+# Use during stress testing
+async with StressTester() as tester:
+    # Start monitoring
+    monitor_task = asyncio.create_task(monitor_resources(300))
+
+    # Run stress test
+    results = await tester.run_stress_test(target_configs)
+
+    # Get monitoring results
+    resource_metrics = await monitor_task
+    print(f"Resource usage: {resource_metrics}")
+```
+
+## Rate Limiting and Throttling
+
+### Adaptive Rate Limiting
+
+```python
+from logicpwn.core.reliability import AdaptiveRateLimiter, RateLimitConfig
+
+# Configure adaptive rate limiter
+rate_config = RateLimitConfig(
+    initial_rate=10,  # Start with 10 requests/second
+    max_rate=100,     # Maximum 100 requests/second
+    min_rate=1,       # Minimum 1 request/second
+    adaptation_sensitivity=0.1
+)
+
+rate_limiter = AdaptiveRateLimiter(rate_config)
+
+# Use with stress testing
+async with StressTester(rate_limiter=rate_limiter) as tester:
+    results = await tester.run_stress_test(target_configs)
+```
+
+### Fixed Rate Limiting
+
+```python
+from logicpwn.core.reliability import RateLimitConfig
+
+# Fixed rate limiting
+rate_config = RateLimitConfig(
+    requests_per_second=20,  # Fixed 20 requests/second
+    burst_size=50           # Allow bursts up to 50 requests
+)
+
+rate_limiter = AdaptiveRateLimiter(rate_config)
+```
+
+## Error Analysis and Reporting
+
+### Error Rate Analysis
+
+```python
+async with StressTester() as tester:
+    results = await tester.run_stress_test(target_configs)
+
+    # Analyze error distribution
+    print(f"Total requests: {results.total_requests}")
+    print(f"Successful requests: {results.successful_requests}")
+    print(f"Failed requests: {results.failed_requests}")
+    print(f"Error rate: {results.error_rate:.2f}%")
+
+    # Status code distribution
+    for status_code, count in results.status_code_distribution.items():
+        print(f"Status {status_code}: {count} requests")
+
+    # Error distribution
+    for error_type, count in results.error_distribution.items():
+        print(f"Error {error_type}: {count} occurrences")
+```
+
+### Performance Metrics Analysis
+
+```python
+# Analyze performance metrics
+print(f"Requests per second: {results.requests_per_second:.2f}")
+print(f"Average response time: {results.average_response_time:.3f}s")
+print(f"Median response time: {results.median_response_time:.3f}s")
+print(f"95th percentile: {results.p95_response_time:.3f}s")
+print(f"99th percentile: {results.p99_response_time:.3f}s")
+```
+
+## Integration with Other Components
+
+### Stress Testing with Access Detection
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.stress import StressTester
+
+# Combine stress testing with access detection
+async def stress_access_test():
+    async with StressTester() as tester:
+        # Run stress test first
+        stress_results = await tester.run_stress_test(target_configs)
+
+        # Then run access detection
+        access_results = await detect_idor_flaws(
+            runner=runner,
+            base_url="https://target.com",
+            auth_config=auth_config,
+            test_endpoints=["/api/users/1", "/api/users/2"]
+        )
+
+        return stress_results, access_results
+```
+
+### Stress Testing with Exploit Engine
+
+```python
+from logicpwn.core.exploit_engine import ExploitEngine, ExploitChain
+
+# Stress test exploit chains
+async def stress_exploit_test():
+    async with StressTester() as tester:
+        # Create exploit chains
+        chains = [
+            ExploitChain(name="IDOR Chain")
+                .add_step("GET", "https://target.com/api/users/1")
+                .add_step("GET", "https://target.com/api/users/2"),
+            ExploitChain(name="Access Chain")
+                .add_step("GET", "https://target.com/api/admin")
+                .add_step("POST", "https://target.com/api/admin/users")
+        ]
+
+        # Run stress test with exploit chains
+        results = await tester.run_load_test(
+            target_urls=["https://target.com/api/users/1"],
+            exploit_chains=chains,
+            max_concurrent=50,
+            duration=300
+        )
+
+        return results
+```
+
+## Best Practices
+
+<CardGrid stagger>
+<Card title="Start Small" icon="arrow-up">
+Begin with low concurrency and gradually increase to find optimal performance.
+</Card>
+
+<Card title="Monitor Resources" icon="chart">
+Always monitor memory and CPU usage during stress testing.
+</Card>
+
+<Card title="Set Reasonable Limits" icon="shield">
+Use appropriate rate limits to avoid overwhelming the target.
+</Card>
+
+<Card title="Analyze Results" icon="search">
+Thoroughly analyze error rates and performance metrics.
+</Card>
+</CardGrid>
+
+### 1. Gradual Load Increase
+
+```python
+# Good: Gradual load increase
+concurrency_levels = [10, 25, 50, 100, 200]
+for level in concurrency_levels:
+    config = StressTestConfig(max_concurrent=level, duration=60)
+    tester = StressTester(config)
+    results = await tester.run_stress_test(target_configs)
+
+    if results.error_rate > 0.1:  # 10% error threshold
+        print(f"Error rate too high at {level} concurrent users")
+        break
+
+# Bad: Start with high load
+config = StressTestConfig(max_concurrent=1000, duration=60)
+```
+
+### 2. Resource Monitoring
+
+```python
+# Good: Monitor resources
+config = StressTestConfig(
+    max_concurrent=50,
+    duration=300,
+    memory_monitoring=True,
+    cpu_monitoring=True
+)
+
+# Bad: No resource monitoring
+config = StressTestConfig(max_concurrent=50, duration=300)
+```
+
+### 3. Error Analysis
+
+```python
+# Good: Analyze errors
+results = await tester.run_stress_test(target_configs)
+
+if results.error_rate > 0.05:  # 5% threshold
+    print("High error rate detected")
+    for error_type, count in results.error_distribution.items():
+        print(f"Error {error_type}: {count} occurrences")
+
+# Bad: Ignore errors
+results = await tester.run_stress_test(target_configs)
+print(f"Completed {results.total_requests} requests")
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**High Error Rates**: Reduce concurrency or check target stability:
+```python
+# Reduce concurrency
+config = StressTestConfig(
+    max_concurrent=10,  # Reduce from 50
+    duration=300
+)
+```
+
+**Memory Issues**: Enable memory monitoring and reduce batch size:
+```python
+# Enable memory monitoring
+config = StressTestConfig(
+    max_concurrent=25,
+    duration=300,
+    memory_monitoring=True
+)
+```
+
+**Timeout Issues**: Increase timeout values:
+```python
+# Increase timeout
+target_configs = [
+    {
+        "url": "https://target.com/api/users/1",
+        "method": "GET",
+        "timeout": 30  # Increase timeout
+    }
+]
+```
+
+## Related Guides
+
+<CardGrid stagger>
+<Card title="Async Runner" icon="rocket" link="/guides/async-runner/">
+Learn about high-performance asynchronous request handling.
+</Card>
+
+<Card title="Performance Monitoring" icon="chart" link="/guides/performance-monitoring/">
+Explore advanced performance monitoring and optimization.
+</Card>
+
+<Card title="Exploit Engine" icon="shield" link="/guides/exploit-engine/">
+Discover advanced exploit chain execution and validation.
+</Card>
+
+<Card title="API Reference" icon="book" link="/api-reference/">
+Browse the complete API documentation for stress testing modules.
+</Card>
+</CardGrid>
+
+## Next Steps
+
+Now that you understand stress testing in LogicPWN, you can:
+
+1. **Integrate with Performance Monitoring** for comprehensive system analysis
+2. **Use with Exploit Engine** for stress testing complex attack scenarios
+3. **Explore Rate Limiting** for controlled load testing
+4. **Check out examples** in the `/examples` directory for real-world implementations

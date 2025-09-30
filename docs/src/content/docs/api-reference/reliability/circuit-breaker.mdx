@@ -1,0 +1,382 @@
+---
+title: Reliability Circuit Breaker
+description: Circuit Breaker pattern implementation for LogicPwn reliability and fault tolerance
+category: Reliability
+sidebar:
+  order: 66
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Reliability
+**Navigation:** [API Reference](../) › [Reliability](../reliability)
+
+Circuit Breaker pattern implementation for LogicPwn reliability and fault tolerance.
+
+This module provides circuit breaker functionality to prevent cascading failures
+and provide fast failure responses when services are unavailable.
+
+## Import
+
+```python
+import logicpwn.core.reliability.circuit_breaker
+# or
+from logicpwn.core.reliability.circuit_breaker import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 6 class(es) for reliability.
+:::
+
+### CircuitBreaker
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CircuitBreaker:
+    """
+    Circuit breaker implementation for reliable service calls
+    """
+```
+
+Circuit breaker implementation for reliable service calls.
+
+The circuit breaker prevents cascading failures by:
+1. CLOSED: Normal operation, monitoring for failures
+2. OPEN: Fast-fail mode, rejecting calls without attempting them
+3. HALF_OPEN: Testing mode, allowing limited calls to test recovery
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, name: str, config: Optional[logicpwn.core.reliability.circuit_breaker.CircuitBreakerConfig] = None)
+```
+
+Initialize a new instance of `CircuitBreaker`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### call
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def call(self, func: Callable, *args, **kwargs) -> Any
+```
+
+Execute function with circuit breaker protection.
+
+**Args:**
+- **func**: Function to execute
+
+- ***args**: Positional arguments for function
+
+- ****kwargs**: Keyword arguments for function
+
+**Returns:**
+ Function result
+
+**Raises:**
+
+- **CircuitBreakerOpenException**: If circuit breaker is open Any exception raised by the function
+
+##### force_close
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def force_close(self) -> None
+```
+
+Force circuit breaker to CLOSED state (for testing/manual intervention).
+
+##### force_open
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def force_open(self) -> None
+```
+
+Force circuit breaker to OPEN state (for testing/manual intervention).
+
+##### get_metrics
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_metrics(self) -> dict[str, typing.Any]
+```
+
+Get current circuit breaker metrics.
+
+##### reset
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def reset(self) -> None
+```
+
+Reset circuit breaker to initial state.
+
+
+---
+
+### CircuitBreakerConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CircuitBreakerConfig:
+    """
+    Configuration for circuit breaker behavior
+    """
+```
+
+Configuration for circuit breaker behavior.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, failure_threshold: int = 5, recovery_timeout: float = 60.0, success_threshold: int = 3, timeout: float = 10.0, exception_whitelist: list[type] = <factory>) -> None
+```
+
+Initialize a new instance of `CircuitBreakerConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### CircuitBreakerMetrics
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CircuitBreakerMetrics:
+    """
+    Metrics tracking for circuit breaker
+    """
+```
+
+Metrics tracking for circuit breaker.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, total_requests: int = 0, successful_requests: int = 0, failed_requests: int = 0, consecutive_failures: int = 0, consecutive_successes: int = 0, last_failure_time: Optional[float] = None, state_changes: int = 0) -> None
+```
+
+Initialize a new instance of `CircuitBreakerMetrics`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### CircuitBreakerOpenException
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CircuitBreakerOpenException (Exception):
+    """
+    Exception raised when circuit breaker is open
+    """
+```
+
+Exception raised when circuit breaker is open.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, name: str, failure_count: int)
+```
+
+Initialize a new instance of `CircuitBreakerOpenException`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### CircuitBreakerRegistry
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CircuitBreakerRegistry:
+    """
+    Registry for managing multiple circuit breakers
+    """
+```
+
+Registry for managing multiple circuit breakers.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self)
+```
+
+Initialize a new instance of `CircuitBreakerRegistry`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### get_all_metrics
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_all_metrics(self) -> list[dict[str, typing.Any]]
+```
+
+Get metrics for all registered circuit breakers.
+
+##### get_breaker
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_breaker(self, name: str, config: Optional[logicpwn.core.reliability.circuit_breaker.CircuitBreakerConfig] = None) -> logicpwn.core.reliability.circuit_breaker.CircuitBreaker
+```
+
+Get or create a circuit breaker by name.
+
+##### reset_all
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def reset_all(self) -> None
+```
+
+Reset all circuit breakers.
+
+
+---
+
+### CircuitBreakerState
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CircuitBreakerState (Enum):
+    """
+    Circuit breaker states
+    """
+```
+
+Circuit breaker states.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `CircuitBreakerState`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+
+## Related Modules
+
+:::tip[Reliability Modules]
+Explore other modules in the Reliability category:
+
+- **[Reliability](../reliability)** - Core reliability functionality
+- **[Reliability › Adaptive Rate Limiter](../reliability/adaptive-rate-limiter)** - Adaptive rate limiting
+- **[Reliability › Security Metrics](../reliability/security-metrics)** - Security metrics collection
+:::

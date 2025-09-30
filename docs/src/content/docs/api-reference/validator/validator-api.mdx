@@ -1,0 +1,238 @@
+---
+title: Validator Validator Api
+description: Enhanced API functions for LogicPwn response validation
+category: Validation
+sidebar:
+  order: 81
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Validation
+**Navigation:** [API Reference](../) › [Validator](../validator)
+
+Enhanced API functions for LogicPwn response validation.
+Includes adaptive confidence scoring, business logic detection, and critical vulnerability presets.
+
+## Import
+
+```python
+import logicpwn.core.validator.validator_api
+# or
+from logicpwn.core.validator.validator_api import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Functions
+
+:::note[Available Functions]
+This module provides 7 function(s) for direct use.
+:::
+
+### create_custom_preset
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_custom_preset(name: str, success_patterns: Optional[list[str]] = None, failure_patterns: Optional[list[str]] = None, regex_patterns: Optional[list[str]] = None, status_codes: Optional[list[int]] = None, confidence_threshold: float = 0.3, vulnerability_type: Optional[str] = None) -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Create a custom validation preset.
+
+**Args:**
+- **name**: Name for the custom preset
+
+- **success_patterns**: Success indicator patterns
+
+- **failure_patterns**: Failure indicator patterns
+
+- **regex_patterns**: Regular expression patterns
+
+- **status_codes**: Expected status codes
+
+- **confidence_threshold**: Minimum confidence threshold
+
+- **vulnerability_type**: Type of vulnerability being tested
+
+**Returns:**
+ ValidationConfig object
+
+### extract_from_response
+
+:::note[Function]
+Module function
+:::
+
+```python
+def extract_from_response(response: requests.models.Response, regex: str, group_names: Optional[list[str]] = None, extract_all: bool = False) -> Union[list[str], dict[str, str]]
+```
+
+Extract data from response using regex patterns.
+
+**Args:**
+- **response**: HTTP response object
+
+- **regex**: Regular expression pattern
+
+- **group_names**: Named groups to extract
+
+- **extract_all**: Extract all matches or just the first
+
+**Returns:**
+ List of matches or dictionary of named groups
+
+### list_available_presets
+
+:::note[Function]
+Module function
+:::
+
+```python
+def list_available_presets() -> list[str]
+```
+
+List all available validation presets.
+
+**Returns:**
+ List of preset names
+
+### list_vulnerability_presets
+
+:::note[Function]
+Module function
+:::
+
+```python
+def list_vulnerability_presets() -> list[str]
+```
+
+List critical vulnerability detection presets.
+
+**Returns:**
+ List of critical vulnerability preset names
+
+### validate_business_logic
+
+:::note[Function]
+Module function
+:::
+
+```python
+def validate_business_logic(response: requests.models.Response, business_rules: list[dict[str, typing.Any]], context_data: Optional[dict[str, Any]] = None) -> logicpwn.core.validator.validator_models.ValidationResult
+```
+
+Validate business logic rules against response.
+
+**Args:**
+- **response**: HTTP response object
+
+- **business_rules**: List of business logic rules to validate
+
+- **context_data**: Additional context for validation
+
+**Returns:**
+ ValidationResult object
+
+### validate_json_response
+
+:::note[Function]
+Module function
+:::
+
+```python
+def validate_json_response(response: requests.models.Response, json_schema: Optional[dict] = None, required_keys: Optional[list[str]] = None, forbidden_keys: Optional[list[str]] = None) -> logicpwn.core.validator.validator_models.ValidationResult
+```
+
+Validate JSON response structure and content.
+
+**Args:**
+- **response**: HTTP response object
+
+- **json_schema**: JSON schema for validation
+
+- **required_keys**: Keys that must be present
+
+- **forbidden_keys**: Keys that must not be present
+
+**Returns:**
+ ValidationResult object
+
+### validate_timing_attack
+
+:::note[Function]
+Module function
+:::
+
+```python
+def validate_timing_attack(responses: list[requests.models.Response], response_times: list[float], timing_threshold: float = 1.0) -> logicpwn.core.validator.validator_models.ValidationResult
+```
+
+Validate potential timing attack vulnerabilities.
+
+**Args:**
+- **responses**: List of HTTP response objects
+
+- **response_times**: List of response times
+
+- **timing_threshold**: Threshold for timing difference detection
+
+**Returns:**
+ ValidationResult object
+
+
+## Related Modules
+
+:::tip[Validation Modules]
+Explore other modules in the Validation category:
+
+- **[Validator](../validator)** - Core validation functionality
+- **[Validator › Validator Models](../validator/validator-models)** - Validation data models
+:::

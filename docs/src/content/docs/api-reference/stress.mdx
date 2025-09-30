@@ -1,0 +1,349 @@
+---
+title: Stress
+description: API documentation for the Stress module in LogicPwn framework
+category: Stress Testing
+sidebar:
+  order: 40
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Stress Testing
+**Navigation:** [API Reference](../)
+
+API documentation for the `logicpwn.core.stress` module.
+
+## Import
+
+```python
+import logicpwn.core.stress
+# or
+from logicpwn.core.stress import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 3 class(es) for stress testing.
+:::
+
+### StressTestConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class StressTestConfig:
+    """
+    Configuration for stress testing
+    """
+```
+
+Configuration for stress testing.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, max_concurrent: int = 50, duration: int = 300, rate_limit: Optional[float] = None, timeout: int = 30, verify_ssl: bool = True, memory_monitoring: bool = True, cpu_monitoring: bool = True, error_threshold: float = 0.1, warmup_duration: int = 30) -> None
+```
+
+Initialize a new instance of `StressTestConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### StressTestMetrics
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class StressTestMetrics:
+    """
+    Metrics from stress testing
+    """
+```
+
+Metrics from stress testing.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, total_requests: int = 0, successful_requests: int = 0, failed_requests: int = 0, total_duration: float = 0.0, requests_per_second: float = 0.0, average_response_time: float = 0.0, median_response_time: float = 0.0, p95_response_time: float = 0.0, p99_response_time: float = 0.0, error_rate: float = 0.0, memory_usage_mb: float = 0.0, cpu_usage_percent: float = 0.0, peak_memory_mb: float = 0.0, peak_cpu_percent: float = 0.0, status_code_distribution: dict[int, int] = <factory>, error_distribution: dict[str, int] = <factory>, timestamp: datetime.datetime = <factory>) -> None
+```
+
+Initialize a new instance of `StressTestMetrics`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### to_dict
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def to_dict(self) -> dict[str, typing.Any]
+```
+
+Convert metrics to dictionary.
+
+
+---
+
+### StressTester
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class StressTester:
+    """
+    Comprehensive stress testing for LogicPwn security workflows
+    """
+```
+
+Comprehensive stress testing for LogicPwn security workflows.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, config: Optional[logicpwn.core.stress.stress_tester.StressTestConfig] = None)
+```
+
+Initialize a new instance of `StressTester`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### generate_report
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def generate_report(self, output_format: str = 'json') -> str
+```
+
+Generate a comprehensive test report.
+
+**Args:**
+- **output_format**: Report format ("json", "text", "html")
+
+**Returns:**
+ Formatted report string
+
+##### run_burst_test
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def run_burst_test(self, target_config: dict[str, typing.Any], burst_size: int = 100, burst_count: int = 5, auth_config: Optional[dict[str, Any]] = None) -> logicpwn.core.stress.stress_tester.StressTestMetrics
+```
+
+Run burst testing with rapid request sequences.
+
+**Args:**
+- **target_config**: Request configuration
+
+- **burst_size**: Number of requests per burst
+
+- **burst_count**: Number of bursts
+
+- **auth_config**: Optional authentication configuration
+
+**Returns:**
+ StressTestMetrics with test results
+
+**Usage Example:**
+```python
+result = await run_burst_test(...)
+```
+
+##### run_load_test
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def run_load_test(self, target_urls: list[str], exploit_chains: list[list[dict[str, typing.Any]]], auth_config: Optional[dict[str, Any]] = None) -> logicpwn.core.stress.stress_tester.StressTestMetrics
+```
+
+Run a load test with exploit chains.
+
+**Args:**
+- **target_urls**: List of target URLs
+
+- **exploit_chains**: List of exploit chain configurations
+
+- **auth_config**: Optional authentication configuration
+
+**Returns:**
+ StressTestMetrics with test results
+
+**Usage Example:**
+```python
+result = await run_load_test(...)
+```
+
+##### run_stress_test
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def run_stress_test(self, target_configs: list[dict[str, typing.Any]], auth_config: Optional[dict[str, Any]] = None) -> logicpwn.core.stress.stress_tester.StressTestMetrics
+```
+
+Run a basic stress test with concurrent requests.
+
+**Args:**
+- **target_configs**: List of request configurations
+
+- **auth_config**: Optional authentication configuration
+
+**Returns:**
+ StressTestMetrics with test results
+
+**Usage Example:**
+```python
+result = await run_stress_test(...)
+```
+
+
+---
+
+## Functions
+
+:::note[Available Functions]
+This module provides 2 function(s) for direct use.
+:::
+
+### run_exploit_chain_stress_test
+
+:::note[Async Function]
+Asynchronous function
+:::
+
+```python
+async def run_exploit_chain_stress_test(exploit_chains: list[list[dict[str, typing.Any]]], target_urls: list[str], auth_config: Optional[dict[str, Any]] = None, duration: int = 300) -> logicpwn.core.stress.stress_tester.StressTestMetrics
+```
+
+Run stress test with exploit chains.
+
+**Args:**
+- **exploit_chains**: List of exploit chain configurations
+
+- **target_urls**: List of target URLs
+
+- **auth_config**: Optional authentication configuration
+
+- **duration**: Test duration in seconds
+
+**Returns:**
+ StressTestMetrics with results
+
+**Usage Example:**
+```python
+result = await run_exploit_chain_stress_test(...)
+```
+
+### run_quick_stress_test
+
+:::note[Async Function]
+Asynchronous function
+:::
+
+```python
+async def run_quick_stress_test(target_urls: list[str], duration: int = 60, max_concurrent: int = 20) -> logicpwn.core.stress.stress_tester.StressTestMetrics
+```
+
+Run a quick stress test with basic configuration.
+
+**Args:**
+- **target_urls**: List of target URLs
+
+- **duration**: Test duration in seconds
+
+- **max_concurrent**: Maximum concurrent requests
+
+**Returns:**
+ StressTestMetrics with results
+
+**Usage Example:**
+```python
+result = await run_quick_stress_test(...)
+```
+
+
+## Related Modules
+
+:::tip[Stress Testing Modules]
+Explore other modules in the Stress Testing category:
+
+- **[Stress › Stress Tester](./stress/stress-tester)** - Main stress tester
+- **[Stress › Stress Core](./stress/stress-core)** - Core stress testing engine
+:::

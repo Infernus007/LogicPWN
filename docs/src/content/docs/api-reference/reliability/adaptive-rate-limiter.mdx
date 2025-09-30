@@ -1,0 +1,313 @@
+---
+title: Reliability Adaptive Rate Limiter
+description: Adaptive Rate Limiting for LogicPwn - Dynamic throttling based on response patterns
+category: Reliability
+sidebar:
+  order: 15
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Reliability
+**Navigation:** [API Reference](../) › [Reliability](../reliability)
+
+Adaptive Rate Limiting for LogicPwn - Dynamic throttling based on response patterns.
+
+This module provides intelligent rate limiting that adapts based on:
+- Response status codes and error patterns
+- Server response times and performance
+- Rate limit indicators in responses
+- Circuit breaker state
+
+## Import
+
+```python
+import logicpwn.core.reliability.adaptive_rate_limiter
+# or
+from logicpwn.core.reliability.adaptive_rate_limiter import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 4 class(es) for reliability.
+:::
+
+### AdaptiveRateLimiter
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AdaptiveRateLimiter:
+    """
+    Adaptive rate limiter that adjusts delays based on server response patterns
+    """
+```
+
+Adaptive rate limiter that adjusts delays based on server response patterns.
+
+Features:
+- Exponential backoff on rate limiting
+- Adaptive delay based on response times
+- Recovery on successful requests
+- Circuit breaker integration
+- Comprehensive metrics collection
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, name: str, config: Optional[logicpwn.core.reliability.adaptive_rate_limiter.RateLimitConfig] = None)
+```
+
+Initialize a new instance of `AdaptiveRateLimiter`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### get_metrics
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_metrics(self) -> dict[str, typing.Any]
+```
+
+Get current rate limiter metrics.
+
+##### record_request
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def record_request(self, response_time: float, status_code: int, exception: Optional[Exception] = None) -> None
+```
+
+Record request results and adapt rate limiting accordingly.
+
+**Args:**
+- **response_time**: Time taken for the request in seconds
+
+- **status_code**: HTTP status code received
+
+- **exception**: Exception that occurred during request (if any)
+
+##### reset
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def reset(self) -> None
+```
+
+Reset rate limiter to initial state.
+
+##### wait_if_needed
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wait_if_needed(self) -> float
+```
+
+Apply rate limiting delay if needed.
+
+**Returns:**
+ Actual delay applied in seconds
+
+
+---
+
+### RateLimitConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RateLimitConfig:
+    """
+    Configuration for adaptive rate limiting
+    """
+```
+
+Configuration for adaptive rate limiting.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, base_delay: float = 1.0, max_delay: float = 30.0, min_delay: float = 0.1, backoff_multiplier: float = 2.0, recovery_factor: float = 0.8, rate_limit_status_codes: list[int] = <factory>, error_status_codes: list[int] = <factory>, response_time_threshold: float = 5.0, window_size: int = 10, adaptation_sensitivity: float = 0.1) -> None
+```
+
+Initialize a new instance of `RateLimitConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RateLimiterRegistry
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RateLimiterRegistry:
+    """
+    Registry for managing multiple rate limiters
+    """
+```
+
+Registry for managing multiple rate limiters.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self)
+```
+
+Initialize a new instance of `RateLimiterRegistry`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### get_all_metrics
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_all_metrics(self) -> list[dict[str, typing.Any]]
+```
+
+Get metrics for all registered rate limiters.
+
+##### get_limiter
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_limiter(self, name: str, config: Optional[logicpwn.core.reliability.adaptive_rate_limiter.RateLimitConfig] = None) -> logicpwn.core.reliability.adaptive_rate_limiter.AdaptiveRateLimiter
+```
+
+Get or create a rate limiter by name.
+
+##### reset_all
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def reset_all(self) -> None
+```
+
+Reset all rate limiters.
+
+
+---
+
+### RequestMetrics
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RequestMetrics:
+    """
+    Metrics for a single request
+    """
+```
+
+Metrics for a single request.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, timestamp: float, response_time: float, status_code: int, success: bool, rate_limited: bool, error: bool) -> None
+```
+
+Initialize a new instance of `RequestMetrics`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+
+## Related Modules
+
+:::tip[Reliability Modules]
+Explore other modules in the Reliability category:
+
+- **[Reliability](../reliability)** - Core reliability functionality
+- **[Reliability › Circuit Breaker](../reliability/circuit-breaker)** - Circuit breaker implementation
+- **[Reliability › Security Metrics](../reliability/security-metrics)** - Security metrics collection
+:::

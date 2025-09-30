@@ -1,0 +1,164 @@
+---
+title: API Reference
+description: Complete API documentation for LogicPwn framework - authentication, access control, exploit engine, validation, and reporting modules
+category: Documentation
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+# LogicPwn API Reference
+
+Complete API documentation for all LogicPwn framework components.
+
+## Core Modules
+
+<CardGrid>
+  <Card title="Authentication" icon="puzzle">
+    <p>Authentication mechanisms, session management, and identity provider integration</p>
+    <ul>
+      <li><a href="./auth">Auth</a></li>
+      <li><a href="./auth/idp-integration">Auth › Idp Integration</a></li>
+      <li><a href="./auth/jwt-handler">Auth › Jwt Handler</a></li>
+    </ul>
+  </Card>
+  <Card title="Test Runner" icon="puzzle">
+    <p>Test execution, async processing, and session management</p>
+    <ul>
+      <li><a href="./runner">Runner</a></li>
+      <li><a href="./runner/async-runner">Runner › Async Runner</a></li>
+      <li><a href="./runner/async-session-manager">Runner › Async Session Manager</a></li>
+    </ul>
+  </Card>
+  <Card title="Validation" icon="puzzle">
+    <p>Response validation, test result analysis, and reporting</p>
+    <ul>
+      <li><a href="./validator">Validator</a></li>
+      <li><a href="./validator/validator-api">Validator › Validator Api</a></li>
+      <li><a href="./validator/validator-models">Validator › Validator Models</a></li>
+      <li><a href="./exploit-engine/security-validator">Exploit Engine › Security Validator</a></li>
+    </ul>
+  </Card>
+  <Card title="Utilities" icon="puzzle">
+    <p>Configuration, caching, performance monitoring, and utility functions</p>
+    <ul>
+      <li><a href="./utils">Utils</a></li>
+      <li><a href="./config">Config</a></li>
+      <li><a href="./cache">Cache</a></li>
+      <li><a href="./integration-utils">Integration Utils</a></li>
+    </ul>
+  </Card>
+  <Card title="Reporting & Compliance" icon="puzzle">
+    <p>Report generation, compliance frameworks, and law enforcement reporting</p>
+    <ul>
+      <li><a href="./reporter">Reporter</a></li>
+      <li><a href="./reporter/compliance">Reporter › Compliance</a></li>
+      <li><a href="./reporter/law-enforcement">Reporter › Law Enforcement</a></li>
+      <li><a href="./reporter/framework-mapper">Reporter › Framework Mapper</a></li>
+      <li><a href="./reporter/integration">Reporter › Integration</a></li>
+    </ul>
+  </Card>
+  <Card title="Exceptions" icon="puzzle">
+    <p>Error handling and exception definitions</p>
+    <ul>
+      <li><a href="./exceptions">Exceptions</a></li>
+    </ul>
+  </Card>
+</CardGrid>
+
+## Quick Start Examples
+
+### Basic IDOR Detection
+
+```python
+from logicpwn.core.auth import AuthConfig, authenticate_session
+from logicpwn.core.access import detect_idor_flaws
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://app.example.com/login",
+    credentials={"username": "user", "password": "pass"}
+)
+
+session = authenticate_session(auth_config)
+
+# Run IDOR detection
+results = detect_idor_flaws(
+    session,
+    "https://app.example.com/api/users/{id}",
+    test_ids=["1", "2", "3"],
+    success_indicators=["user_data"],
+    failure_indicators=["unauthorized"]
+)
+```
+
+### Async Execution
+
+```python
+from logicpwn.core.runner.async_runner import AsyncTestRunner
+
+# Setup async testing
+runner = AsyncTestRunner(max_concurrent=5)
+
+# Run tests asynchronously
+results = await runner.run_tests([
+    {"endpoint": endpoint, "test_data": test_data}
+    for endpoint in endpoints
+])
+```
+
+### Advanced Authentication
+
+```python
+from logicpwn.core.auth.enhanced_auth import EnhancedAuthHandler
+from logicpwn.core.auth.idp_integration import IdPIntegration
+
+# OAuth 2.0 authentication
+auth_handler = EnhancedAuthHandler()
+oauth_config = {
+    "client_id": "your_client_id",
+    "client_secret": "your_secret",
+    "redirect_uri": "http://localhost:8080/callback"
+}
+
+session = await auth_handler.authenticate_oauth(oauth_config)
+```
+
+## Module Categories
+
+<LinkCard
+  title="Authentication & Sessions"
+  description="Comprehensive authentication support including OAuth, SAML, JWT, and MFA"
+  href="./auth"
+/>
+
+<LinkCard
+  title="Access Control Testing"
+  description="Advanced IDOR detection and privilege escalation testing capabilities"
+  href="./access"
+/>
+
+<LinkCard
+  title="Async Execution Engine"
+  description="High-performance async test execution and session management"
+  href="./runner"
+/>
+
+<LinkCard
+  title="Validation & Reporting"
+  description="Response validation, result analysis, and comprehensive reporting"
+  href="./validator"
+/>
+
+:::tip[Documentation Notes]
+This API reference is automatically generated from the source code. For usage examples and tutorials, see the [main documentation](/).
+
+All async functions support standard Python `asyncio` patterns and can be used with `async`/`await` syntax.
+:::
+
+## Support
+
+- **Issues**: Report bugs and request features on [GitHub](https://github.com/logicpwn/logicpwn/issues)
+- **Discussions**: Join the community discussions
+- **Documentation**: Full guides and tutorials in the main documentation

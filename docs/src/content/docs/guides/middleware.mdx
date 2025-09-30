@@ -1,0 +1,714 @@
+---
+title: Middleware & Reliability
+description: Comprehensive guide to middleware system, circuit breakers, rate limiting, and reliability features in LogicPWN
+category: Guides
+sidebar:
+  order: 7
+---
+import { Card, CardGrid, Steps, TabItem, Tabs } from '@astrojs/starlight/components';
+
+## Overview
+
+LogicPWN provides a comprehensive middleware system for extensible request/response processing, along with reliability features like circuit breakers, rate limiting, and adaptive throttling. This enables robust security testing workflows.
+
+<Card title="Key Features" icon="puzzle">
+- Flexible middleware system for request/response processing
+- Circuit breaker pattern for resilient request handling
+- Adaptive rate limiting and throttling
+- Retry logic with exponential backoff
+- Session management middleware
+- Logging and monitoring middleware
+- Custom middleware development
+</Card>
+
+## Quick Start
+
+<Steps>
+1. **Basic Middleware Usage**
+
+   ```python
+   from logicpwn.core.middleware import MiddlewareManager, LoggingMiddleware
+
+   # Create middleware manager
+   manager = MiddlewareManager()
+
+   # Add logging middleware
+   manager.add_middleware(LoggingMiddleware())
+
+   # Use middleware in requests
+   context = MiddlewareContext(
+       request_id="req-001",
+       url="https://target.com/api/data",
+       method="GET"
+   )
+
+   processed_context = manager.process_request(context)
+   ```
+
+2. **Circuit Breaker Middleware**
+
+   ```python
+   from logicpwn.core.middleware import CircuitBreakerMiddleware
+
+   # Add circuit breaker
+   circuit_breaker = CircuitBreakerMiddleware(
+       failure_threshold=5,
+       recovery_timeout=60
+   )
+   manager.add_middleware(circuit_breaker)
+   ```
+
+3. **Rate Limiting Middleware**
+
+   ```python
+   from logicpwn.core.reliability import AdaptiveRateLimiter, RateLimitConfig
+
+   # Configure rate limiting
+   rate_config = RateLimitConfig(
+       requests_per_second=10,
+       burst_size=20
+   )
+   rate_limiter = AdaptiveRateLimiter(rate_config)
+   ```
+</Steps>
+
+## Middleware System
+
+### Basic Middleware Usage
+
+```python
+from logicpwn.core.middleware import MiddlewareManager, MiddlewareContext
+from logicpwn.core.middleware import LoggingMiddleware, RetryMiddleware
+
+# Create middleware manager
+manager = MiddlewareManager()
+
+# Add middleware components
+manager.add_middleware(LoggingMiddleware())
+manager.add_middleware(RetryMiddleware(max_retries=3))
+
+# Create request context
+context = MiddlewareContext(
+    request_id="req-001",
+    url="https://target.com/api/users/1",
+    method="GET",
+    headers={"Authorization": "Bearer token"}
+)
+
+# Process request through middleware
+processed_context = manager.process_request(context)
+
+# Process response through middleware
+response = requests.get(processed_context.url)
+processed_response = manager.process_response(context, response)
+```
+
+### Custom Middleware Development
+
+```python
+from logicpwn.core.middleware import BaseMiddleware, MiddlewareContext
+
+class CustomMiddleware(BaseMiddleware):
+    """Custom middleware for specific processing logic"""
+
+    def __init__(self, custom_param="default"):
+        super().__init__("Custom")
+        self.custom_param = custom_param
+
+    def process_request(self, context: MiddlewareContext) -> MiddlewareContext:
+        """Process request before sending"""
+        if not self.enabled:
+            return context
+
+        # Add custom headers
+        context.headers["X-Custom-Header"] = self.custom_param
+
+        # Add custom metadata
+        context.metadata = context.metadata or {}
+        context.metadata["custom_processing"] = True
+
+        return context
+
+    def process_response(self, context: MiddlewareContext, response: Any) -> Any:
+        """Process response after receiving"""
+        if not self.enabled:
+            return response
+
+        # Add custom processing
+        if hasattr(response, 'headers'):
+            response.headers["X-Processed-By"] = "CustomMiddleware"
+
+        return response
+
+# Use custom middleware
+custom_middleware = CustomMiddleware(custom_param="value")
+manager.add_middleware(custom_middleware)
+```
+
+## Circuit Breaker Pattern
+
+### Basic Circuit Breaker
+
+```python
+from logicpwn.core.middleware import CircuitBreakerMiddleware
+
+# Configure circuit breaker
+circuit_breaker = CircuitBreakerMiddleware(
+    failure_threshold=5,      # Open after 5 failures
+    recovery_timeout=60,       # Wait 60 seconds before retry
+    error_threshold=0.5        # Open if 50% of requests fail
+)
+
+# Add to middleware manager
+manager.add_middleware(circuit_breaker)
+
+# Use in requests
+try:
+    context = MiddlewareContext(
+        request_id="req-001",
+        url="https://target.com/api/data",
+        method="GET"
+    )
+
+    processed_context = manager.process_request(context)
+    response = requests.get(processed_context.url)
+    processed_response = manager.process_response(context, response)
+
+except CircuitBreakerError as e:
+    print(f"Circuit breaker open: {e}")
+    # Handle circuit breaker state
+```
+
+### Advanced Circuit Breaker Configuration
+
+```python
+from logicpwn.core.reliability import CircuitBreaker, CircuitBreakerConfig
+
+# Advanced circuit breaker configuration
+config = CircuitBreakerConfig(
+    failure_threshold=10,
+    recovery_timeout=120,
+    error_threshold=0.3,
+    success_threshold=3,
+    timeout=30
+)
+
+circuit_breaker = CircuitBreaker(config)
+
+# Use with middleware
+class CircuitBreakerMiddleware(BaseMiddleware):
+    def __init__(self, circuit_breaker):
+        super().__init__("CircuitBreaker")
+        self.circuit_breaker = circuit_breaker
+
+    def process_request(self, context: MiddlewareContext) -> MiddlewareContext:
+        if not self.enabled:
+            return context
+
+        # Check circuit breaker state
+        if self.circuit_breaker.state == "open":
+            raise CircuitBreakerError("Circuit breaker is open")
+
+        return context
+
+    def process_response(self, context: MiddlewareContext, response: Any) -> Any:
+        if not self.enabled:
+            return response
+
+        # Update circuit breaker state
+        if response.status_code >= 500:
+            self.circuit_breaker.record_failure()
+        else:
+            self.circuit_breaker.record_success()
+
+        return response
+```
+
+## Rate Limiting and Throttling
+
+### Basic Rate Limiting
+
+```python
+from logicpwn.core.reliability import AdaptiveRateLimiter, RateLimitConfig
+
+# Configure rate limiting
+rate_config = RateLimitConfig(
+    requests_per_second=10,    # 10 requests per second
+    burst_size=20,            # Allow bursts up to 20 requests
+    adaptation_sensitivity=0.1 # How quickly to adapt
+)
+
+rate_limiter = AdaptiveRateLimiter(rate_config)
+
+# Use in middleware
+class RateLimitingMiddleware(BaseMiddleware):
+    def __init__(self, rate_limiter):
+        super().__init__("RateLimiting")
+        self.rate_limiter = rate_limiter
+
+    def process_request(self, context: MiddlewareContext) -> MiddlewareContext:
+        if not self.enabled:
+            return context
+
+        # Check rate limit
+        if not self.rate_limiter.allow_request():
+            raise RateLimitExceededError("Rate limit exceeded")
+
+        return context
+```
+
+### Adaptive Rate Limiting
+
+```python
+# Adaptive rate limiting that adjusts based on response times
+rate_config = RateLimitConfig(
+    initial_rate=10,           # Start with 10 requests/second
+    max_rate=100,             # Maximum 100 requests/second
+    min_rate=1,               # Minimum 1 request/second
+    adaptation_sensitivity=0.1 # How quickly to adapt
+)
+
+adaptive_limiter = AdaptiveRateLimiter(rate_config)
+
+# Use in requests
+for i in range(100):
+    if adaptive_limiter.allow_request():
+        response = requests.get("https://target.com/api/data")
+
+        # Update rate limiter based on response
+        if response.status_code == 200:
+            adaptive_limiter.record_success()
+        else:
+            adaptive_limiter.record_failure()
+    else:
+        print("Rate limit exceeded, waiting...")
+        time.sleep(1)
+```
+
+## Retry Logic
+
+### Basic Retry Middleware
+
+```python
+from logicpwn.core.middleware import RetryMiddleware
+
+# Configure retry middleware
+retry_middleware = RetryMiddleware(
+    max_retries=3,
+    backoff_factor=2.0
+)
+
+manager.add_middleware(retry_middleware)
+
+# Use in requests
+context = MiddlewareContext(
+    request_id="req-001",
+    url="https://target.com/api/data",
+    method="GET"
+)
+
+try:
+    processed_context = manager.process_request(context)
+    response = requests.get(processed_context.url)
+    processed_response = manager.process_response(context, response)
+except RetryException as e:
+    print(f"Retry needed: {e}")
+    # Retry logic will be handled automatically
+```
+
+### Advanced Retry Logic
+
+```python
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+class AdvancedRetryMiddleware(BaseMiddleware):
+    def __init__(self, max_retries=3, backoff_factor=2.0):
+        super().__init__("AdvancedRetry")
+        self.max_retries = max_retries
+        self.backoff_factor = backoff_factor
+
+    def process_request(self, context: MiddlewareContext) -> MiddlewareContext:
+        if not self.enabled:
+            return context
+
+        # Add retry information to context
+        context.metadata = context.metadata or {}
+        context.metadata["retry_count"] = 0
+        context.metadata["max_retries"] = self.max_retries
+
+        return context
+
+    def process_response(self, context: MiddlewareContext, response: Any) -> Any:
+        if not self.enabled:
+            return response
+
+        # Check if retry is needed
+        if self._should_retry(response):
+            retry_count = context.metadata.get("retry_count", 0)
+            if retry_count < self.max_retries:
+                # Calculate backoff delay
+                delay = self.backoff_factor ** retry_count
+                time.sleep(delay)
+
+                # Update retry count
+                context.metadata["retry_count"] = retry_count + 1
+                raise RetryException(f"Retry needed for {context.url}")
+
+        return response
+
+    def _should_retry(self, response: Any) -> bool:
+        """Determine if request should be retried"""
+        if hasattr(response, 'status_code'):
+            return response.status_code >= 500
+        return False
+```
+
+## Session Management Middleware
+
+### Session Middleware
+
+```python
+from logicpwn.core.middleware import SessionMiddleware
+
+# Configure session middleware
+session_middleware = SessionMiddleware(
+    session_timeout=3600,     # 1 hour timeout
+    auto_refresh=True         # Auto-refresh expired sessions
+)
+
+manager.add_middleware(session_middleware)
+
+# Use in requests
+context = MiddlewareContext(
+    request_id="req-001",
+    url="https://target.com/api/protected",
+    method="GET",
+    session_data={"user_id": "123", "token": "abc123"}
+)
+
+processed_context = manager.process_request(context)
+```
+
+### Custom Session Management
+
+```python
+class CustomSessionMiddleware(BaseMiddleware):
+    def __init__(self, session_manager):
+        super().__init__("CustomSession")
+        self.session_manager = session_manager
+
+    def process_request(self, context: MiddlewareContext) -> MiddlewareContext:
+        if not self.enabled:
+            return context
+
+        # Check session validity
+        if context.session_data:
+            session_id = context.session_data.get("session_id")
+            if session_id and not self.session_manager.is_valid(session_id):
+                # Refresh session
+                new_session = self.session_manager.refresh(session_id)
+                context.session_data.update(new_session)
+
+        return context
+
+    def process_response(self, context: MiddlewareContext, response: Any) -> Any:
+        if not self.enabled:
+            return response
+
+        # Update session data from response
+        if hasattr(response, 'cookies'):
+            for cookie in response.cookies:
+                if cookie.name == "session_id":
+                    context.session_data["session_id"] = cookie.value
+
+        return response
+```
+
+## Logging and Monitoring Middleware
+
+### Logging Middleware
+
+```python
+from logicpwn.core.middleware import LoggingMiddleware
+
+# Configure logging middleware
+logging_middleware = LoggingMiddleware(
+    log_level="INFO",
+    include_headers=True,
+    include_body=False  # Don't log sensitive data
+)
+
+manager.add_middleware(logging_middleware)
+
+# Use in requests
+context = MiddlewareContext(
+    request_id="req-001",
+    url="https://target.com/api/data",
+    method="GET"
+)
+
+processed_context = manager.process_request(context)
+# Logging will be handled automatically
+```
+
+### Custom Monitoring Middleware
+
+```python
+class MonitoringMiddleware(BaseMiddleware):
+    def __init__(self, metrics_collector):
+        super().__init__("Monitoring")
+        self.metrics_collector = metrics_collector
+
+    def process_request(self, context: MiddlewareContext) -> MiddlewareContext:
+        if not self.enabled:
+            return context
+
+        # Record request start
+        context.metadata = context.metadata or {}
+        context.metadata["start_time"] = time.time()
+
+        return context
+
+    def process_response(self, context: MiddlewareContext, response: Any) -> Any:
+        if not self.enabled:
+            return response
+
+        # Record metrics
+        start_time = context.metadata.get("start_time", time.time())
+        duration = time.time() - start_time
+
+        self.metrics_collector.record_request(
+            url=context.url,
+            method=context.method,
+            status_code=getattr(response, 'status_code', None),
+            duration=duration
+        )
+
+        return response
+```
+
+## Middleware Management
+
+### Middleware Lifecycle
+
+```python
+# Add middleware
+manager.add_middleware(LoggingMiddleware())
+manager.add_middleware(CircuitBreakerMiddleware())
+manager.add_middleware(RetryMiddleware())
+
+# Enable/disable middleware
+manager.enable_middleware("Logging")
+manager.disable_middleware("CircuitBreaker")
+
+# Remove middleware
+manager.remove_middleware("Retry")
+
+# List middleware
+middleware_list = manager.list_middleware()
+for middleware in middleware_list:
+    print(f"{middleware['name']}: {middleware['enabled']}")
+```
+
+### Middleware Ordering
+
+```python
+# Middleware execution order matters
+# Add in desired order
+manager.add_middleware(LoggingMiddleware())        # First
+manager.add_middleware(CircuitBreakerMiddleware()) # Second
+manager.add_middleware(RetryMiddleware())          # Third
+manager.add_middleware(SessionMiddleware())        # Fourth
+
+# Process request (middleware executed in order)
+processed_context = manager.process_request(context)
+
+# Process response (middleware executed in reverse order)
+processed_response = manager.process_response(context, response)
+```
+
+## Integration Examples
+
+### With Async Runner
+
+```python
+from logicpwn.core.runner import AsyncRequestRunner
+from logicpwn.core.middleware import MiddlewareManager
+
+# Create middleware manager
+manager = MiddlewareManager()
+manager.add_middleware(LoggingMiddleware())
+manager.add_middleware(CircuitBreakerMiddleware())
+
+# Use with async runner
+async with AsyncRequestRunner() as runner:
+    # Middleware will be applied to all requests
+    response = await runner.send_request(
+        method="GET",
+        url="https://target.com/api/data"
+    )
+```
+
+### With Access Detection
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.middleware import MiddlewareManager
+
+# Configure middleware for access detection
+manager = MiddlewareManager()
+manager.add_middleware(LoggingMiddleware())
+manager.add_middleware(RetryMiddleware(max_retries=3))
+
+# Use in access detection
+results = await detect_idor_flaws(
+    runner=runner,
+    base_url="https://target.com",
+    auth_config=auth_config,
+    test_endpoints=["/api/users/1", "/api/users/2"],
+    middleware_manager=manager
+)
+```
+
+## Best Practices
+
+<CardGrid stagger>
+<Card title="Order Middleware Carefully" icon="list">
+Add middleware in the correct order for proper request/response processing.
+</Card>
+
+<Card title="Handle Errors Gracefully" icon="warning">
+Implement proper error handling in custom middleware.
+</Card>
+
+<Card title="Monitor Performance" icon="chart">
+Use monitoring middleware to track performance and identify issues.
+</Card>
+
+<Card title="Test Middleware" icon="check">
+Thoroughly test middleware components before production use.
+</Card>
+</CardGrid>
+
+### 1. Middleware Ordering
+
+```python
+# Good: Logical middleware order
+manager.add_middleware(LoggingMiddleware())        # Log first
+manager.add_middleware(CircuitBreakerMiddleware()) # Check circuit breaker
+manager.add_middleware(RetryMiddleware())          # Handle retries
+manager.add_middleware(SessionMiddleware())        # Manage sessions
+
+# Bad: Random middleware order
+manager.add_middleware(SessionMiddleware())        # Sessions before circuit breaker
+manager.add_middleware(LoggingMiddleware())        # Logging after sessions
+```
+
+### 2. Error Handling
+
+```python
+# Good: Proper error handling
+class CustomMiddleware(BaseMiddleware):
+    def process_request(self, context: MiddlewareContext) -> MiddlewareContext:
+        try:
+            # Process request
+            return context
+        except Exception as e:
+            logger.error(f"Middleware error: {e}")
+            # Don't break the chain
+            return context
+
+    def process_response(self, context: MiddlewareContext, response: Any) -> Any:
+        try:
+            # Process response
+            return response
+        except Exception as e:
+            logger.error(f"Middleware error: {e}")
+            # Don't break the chain
+            return response
+
+# Bad: No error handling
+class BadMiddleware(BaseMiddleware):
+    def process_request(self, context: MiddlewareContext) -> MiddlewareContext:
+        # No error handling - can break the chain
+        return context
+```
+
+### 3. Performance Monitoring
+
+```python
+# Good: Monitor middleware performance
+class MonitoringMiddleware(BaseMiddleware):
+    def process_request(self, context: MiddlewareContext) -> MiddlewareContext:
+        start_time = time.time()
+        # Process request
+        duration = time.time() - start_time
+        logger.info(f"Middleware processing time: {duration:.3f}s")
+        return context
+
+# Bad: No performance monitoring
+class NoMonitoringMiddleware(BaseMiddleware):
+    def process_request(self, context: MiddlewareContext) -> MiddlewareContext:
+        # No performance tracking
+        return context
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Middleware Not Executing**: Check middleware order and enable status:
+```python
+# Check middleware status
+middleware_list = manager.list_middleware()
+for middleware in middleware_list:
+    if not middleware['enabled']:
+        print(f"Middleware {middleware['name']} is disabled")
+```
+
+**Circuit Breaker Issues**: Check configuration:
+```python
+# Verify circuit breaker configuration
+circuit_breaker = manager.get_middleware("CircuitBreaker")
+if circuit_breaker:
+    print(f"Circuit breaker state: {circuit_breaker.state}")
+    print(f"Failure count: {circuit_breaker.failure_count}")
+```
+
+**Rate Limiting Issues**: Check rate limit configuration:
+```python
+# Check rate limiter status
+rate_limiter = manager.get_middleware("RateLimiting")
+if rate_limiter:
+    print(f"Rate limiter status: {rate_limiter.status}")
+    print(f"Current rate: {rate_limiter.current_rate}")
+```
+
+## Related Guides
+
+<CardGrid stagger>
+<Card title="Async Runner" icon="rocket" link="/guides/async-runner/">
+Learn about high-performance request handling with middleware.
+</Card>
+
+<Card title="Stress Testing" icon="chart" link="/guides/stress-testing/">
+Explore stress testing with reliability features.
+</Card>
+
+<Card title="Performance Monitoring" icon="chart" link="/guides/performance-monitoring/">
+Discover performance monitoring with middleware.
+</Card>
+
+<Card title="API Reference" icon="book" link="/api-reference/">
+Browse the complete API documentation for middleware modules.
+</Card>
+</CardGrid>
+
+## Next Steps
+
+Now that you understand middleware in LogicPWN, you can:
+
+1. **Integrate with Async Runner** for robust request handling
+2. **Use with Stress Testing** for reliable load testing
+3. **Explore Custom Middleware** for specific use cases
+4. **Check out examples** in the `/examples` directory for real-world implementations

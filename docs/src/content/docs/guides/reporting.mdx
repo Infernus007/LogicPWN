@@ -1,0 +1,669 @@
+---
+title: Reporting & Compliance
+description: Comprehensive guide to report generation, compliance frameworks, and Indian law enforcement integration in LogicPWN
+category: Guides
+sidebar:
+  order: 5
+---
+import { Card, CardGrid, Steps, TabItem, Tabs } from '@astrojs/starlight/components';
+
+## Overview
+
+LogicPWN provides comprehensive reporting capabilities with specialized support for Indian law enforcement agencies and cybersecurity compliance frameworks. This includes CVSS scoring, compliance mapping, and secure report generation.
+
+<Card title="Key Features" icon="file-text">
+- Professional report generation (HTML, JSON, Markdown)
+- CVSS scoring and vulnerability assessment
+- Indian compliance frameworks (CERT-In, IT Act 2000)
+- Law enforcement integration
+- Secure data redaction
+- Compliance mapping and assessment
+- Digital evidence preservation
+</Card>
+
+## Quick Start
+
+<Steps>
+1. **Basic Report Generation**
+
+   ```python
+   from logicpwn.core.reporter import ReportGenerator, VulnerabilityFinding
+
+   # Create vulnerability finding
+   finding = VulnerabilityFinding(
+       id="VULN-001",
+       title="SQL Injection in Login Form",
+       severity="High",
+       description="SQL injection vulnerability found in login form",
+       affected_endpoints=["/login"],
+       proof_of_concept="' OR '1'='1",
+       impact="Complete database compromise",
+       remediation="Use parameterized queries"
+   )
+
+   # Generate report
+   generator = ReportGenerator()
+   report = generator.generate_report([finding])
+   ```
+
+2. **Indian Law Enforcement Report**
+
+   ```python
+   from logicpwn.core.reporter import IndianLawEnforcementReportGenerator
+
+   # Generate Indian law enforcement report
+   generator = IndianLawEnforcementReportGenerator()
+   report = generator.generate_report(
+       findings=[finding],
+       metadata={
+           "case_number": "CASE-2024-001",
+           "investigating_officer": "Inspector John Doe",
+           "jurisdiction": "Mumbai"
+       }
+   )
+   ```
+
+3. **Export Report**
+
+   ```python
+   # Export to different formats
+   generator.export_html("report.html")
+   generator.export_json("report.json")
+   generator.export_markdown("report.md")
+   ```
+</Steps>
+
+## Basic Report Generation
+
+### Simple Vulnerability Report
+
+```python
+from logicpwn.core.reporter import ReportGenerator, VulnerabilityFinding
+from datetime import datetime
+
+# Create vulnerability findings
+findings = [
+    VulnerabilityFinding(
+        id="VULN-001",
+        title="SQL Injection in Login Form",
+        severity="High",
+        cvss_score=8.5,
+        description="SQL injection vulnerability found in login form",
+        affected_endpoints=["/login", "/api/auth"],
+        proof_of_concept="' OR '1'='1",
+        impact="Complete database compromise possible",
+        remediation="Use parameterized queries and input validation",
+        references=["https://owasp.org/www-community/attacks/SQL_Injection"],
+        discovered_at=datetime.now()
+    ),
+    VulnerabilityFinding(
+        id="VULN-002",
+        title="Cross-Site Scripting (XSS)",
+        severity="Medium",
+        cvss_score=6.1,
+        description="Reflected XSS vulnerability in search functionality",
+        affected_endpoints=["/search"],
+        proof_of_concept="<script>alert('XSS')</script>",
+        impact="Session hijacking and data theft",
+        remediation="Implement proper output encoding",
+        references=["https://owasp.org/www-community/attacks/xss/"],
+        discovered_at=datetime.now()
+    )
+]
+
+# Generate report
+generator = ReportGenerator()
+report = generator.generate_report(findings)
+
+print(f"Report generated with {len(report.findings)} findings")
+```
+
+### Advanced Report Configuration
+
+```python
+from logicpwn.core.reporter import ReportConfig, ReportMetadata
+
+# Configure report metadata
+metadata = ReportMetadata(
+    title="Security Assessment Report",
+    target="https://target.com",
+    assessment_date=datetime.now(),
+    assessor="Security Team",
+    methodology="OWASP Testing Guide",
+    scope=["Web Application", "API Endpoints"],
+    executive_summary="Critical vulnerabilities found requiring immediate attention"
+)
+
+# Configure report settings
+config = ReportConfig(
+    include_cvss=True,
+    include_remediation=True,
+    include_references=True,
+    include_technical_details=True,
+    redaction_enabled=True
+)
+
+# Generate report with configuration
+generator = ReportGenerator(config=config)
+report = generator.generate_report(findings, metadata=metadata)
+```
+
+## CVSS Scoring
+
+### Basic CVSS Scoring
+
+```python
+from logicpwn.core.reporter import CVSSCalculator, CVSSVector
+
+# Create CVSS vector
+cvss_vector = CVSSVector(
+    attack_vector=AttackVector.NETWORK,
+    attack_complexity=AttackComplexity.LOW,
+    privileges_required=PrivilegesRequired.NONE,
+    user_interaction=UserInteraction.NONE,
+    scope=Scope.UNCHANGED,
+    confidentiality_impact=ImpactMetric.HIGH,
+    integrity_impact=ImpactMetric.HIGH,
+    availability_impact=ImpactMetric.HIGH
+)
+
+# Calculate CVSS score
+calculator = CVSSCalculator()
+score = calculator.calculate_score(cvss_vector)
+
+print(f"CVSS Score: {score.base_score}")
+print(f"Severity: {score.severity}")
+print(f"Vector String: {score.vector_string}")
+```
+
+### Advanced CVSS Scoring
+
+```python
+# Calculate CVSS v3.1 score with temporal and environmental metrics
+score = calculator.calculate_score(
+    cvss_vector,
+    temporal_metrics={
+        "exploitability": "FUNCTIONAL",
+        "remediation_level": "OFFICIAL_FIX",
+        "report_confidence": "CONFIRMED"
+    },
+    environmental_metrics={
+        "confidentiality_requirement": "HIGH",
+        "integrity_requirement": "HIGH",
+        "availability_requirement": "MEDIUM"
+    }
+)
+
+print(f"Base Score: {score.base_score}")
+print(f"Temporal Score: {score.temporal_score}")
+print(f"Environmental Score: {score.environmental_score}")
+print(f"Overall Score: {score.overall_score}")
+```
+
+## Indian Law Enforcement Integration
+
+### Indian Compliance Framework
+
+```python
+from logicpwn.core.reporter import IndianLawEnforcementReportGenerator
+from logicpwn.core.reporter import IndianComplianceFramework, ThreatClassification
+
+# Create Indian law enforcement report
+generator = IndianLawEnforcementReportGenerator()
+
+# Configure Indian compliance
+compliance_config = {
+    "frameworks": [
+        IndianComplianceFramework.CERT_IN,
+        IndianComplianceFramework.IT_ACT_2000,
+        IndianComplianceFramework.DIGITAL_INDIA
+    ],
+    "threat_classification": ThreatClassification.CYBER_TERRORISM,
+    "jurisdiction": "Mumbai",
+    "case_number": "CASE-2024-001",
+    "investigating_officer": "Inspector John Doe"
+}
+
+# Generate Indian law enforcement report
+report = generator.generate_report(
+    findings=findings,
+    compliance_config=compliance_config
+)
+```
+
+### Indian Compliance Assessment
+
+```python
+from logicpwn.core.reporter import IndianComplianceChecker
+
+# Check compliance against Indian frameworks
+compliance_checker = IndianComplianceChecker()
+
+# Assess compliance
+compliance_status = compliance_checker.assess_compliance(
+    findings=findings,
+    frameworks=[
+        IndianComplianceFramework.CERT_IN,
+        IndianComplianceFramework.IT_ACT_2000
+    ]
+)
+
+print(f"CERT-In Compliance: {compliance_status['cert_in']}")
+print(f"IT Act 2000 Compliance: {compliance_status['it_act_2000']}")
+```
+
+## Secure Report Generation
+
+### Data Redaction
+
+```python
+from logicpwn.core.reporter import SecureReportGenerator, RedactionRule
+
+# Configure redaction rules
+redaction_rules = [
+    RedactionRule(
+        pattern=r"\b\d{4}-\d{4}-\d{4}-\d{4}\b",  # Credit card numbers
+        replacement="[REDACTED]",
+        description="Credit card numbers"
+    ),
+    RedactionRule(
+        pattern=r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",  # Email addresses
+        replacement="[EMAIL_REDACTED]",
+        description="Email addresses"
+    )
+]
+
+# Create secure report generator
+secure_generator = SecureReportGenerator(
+    redaction_rules=redaction_rules,
+    encryption_enabled=True
+)
+
+# Generate secure report
+secure_report = secure_generator.generate_report(findings)
+```
+
+### Report Security
+
+```python
+from logicpwn.core.reporter import ReportSecurityMiddleware, SecurityPolicy
+
+# Configure security policy
+security_policy = SecurityPolicy(
+    require_authentication=True,
+    encryption_required=True,
+    audit_logging=True,
+    access_control=True
+)
+
+# Create secure report generator
+secure_generator = SecureReportGenerator(
+    security_policy=security_policy,
+    redaction_rules=redaction_rules
+)
+
+# Generate secure report
+secure_report = secure_generator.generate_report(findings)
+```
+
+## Report Export Formats
+
+### HTML Export
+
+```python
+# Export to HTML
+generator.export_html(
+    "security_report.html",
+    template="professional",  # or "minimal", "detailed"
+    include_charts=True,
+    include_timeline=True
+)
+```
+
+### JSON Export
+
+```python
+# Export to JSON
+generator.export_json(
+    "security_report.json",
+    include_metadata=True,
+    include_cvss=True,
+    include_remediation=True
+)
+```
+
+### Markdown Export
+
+```python
+# Export to Markdown
+generator.export_markdown(
+    "security_report.md",
+    include_toc=True,
+    include_summary=True
+)
+```
+
+## Compliance Mapping
+
+### Framework Mapping
+
+```python
+from logicpwn.core.reporter import IndianFrameworkMapper, ComplianceMapping
+
+# Create framework mapper
+mapper = IndianFrameworkMapper()
+
+# Map findings to compliance requirements
+compliance_mapping = mapper.map_findings_to_compliance(
+    findings=findings,
+    frameworks=[
+        IndianComplianceFramework.CERT_IN,
+        IndianComplianceFramework.IT_ACT_2000
+    ]
+)
+
+print(f"Compliance mapping: {compliance_mapping}")
+```
+
+### Compliance Assessment
+
+```python
+# Assess compliance status
+compliance_status = mapper.assess_compliance(
+    findings=findings,
+    frameworks=[
+        IndianComplianceFramework.CERT_IN,
+        IndianComplianceFramework.IT_ACT_2000
+    ]
+)
+
+print(f"Overall compliance: {compliance_status['overall']}")
+print(f"Critical gaps: {compliance_status['critical_gaps']}")
+```
+
+## Digital Evidence Preservation
+
+### Evidence Collection
+
+```python
+from logicpwn.core.reporter import DigitalEvidenceCollector
+
+# Create evidence collector
+collector = DigitalEvidenceCollector()
+
+# Collect digital evidence
+evidence = collector.collect_evidence(
+    findings=findings,
+    include_screenshots=True,
+    include_network_logs=True,
+    include_system_logs=True
+)
+
+print(f"Evidence collected: {len(evidence.items)} items")
+print(f"Total size: {evidence.total_size_mb:.2f} MB")
+```
+
+### Evidence Chain of Custody
+
+```python
+# Create chain of custody
+chain_of_custody = collector.create_chain_of_custody(
+    evidence=evidence,
+    case_number="CASE-2024-001",
+    investigating_officer="Inspector John Doe",
+    jurisdiction="Mumbai"
+)
+
+print(f"Chain of custody created: {chain_of_custody.id}")
+print(f"Items in custody: {len(chain_of_custody.items)}")
+```
+
+## Report Templates
+
+### Custom Report Template
+
+```python
+from logicpwn.core.reporter import ReportTemplate
+
+# Create custom template
+template = ReportTemplate(
+    name="Custom Security Report",
+    sections=[
+        "Executive Summary",
+        "Methodology",
+        "Findings",
+        "Recommendations",
+        "Compliance Assessment"
+    ],
+    styling={
+        "header_color": "#2c3e50",
+        "accent_color": "#e74c3c",
+        "font_family": "Arial, sans-serif"
+    }
+)
+
+# Use custom template
+generator = ReportGenerator(template=template)
+report = generator.generate_report(findings)
+```
+
+### Template Customization
+
+```python
+# Customize existing template
+template = ReportTemplate(
+    name="Indian Law Enforcement Report",
+    base_template="indian_law_enforcement",
+    customizations={
+        "include_legal_framework": True,
+        "include_jurisdiction": True,
+        "include_case_details": True,
+        "include_evidence_summary": True
+    }
+)
+```
+
+## Integration Examples
+
+### With Access Detection
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.reporter import ReportGenerator, VulnerabilityFinding
+
+# Run access detection
+access_results = await detect_idor_flaws(
+    runner=runner,
+    base_url="https://target.com",
+    auth_config=auth_config,
+    test_endpoints=["/api/users/1", "/api/users/2"]
+)
+
+# Convert results to findings
+findings = []
+for result in access_results:
+    if result.is_vulnerable:
+        finding = VulnerabilityFinding(
+            id=f"IDOR-{result.endpoint.replace('/', '-')}",
+            title=f"IDOR Vulnerability in {result.endpoint}",
+            severity="High",
+            description=f"Direct object reference vulnerability in {result.endpoint}",
+            affected_endpoints=[result.endpoint],
+            proof_of_concept=result.response_data[:200],
+            impact="Unauthorized access to sensitive data",
+            remediation="Implement proper authorization checks"
+        )
+        findings.append(finding)
+
+# Generate report
+generator = ReportGenerator()
+report = generator.generate_report(findings)
+```
+
+### With Exploit Engine
+
+```python
+from logicpwn.core.exploit_engine import ExploitEngine, ExploitChain
+from logicpwn.core.reporter import ReportGenerator
+
+# Run exploit chain
+chain = ExploitChain(name="SQL Injection Test")
+chain.add_step("GET", "https://target.com/api/users/1' OR '1'='1")
+
+engine = ExploitEngine(runner)
+results = await engine.execute_chain(chain)
+
+# Convert results to findings
+findings = []
+for result in results:
+    if result.validation_passed:
+        finding = VulnerabilityFinding(
+            id=f"SQL-{result.step_name}",
+            title=f"SQL Injection in {result.step_name}",
+            severity="Critical",
+            description="SQL injection vulnerability confirmed",
+            affected_endpoints=[result.url],
+            proof_of_concept=result.response_data[:200],
+            impact="Complete database compromise",
+            remediation="Use parameterized queries"
+        )
+        findings.append(finding)
+
+# Generate report
+generator = ReportGenerator()
+report = generator.generate_report(findings)
+```
+
+## Best Practices
+
+<CardGrid stagger>
+<Card title="Use Appropriate Severity Levels" icon="alert">
+Assign accurate severity levels based on CVSS scores and impact.
+</Card>
+
+<Card title="Include Detailed Remediation" icon="tool">
+Provide specific, actionable remediation steps for each finding.
+</Card>
+
+<Card title="Follow Compliance Frameworks" icon="shield">
+Ensure reports meet relevant compliance framework requirements.
+</Card>
+
+<Card title="Secure Sensitive Data" icon="lock">
+Use data redaction and encryption for sensitive information.
+</Card>
+</CardGrid>
+
+### 1. Accurate Severity Assessment
+
+```python
+# Good: Use CVSS scoring
+cvss_score = calculator.calculate_score(cvss_vector)
+if cvss_score.base_score >= 9.0:
+    severity = "Critical"
+elif cvss_score.base_score >= 7.0:
+    severity = "High"
+elif cvss_score.base_score >= 4.0:
+    severity = "Medium"
+else:
+    severity = "Low"
+
+# Bad: Arbitrary severity assignment
+severity = "High"  # Without proper assessment
+```
+
+### 2. Detailed Remediation
+
+```python
+# Good: Specific remediation steps
+remediation = """
+1. Use parameterized queries instead of string concatenation
+2. Implement input validation and sanitization
+3. Use least privilege principle for database access
+4. Enable SQL injection protection in WAF
+5. Conduct regular security testing
+"""
+
+# Bad: Vague remediation
+remediation = "Fix the vulnerability"
+```
+
+### 3. Compliance Framework Alignment
+
+```python
+# Good: Align with compliance frameworks
+compliance_config = {
+    "frameworks": [
+        IndianComplianceFramework.CERT_IN,
+        IndianComplianceFramework.IT_ACT_2000
+    ],
+    "reporting_requirements": [
+        "Incident reporting within 6 hours",
+        "Vulnerability assessment documentation",
+        "Digital forensics evidence preservation"
+    ]
+}
+
+# Bad: No compliance consideration
+report = generator.generate_report(findings)
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Report Generation Failures**: Check finding data:
+```python
+# Validate findings before generation
+for finding in findings:
+    if not finding.id or not finding.title:
+        print(f"Invalid finding: {finding}")
+        continue
+```
+
+**Export Issues**: Verify file permissions:
+```python
+# Check file permissions
+import os
+if not os.access(".", os.W_OK):
+    print("No write permission in current directory")
+```
+
+**Compliance Issues**: Verify framework requirements:
+```python
+# Check compliance requirements
+compliance_checker = IndianComplianceChecker()
+requirements = compliance_checker.get_requirements(
+    IndianComplianceFramework.CERT_IN
+)
+print(f"Requirements: {requirements}")
+```
+
+## Related Guides
+
+<CardGrid stagger>
+<Card title="Access Detection" icon="search" link="/guides/access-detection/">
+Learn about IDOR vulnerability detection for reporting.
+</Card>
+
+<Card title="Validation" icon="shield" link="/guides/validation/">
+Explore response validation for accurate reporting.
+</Card>
+
+<Card title="Exploit Engine" icon="shield" link="/guides/exploit-engine/">
+Discover advanced exploit chain execution for comprehensive reporting.
+</Card>
+
+<Card title="API Reference" icon="book" link="/api-reference/">
+Browse the complete API documentation for reporting modules.
+</Card>
+</CardGrid>
+
+## Next Steps
+
+Now that you understand reporting in LogicPWN, you can:
+
+1. **Integrate with Access Detection** for comprehensive vulnerability reporting
+2. **Use with Exploit Engine** for detailed exploit chain documentation
+3. **Explore Indian Compliance** for law enforcement reporting
+4. **Check out examples** in the `/examples` directory for real-world implementations

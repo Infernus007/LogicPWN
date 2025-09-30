@@ -1,0 +1,232 @@
+---
+title: Reporter Framework Mapper
+description: Indian Cybersecurity Framework Mapper
+category: Reporting & Compliance
+sidebar:
+  order: 9
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Reporting & Compliance
+**Navigation:** [API Reference](../) › [Reporter](../reporter)
+
+Indian Cybersecurity Framework Mapper
+
+This module maps vulnerabilities discovered by LogicPWN to specific Indian
+cybersecurity frameworks and generates detailed compliance reports.
+
+## Import
+
+```python
+import logicpwn.core.reporter.framework_mapper
+# or
+from logicpwn.core.reporter.framework_mapper import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 4 class(es) for reporting & compliance.
+:::
+
+### ComplianceMapping
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ComplianceMapping:
+    """
+    Maps vulnerabilities to compliance requirements
+    """
+```
+
+Maps vulnerabilities to compliance requirements
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, framework: logicpwn.core.reporter.indian_compliance.IndianComplianceFramework, requirement: logicpwn.core.reporter.framework_mapper.FrameworkRequirement, requirement_id: str, description: str, compliance_status: logicpwn.core.reporter.framework_mapper.ComplianceStatus, evidence_required: list[str], remediation_actions: list[str], legal_implications: Optional[str] = None, priority_level: str = 'medium') -> None
+```
+
+Initialize a new instance of `ComplianceMapping`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### ComplianceStatus
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ComplianceStatus (Enum):
+    """
+    Compliance status levels
+    """
+```
+
+Compliance status levels
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `ComplianceStatus`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### FrameworkRequirement
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class FrameworkRequirement (Enum):
+    """
+    Standard framework requirements
+    """
+```
+
+Standard framework requirements
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `FrameworkRequirement`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### IndianFrameworkMapper
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class IndianFrameworkMapper:
+    """
+    Maps vulnerabilities to Indian cybersecurity frameworks
+    """
+```
+
+Maps vulnerabilities to Indian cybersecurity frameworks
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self)
+```
+
+Initialize a new instance of `IndianFrameworkMapper`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### generate_compliance_matrix
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def generate_compliance_matrix(self, vulnerabilities: list[dict[str, typing.Any]]) -> dict[str, typing.Any]
+```
+
+Generate comprehensive compliance matrix
+
+##### map_vulnerability_to_frameworks
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def map_vulnerability_to_frameworks(self, vulnerability_type: str, severity: str) -> list[logicpwn.core.reporter.framework_mapper.ComplianceMapping]
+```
+
+Map a vulnerability to relevant framework requirements
+
+
+---
+
+
+## Related Modules
+
+:::tip[Reporting & Compliance Modules]
+Explore other modules in the Reporting & Compliance category:
+
+- **[Reporter](../reporter)** - Core reporting functionality
+- **[Reporter › Compliance](../reporter/compliance)** - Indian law enforcement compliance
+- **[Reporter › Law Enforcement](../reporter/law-enforcement)** - Law enforcement reports
+- **[Reporter › Integration](../reporter/integration)** - Integration utilities
+:::

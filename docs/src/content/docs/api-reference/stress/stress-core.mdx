@@ -1,0 +1,190 @@
+---
+title: Stress Stress Core
+description: Core stress testing logic for LogicPwn
+category: Stress Testing
+sidebar:
+  order: 28
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Stress Testing
+**Navigation:** [API Reference](../) › [Stress](../stress)
+
+Core stress testing logic for LogicPwn.
+
+## Import
+
+```python
+import logicpwn.core.stress.stress_core
+# or
+from logicpwn.core.stress.stress_core import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 3 class(es) for stress testing.
+:::
+
+### StressTestConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class StressTestConfig:
+    """
+    StressTestConfig(max_concurrent: int = 50, duration: int = 300, rate_limit: Optional[float] = None, timeout: int = 30, verify_ssl: bool = True, memory_monitoring: bool = True, cpu_monitoring: bool = True, error_threshold: float = 0
+    """
+```
+
+StressTestConfig(max_concurrent: int = 50, duration: int = 300, rate_limit: Optional[float] = None, timeout: int = 30, verify_ssl: bool = True, memory_monitoring: bool = True, cpu_monitoring: bool = True, error_threshold: float = 0.1, warmup_duration: int = 30)
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, max_concurrent: int = 50, duration: int = 300, rate_limit: Optional[float] = None, timeout: int = 30, verify_ssl: bool = True, memory_monitoring: bool = True, cpu_monitoring: bool = True, error_threshold: float = 0.1, warmup_duration: int = 30) -> None
+```
+
+Initialize a new instance of `StressTestConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### StressTestMetrics
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class StressTestMetrics:
+    """
+    StressTestMetrics(total_requests: int = 0, successful_requests: int = 0, failed_requests: int = 0, total_duration: float = 0
+    """
+```
+
+```python
+```python
+StressTestMetrics(total_requests: int = 0, successful_requests: int = 0, failed_requests: int = 0, total_duration: float = 0.0, requests_per_second: float = 0.0, average_response_time: float = 0.0, median_response_time: float = 0.0, p95_response_time: float = 0.0, p99_response_time: float = 0.0, error_rate: float = 0.0, memory_usage_mb: float = 0.0, cpu_usage_percent: float = 0.0, peak_memory_mb: float = 0.0, peak_cpu_percent: float = 0.0, status_code_distribution: dict[int, int] = <factory>, error_distribution: dict[str, int] = <factory>, timestamp: datetime.datetime = <factory>)
+```
+```
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, total_requests: int = 0, successful_requests: int = 0, failed_requests: int = 0, total_duration: float = 0.0, requests_per_second: float = 0.0, average_response_time: float = 0.0, median_response_time: float = 0.0, p95_response_time: float = 0.0, p99_response_time: float = 0.0, error_rate: float = 0.0, memory_usage_mb: float = 0.0, cpu_usage_percent: float = 0.0, peak_memory_mb: float = 0.0, peak_cpu_percent: float = 0.0, status_code_distribution: dict[int, int] = <factory>, error_distribution: dict[str, int] = <factory>, timestamp: datetime.datetime = <factory>) -> None
+```
+
+Initialize a new instance of `StressTestMetrics`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### to_dict
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def to_dict(self) -> dict[str, typing.Any]
+```
+
+Documentation for `to_dict` is not available.
+
+
+---
+
+### StressTester
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class StressTester:
+    """
+    Class documentation.
+    """
+```
+
+The `StressTester` class provides core functionality for this module.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, config: Optional[logicpwn.core.stress.stress_core.StressTestConfig] = None)
+```
+
+Initialize a new instance of `StressTester`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+
+## Related Modules
+
+:::tip[Stress Testing Modules]
+Explore other modules in the Stress Testing category:
+
+- **[Stress](../stress)** - Core stress testing functionality
+- **[Stress › Stress Tester](../stress/stress-tester)** - Main stress tester
+:::

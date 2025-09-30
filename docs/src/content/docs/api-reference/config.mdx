@@ -1,0 +1,611 @@
+---
+title: Config
+description: API documentation for the Config module in LogicPwn framework
+category: Utilities
+sidebar:
+  order: 55
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Utilities
+**Navigation:** [API Reference](../)
+
+API documentation for the `logicpwn.core.config` module.
+
+## Import
+
+```python
+import logicpwn.core.config
+# or
+from logicpwn.core.config import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 7 class(es) for utilities.
+:::
+
+### AuthDefaults
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AuthDefaults:
+    """
+    AuthDefaults(SESSION_TIMEOUT: int = 3600, MAX_SESSIONS: int = 10, SESSION_CLEANUP_INTERVAL: int = 300, DEFAULT_AUTH_TYPE: str = 'basic', ENABLE_SESSION_PERSISTENCE: bool = True, **kwargs)
+    """
+```
+
+AuthDefaults(SESSION_TIMEOUT: int = 3600, MAX_SESSIONS: int = 10, SESSION_CLEANUP_INTERVAL: int = 300, DEFAULT_AUTH_TYPE: str = 'basic', ENABLE_SESSION_PERSISTENCE: bool = True, **kwargs)
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, SESSION_TIMEOUT: int = 3600, MAX_SESSIONS: int = 10, SESSION_CLEANUP_INTERVAL: int = 300, DEFAULT_AUTH_TYPE: str = 'basic', ENABLE_SESSION_PERSISTENCE: bool = True, **kwargs)
+```
+
+Initialize a new instance of `AuthDefaults`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### BodyType
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class BodyType (Enum):
+    """
+    Create a collection of name/value pairs
+    """
+```
+
+Create a collection of name/value pairs.
+
+Example enumeration:
+
+```python
+>>> class Color(Enum):
+... RED = 1
+... BLUE = 2
+... GREEN = 3
+```
+
+Access them by:
+
+- attribute access:
+
+```python
+ >>> Color.RED
+ <Color.RED: 1>
+```
+
+- value lookup:
+
+```python
+ >>> Color(1)
+ <Color.RED: 1>
+```
+
+- name lookup:
+
+```python
+ >>> Color['RED']
+ <Color.RED: 1>
+```
+
+Enumerations can be iterated over, and know how many members they have:
+
+```python
+>>> len(Color)
+```
+3
+
+```python
+>>> list(Color)
+[<Color.RED: 1>, <Color.BLUE: 2>, <Color.GREEN: 3>]
+```
+
+Methods can be added to enumerations, and members can have their own
+attributes --
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `BodyType`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### Config
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class Config:
+    """
+    Config()
+    """
+```
+
+Config()
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self)
+```
+
+Initialize a new instance of `Config`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### reload_env_vars
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def reload_env_vars(self)
+```
+
+Documentation for `reload_env_vars` is not available.
+
+
+---
+
+### HTTPMethod
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class HTTPMethod (Enum):
+    """
+    Create a collection of name/value pairs
+    """
+```
+
+Create a collection of name/value pairs.
+
+Example enumeration:
+
+```python
+>>> class Color(Enum):
+... RED = 1
+... BLUE = 2
+... GREEN = 3
+```
+
+Access them by:
+
+- attribute access:
+
+```python
+ >>> Color.RED
+ <Color.RED: 1>
+```
+
+- value lookup:
+
+```python
+ >>> Color(1)
+ <Color.RED: 1>
+```
+
+- name lookup:
+
+```python
+ >>> Color['RED']
+ <Color.RED: 1>
+```
+
+Enumerations can be iterated over, and know how many members they have:
+
+```python
+>>> len(Color)
+```
+3
+
+```python
+>>> list(Color)
+[<Color.RED: 1>, <Color.BLUE: 2>, <Color.GREEN: 3>]
+```
+
+Methods can be added to enumerations, and members can have their own
+attributes --
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `HTTPMethod`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### LoggingDefaults
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class LoggingDefaults:
+    """
+    LoggingDefaults(LOG_LEVEL: str = 'INFO', LOG_FORMAT: str = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', LOG_DATE_FORMAT: str = '%Y-%m-%d %H:%M:%S', ENABLE_REQUEST_LOGGING: bool = True, ENABLE_RESPONSE_LOGGING: bool = True, ENABLE_ERROR_LOGGING: bool = True)
+    """
+```
+
+LoggingDefaults(LOG_LEVEL: str = 'INFO', LOG_FORMAT: str = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', LOG_DATE_FORMAT: str = '%Y-%m-%d %H:%M:%S', ENABLE_REQUEST_LOGGING: bool = True, ENABLE_RESPONSE_LOGGING: bool = True, ENABLE_ERROR_LOGGING: bool = True)
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, LOG_LEVEL: str = 'INFO', LOG_FORMAT: str = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', LOG_DATE_FORMAT: str = '%Y-%m-%d %H:%M:%S', ENABLE_REQUEST_LOGGING: bool = True, ENABLE_RESPONSE_LOGGING: bool = True, ENABLE_ERROR_LOGGING: bool = True) -> None
+```
+
+Initialize a new instance of `LoggingDefaults`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RequestDefaults
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RequestDefaults:
+    """
+    RequestDefaults(TIMEOUT: int = 30, MAX_RETRIES: int = 3, RETRY_DELAY: float = 1
+    """
+```
+
+RequestDefaults(TIMEOUT: int = 30, MAX_RETRIES: int = 3, RETRY_DELAY: float = 1.0, BACKOFF_FACTOR: float = 2.0, MAX_BACKOFF: float = 60.0, VERIFY_SSL: bool = True, ALLOW_REDIRECTS: bool = True, FOLLOW_REDIRECTS: bool = True, MAX_REDIRECTS: int = 5, **kwargs)
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, TIMEOUT: int = 30, MAX_RETRIES: int = 3, RETRY_DELAY: float = 1.0, BACKOFF_FACTOR: float = 2.0, MAX_BACKOFF: float = 60.0, VERIFY_SSL: bool = True, ALLOW_REDIRECTS: bool = True, FOLLOW_REDIRECTS: bool = True, MAX_REDIRECTS: int = 5, **kwargs)
+```
+
+Initialize a new instance of `RequestDefaults`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SecurityDefaults
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SecurityDefaults:
+    """
+    SecurityDefaults(SENSITIVE_HEADERS: set = <factory>, SENSITIVE_PARAMS: set = <factory>, REDACTION_STRING: str = '[REDACTED]', MAX_LOG_BODY_SIZE: int = 1024)
+    """
+```
+
+```python
+```python
+SecurityDefaults(SENSITIVE_HEADERS: set = <factory>, SENSITIVE_PARAMS: set = <factory>, REDACTION_STRING: str = '[REDACTED]', MAX_LOG_BODY_SIZE: int = 1024)
+```
+```
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, SENSITIVE_HEADERS: set = <factory>, SENSITIVE_PARAMS: set = <factory>, REDACTION_STRING: str = '[REDACTED]', MAX_LOG_BODY_SIZE: int = 1024) -> None
+```
+
+Initialize a new instance of `SecurityDefaults`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+## Functions
+
+:::note[Available Functions]
+This module provides 17 function(s) for direct use.
+:::
+
+### get_log_level
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_log_level() -> str
+```
+
+Documentation for `get_log_level` is not available.
+
+### get_logging_defaults
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_logging_defaults() -> logicpwn.core.config.config_models.LoggingDefaults
+```
+
+Documentation for `get_logging_defaults` is not available.
+
+### get_max_log_body_size
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_max_log_body_size() -> int
+```
+
+Documentation for `get_max_log_body_size` is not available.
+
+### get_max_retries
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_max_retries() -> int
+```
+
+Documentation for `get_max_retries` is not available.
+
+### get_max_sessions
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_max_sessions() -> int
+```
+
+Documentation for `get_max_sessions` is not available.
+
+### get_redaction_string
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_redaction_string() -> str
+```
+
+Documentation for `get_redaction_string` is not available.
+
+### get_sensitive_headers
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_sensitive_headers() -> set
+```
+
+Documentation for `get_sensitive_headers` is not available.
+
+### get_sensitive_params
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_sensitive_params() -> set
+```
+
+Documentation for `get_sensitive_params` is not available.
+
+### get_session_timeout
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_session_timeout() -> int
+```
+
+Documentation for `get_session_timeout` is not available.
+
+### get_timeout
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_timeout() -> int
+```
+
+Documentation for `get_timeout` is not available.
+
+### is_error_logging_enabled
+
+:::note[Function]
+Module function
+:::
+
+```python
+def is_error_logging_enabled() -> bool
+```
+
+Documentation for `is_error_logging_enabled` is not available.
+
+### is_request_logging_enabled
+
+:::note[Function]
+Module function
+:::
+
+```python
+def is_request_logging_enabled() -> bool
+```
+
+Documentation for `is_request_logging_enabled` is not available.
+
+### is_response_logging_enabled
+
+:::note[Function]
+Module function
+:::
+
+```python
+def is_response_logging_enabled() -> bool
+```
+
+Documentation for `is_response_logging_enabled` is not available.
+
+### load_env_vars
+
+:::note[Function]
+Module function
+:::
+
+```python
+def load_env_vars(config: logicpwn.core.config.config_models.Config) -> None
+```
+
+Documentation for `load_env_vars` is not available.
+
+### reload_config_env_vars
+
+:::note[Function]
+Module function
+:::
+
+```python
+def reload_config_env_vars()
+```
+
+Documentation for `reload_config_env_vars` is not available.
+
+### reload_env_vars
+
+:::note[Function]
+Module function
+:::
+
+```python
+def reload_env_vars(config: logicpwn.core.config.config_models.Config) -> None
+```
+
+Documentation for `reload_env_vars` is not available.
+
+### reset_config_singleton
+
+:::note[Function]
+Module function
+:::
+
+```python
+def reset_config_singleton()
+```
+
+Documentation for `reset_config_singleton` is not available.
+
+
+## Related Modules
+
+:::tip[Utilities Modules]
+Explore other modules in the Utilities category:
+
+- **[Utils](./utils)** - General utilities
+- **[Performance](./performance)** - Performance monitoring
+- **[Cache](./cache)** - Caching utilities
+:::

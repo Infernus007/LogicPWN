@@ -1,0 +1,437 @@
+---
+title: Exceptions
+description: Custom exceptions for LogicPwn Business Logic Exploitation Framework
+category: Exceptions
+sidebar:
+  order: 75
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Exceptions
+**Navigation:** [API Reference](../)
+
+Custom exceptions for LogicPwn Business Logic Exploitation Framework.
+
+This package contains all custom exceptions used throughout the framework
+```python
+for authentication, request execution, and other modules.
+```
+
+## Import
+
+```python
+import logicpwn.exceptions
+# or
+from logicpwn.exceptions import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 11 class(es) for exceptions.
+:::
+
+### NetworkError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class NetworkError (BaseAuthenticationError):
+    """
+    Network-related authentication error
+    """
+```
+
+Network-related authentication error.
+
+Raised when network issues prevent authentication from completing,
+such as connection timeouts, DNS failures, or SSL errors.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str = 'Network error during authentication', original_exception: Exception = None)
+```
+
+Initialize a new instance of `NetworkError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### TimeoutError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class TimeoutError (BaseAuthenticationError):
+    """
+    Authentication timeout error
+    """
+```
+
+Authentication timeout error.
+
+Raised when authentication requests exceed the configured timeout
+period.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str = 'Authentication request timed out', timeout_seconds: int = None)
+```
+
+Initialize a new instance of `TimeoutError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### ValidationError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ValidationError (BaseAuthenticationError):
+    """
+    Configuration validation error
+    """
+```
+
+Configuration validation error.
+
+Raised when authentication configuration is invalid or missing
+required fields.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str = 'Invalid authentication configuration', field: str = None, value: str = None)
+```
+
+Initialize a new instance of `ValidationError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### AuthenticationError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AuthenticationError (Exception):
+    """
+    Base authentication exception
+    """
+```
+
+Base authentication exception.
+
+This is the parent class for all authentication-related exceptions.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, *args, **kwargs)
+```
+
+Initialize a new instance of `AuthenticationError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### LoginFailedException
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class LoginFailedException (BaseAuthenticationError):
+    """
+    Login failed with provided credentials
+    """
+```
+
+Login failed with provided credentials.
+
+Raised when authentication attempt fails due to invalid credentials
+or other login-related issues.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str = 'Login failed with provided credentials', response_code: int = None, response_text: str = None)
+```
+
+Initialize a new instance of `LoginFailedException`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### NetworkError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class NetworkError (BaseRequestError):
+    """
+    Network-related request error
+    """
+```
+
+Network-related request error.
+
+Raised when network issues prevent request execution from completing,
+such as connection timeouts, DNS failures, or SSL errors.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str = 'Network error during request execution', original_exception: Exception = None)
+```
+
+Initialize a new instance of `NetworkError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RequestExecutionError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RequestExecutionError (Exception):
+    """
+    Base request execution exception
+    """
+```
+
+Base request execution exception.
+
+This is the parent class for all request execution-related exceptions.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, *args, **kwargs)
+```
+
+Initialize a new instance of `RequestExecutionError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### ResponseError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ResponseError (BaseRequestError):
+    """
+    HTTP response error
+    """
+```
+
+HTTP response error.
+
+Raised when requests return error status codes or unexpected
+response content.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str = 'Request returned error response', status_code: int = None, response_text: str = None)
+```
+
+Initialize a new instance of `ResponseError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SessionError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SessionError (BaseAuthenticationError):
+    """
+    Session management error
+    """
+```
+
+Session management error.
+
+Raised when there are issues with session creation, persistence,
+or cookie handling.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str = 'Session error occurred', session_id: str = None)
+```
+
+Initialize a new instance of `SessionError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### TimeoutError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class TimeoutError (BaseRequestError):
+    """
+    Request timeout error
+    """
+```
+
+Request timeout error.
+
+Raised when requests exceed the configured timeout period.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str = 'Request timed out', timeout_seconds: int = None)
+```
+
+Initialize a new instance of `TimeoutError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### ValidationError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ValidationError (BaseRequestError):
+    """
+    Request configuration validation error
+    """
+```
+
+Request configuration validation error.
+
+Raised when request configuration is invalid or missing
+required fields.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str = 'Invalid request configuration', field: str = None, value: str = None)
+```
+
+Initialize a new instance of `ValidationError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+
+## Related Modules
+
+:::tip[Exceptions Modules]
+Explore other modules in the Exceptions category:
+
+:::

@@ -1,0 +1,239 @@
+---
+title: Runner Async Session Manager
+description: Async session management for LogicPwn with enhanced security and lifecycle management
+category: Test Runner
+sidebar:
+  order: 32
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Test Runner
+**Navigation:** [API Reference](../) › [Runner](../runner)
+
+Async session management for LogicPwn with enhanced security and lifecycle management.
+
+Security Features:
+- SSL/TLS certificate validation with warnings
+- Secure session lifecycle management
+- Enhanced error handling and recovery
+- Connection pooling with security controls
+
+## Import
+
+```python
+import logicpwn.core.runner.async_session_manager
+# or
+from logicpwn.core.runner.async_session_manager import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 1 class(es) for test runner.
+:::
+
+### AsyncSessionManager
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AsyncSessionManager:
+    """
+    Async session manager with enhanced security and lifecycle management
+    """
+```
+
+Async session manager with enhanced security and lifecycle management.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, auth_config: Optional[dict[str, Any]] = None, max_concurrent: int = 10, timeout: Optional[int] = None, verify_ssl: bool = True, min_tls_version: str = 'TLSv1.2', warn_on_ssl_disabled: bool = True)
+```
+
+Initialize a new instance of `AsyncSessionManager`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>session_closed</code></summary>
+
+Check if the session was properly closed.
+
+</details>
+
+#### Methods
+
+##### authenticate
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def authenticate(self) -> bool
+```
+
+Authenticate using the provided configuration.
+
+**Returns:**
+ True if authentication successful, False otherwise
+
+**Raises:**
+- **ValidationError**: If no authentication configuration provided
+
+**Usage Example:**
+```python
+result = await authenticate(...)
+```
+
+##### delete
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def delete(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+Documentation for `delete` is not available.
+
+**Usage Example:**
+```python
+result = await delete(...)
+```
+
+##### execute_exploit_chain
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def execute_exploit_chain(self, exploit_configs: list[dict[str, typing.Any]]) -> list[logicpwn.models.request_result.RequestResult]
+```
+
+Documentation for `execute_exploit_chain` is not available.
+
+**Usage Example:**
+```python
+result = await execute_exploit_chain(...)
+```
+
+##### get
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def get(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+Documentation for `get` is not available.
+
+**Usage Example:**
+```python
+result = await get(...)
+```
+
+##### post
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def post(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+Documentation for `post` is not available.
+
+**Usage Example:**
+```python
+result = await post(...)
+```
+
+##### put
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def put(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+Documentation for `put` is not available.
+
+**Usage Example:**
+```python
+result = await put(...)
+```
+
+
+---
+
+
+## Related Modules
+
+:::tip[Test Runner Modules]
+Explore other modules in the Test Runner category:
+
+- **[Runner](../runner)** - Core test execution
+- **[Runner › Async Runner](../runner/async-runner)** - Asynchronous test execution
+:::

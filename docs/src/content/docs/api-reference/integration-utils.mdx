@@ -1,0 +1,296 @@
+---
+title: Integration Utils
+description: Enhanced integration utilities for LogicPwn auth, validator, and performance modules
+category: Utilities
+sidebar:
+  order: 65
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Utilities
+**Navigation:** [API Reference](../)
+
+Enhanced integration utilities for LogicPwn auth, validator, and performance modules.
+This module provides high-level functions that combine authentication, validation, and performance monitoring.
+
+## Import
+
+```python
+import logicpwn.core.integration_utils
+# or
+from logicpwn.core.integration_utils import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 2 class(es) for utilities.
+:::
+
+### AuthenticatedValidator
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AuthenticatedValidator:
+    """
+    High-level class that combines authentication, HTTP requests, validation, and performance monitoring
+    """
+```
+
+High-level class that combines authentication, HTTP requests, validation, and performance monitoring.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, auth_config: Union[logicpwn.core.auth.auth_models.AuthConfig, dict[str, Any]], base_url: str = '', enable_performance_monitoring: bool = True)
+```
+
+Initialize a new instance of `AuthenticatedValidator`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### wrapper
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wrapper(*args, **kwargs)
+```
+
+Documentation for `wrapper` is not available.
+
+##### close
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def close(self)
+```
+
+Clean up resources.
+
+##### get_all_metrics
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_all_metrics(self) -> list[logicpwn.core.performance.performance_metrics.PerformanceMetrics]
+```
+
+Get all performance metrics collected.
+
+##### get_latest_metrics
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_latest_metrics(self) -> Optional[logicpwn.core.performance.performance_metrics.PerformanceMetrics]
+```
+
+Get the latest performance metrics.
+
+##### get_performance_summary
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_performance_summary(self) -> dict[str, typing.Any]
+```
+
+Get a summary of performance metrics.
+
+##### wrapper
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wrapper(*args, **kwargs)
+```
+
+Documentation for `wrapper` is not available.
+
+##### wrapper
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wrapper(*args, **kwargs)
+```
+
+Documentation for `wrapper` is not available.
+
+
+---
+
+### nullcontext
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class nullcontext:
+    """
+    Null context manager for when performance monitoring is disabled
+    """
+```
+
+Null context manager for when performance monitoring is disabled.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, *args, **kwargs)
+```
+
+Initialize a new instance of `nullcontext`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+## Functions
+
+:::note[Available Functions]
+This module provides 3 function(s) for direct use.
+:::
+
+### create_authenticated_validator
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_authenticated_validator(auth_config: Union[logicpwn.core.auth.auth_models.AuthConfig, dict[str, Any]], base_url: str = '', auto_authenticate: bool = True, enable_monitoring: bool = True) -> logicpwn.core.integration_utils.AuthenticatedValidator
+```
+
+Factory function to create and optionally authenticate a validator.
+
+**Args:**
+- **auth_config**: Authentication configuration
+
+- **base_url**: Base URL for requests
+
+- **auto_authenticate**: Whether to authenticate immediately
+
+- **enable_monitoring**: Whether to enable performance monitoring
+
+**Returns:**
+ Configured AuthenticatedValidator instance
+
+### create_dvwa_validator
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_dvwa_validator(base_url: str, username: str = 'admin', password: str = 'password') -> logicpwn.core.integration_utils.AuthenticatedValidator
+```
+
+Convenience function to create a validator configured for DVWA.
+
+**Args:**
+- **username**: DVWA username
+
+- **password**: DVWA password
+
+- **base_url**: DVWA base URL
+
+**Returns:**
+ Configured AuthenticatedValidator for DVWA
+
+### list_validator_presets
+
+:::note[Function]
+Module function
+:::
+
+```python
+def list_validator_presets() -> list[str]
+```
+
+List all available validation presets.
+
+
+## Related Modules
+
+:::tip[Utilities Modules]
+Explore other modules in the Utilities category:
+
+- **[Utils](./utils)** - General utilities
+- **[Config](./config)** - Configuration management
+- **[Performance](./performance)** - Performance monitoring
+- **[Cache](./cache)** - Caching utilities
+:::

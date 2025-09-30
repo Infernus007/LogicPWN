@@ -1,0 +1,434 @@
+---
+title: Access Detection
+description: Quick start guide for Access Detection in LogicPWN
+category:
+sidebar:
+  order: 1
+---
+
+
+
+## Overview
+
+Access detection in LogicPWN helps you identify Insecure Direct Object Reference (IDOR) vulnerabilities and other access control flaws in your applications. This guide covers the core access detection functionality.
+
+<Card title="What you'll learn" icon="book">
+- How to detect IDOR vulnerabilities
+- Advanced access testing techniques
+- Configuration and customization options
+- Best practices for access control testing
+</Card>
+
+## Quick Start
+
+<Steps>
+1. **Install LogicPWN**
+
+   ```bash
+   pip install logicpwn
+   ```
+
+2. **Import required modules**
+
+   ```python
+   from logicpwn.core.access import detect_idor_flaws
+   from logicpwn.core.auth import AuthConfig
+   from logicpwn.core.runner import AsyncRequestRunner
+   ```
+
+3. **Run your first test**
+
+   ```python
+   async def basic_idor_test():
+       auth_config = AuthConfig(username="user1", password="password123")
+
+       async with AsyncRequestRunner() as runner:
+           results = await detect_idor_flaws(
+               runner=runner,
+               base_url="https://example.com",
+               auth_config=auth_config,
+               test_endpoints=["/api/users/1", "/api/users/2"]
+           )
+
+           for result in results:
+               if result.is_vulnerable:
+                   print(f"🚨 IDOR Vulnerability Found: {result.endpoint}")
+               else:
+                   print(f"✅ Secure: {result.endpoint}")
+   ```
+</Steps>
+
+## Basic Access Testing
+
+### Simple IDOR Detection
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig
+from logicpwn.core.runner import AsyncRequestRunner
+
+async def basic_idor_test():
+    # Configure authentication
+    auth_config = AuthConfig(
+        username="user1",
+        password="password123"
+    )
+
+    async with AsyncRequestRunner() as runner:
+        # Test for IDOR vulnerabilities
+        results = await detect_idor_flaws(
+            runner=runner,
+            base_url="https://example.com",
+            auth_config=auth_config,
+            test_endpoints=[
+                "/api/users/1",
+                "/api/users/2",
+                "/api/users/3"
+            ]
+        )
+
+        # Analyze results
+        for result in results:
+            if result.is_vulnerable:
+                print(f"🚨 IDOR Vulnerability Found!")
+                print(f"   Endpoint: {result.endpoint}")
+                print(f"   Status Code: {result.status_code}")
+                print(f"   Response: {result.response_data[:200]}...")
+            else:
+                print(f"✅ Secure: {result.endpoint}")
+```
+
+## Advanced Access Testing
+
+<Tabs>
+<TabItem label="Custom ID Generation">
+```python
+from logicpwn.core.access import EnhancedIDGenerator
+
+async def advanced_idor_test():
+    # Create custom ID generator
+    id_generator = EnhancedIDGenerator(
+        base_ids=[1, 2, 3, 4, 5],
+        pattern_ids=["admin", "user", "guest"],
+        sequential_ids=True,
+        random_ids=True,
+        max_random=100
+    )
+
+    # Generate test endpoints
+    test_endpoints = []
+    for base_id in id_generator.base_ids:
+        test_endpoints.append(f"/api/users/{base_id}")
+        test_endpoints.append(f"/api/orders/{base_id}")
+
+    # Run tests
+    async with AsyncRequestRunner() as runner:
+        results = await detect_idor_flaws(
+            runner=runner,
+            base_url="https://example.com",
+            auth_config=auth_config,
+            test_endpoints=test_endpoints
+        )
+
+        return results
+```
+</TabItem>
+
+<TabItem label="Enhanced Access Testing">
+```python
+from logicpwn.core.access import EnhancedAccessTester
+
+async def enhanced_access_test():
+    # Create enhanced tester
+    tester = EnhancedAccessTester(
+        base_url="https://example.com",
+        auth_config=auth_config
+    )
+
+    # Configure test parameters
+    test_config = {
+        "test_endpoints": [
+            "/api/users/{id}",
+            "/api/orders/{id}",
+            "/api/profile"
+        ],
+        "id_range": (1, 100),
+        "test_methods": ["GET", "POST", "PUT", "DELETE"],
+        "custom_headers": {
+            "X-API-Key": "your-api-key"
+        }
+    }
+
+    # Run comprehensive tests
+    results = await tester.run_comprehensive_test(
+        runner=runner,
+        config=test_config
+    )
+
+    return results
+```
+</TabItem>
+
+<TabItem label="Multi-Role Testing">
+```python
+async def multi_role_testing():
+    # Test with different user roles
+    user_roles = [
+        {"username": "admin", "password": "admin123"},
+        {"username": "user", "password": "user123"},
+        {"username": "guest", "password": "guest123"}
+    ]
+
+    all_results = []
+    for role in user_roles:
+        auth_config = AuthConfig(**role)
+
+        async with AsyncRequestRunner() as runner:
+            results = await detect_idor_flaws(
+                runner=runner,
+                base_url="https://example.com",
+                auth_config=auth_config,
+                test_endpoints=["/api/users/1", "/api/users/2"]
+            )
+            all_results.extend(results)
+
+    return all_results
+```
+</TabItem>
+</Tabs>
+
+## Configuration Options
+
+<CardGrid stagger>
+	<Card title="Test Endpoints" icon="link">
+		Specify the endpoints to test for IDOR vulnerabilities. Supports wildcards and ID placeholders.
+	</Card>
+	<Card title="ID Generation" icon="hash">
+		Configure how IDs are generated for testing, including sequential, random, and pattern-based IDs.
+	</Card>
+	<Card title="Authentication" icon="key">
+		Set up authentication for testing protected endpoints and different user roles.
+	</Card>
+	<Card title="Response Analysis" icon="search">
+		Configure how responses are analyzed to detect vulnerabilities and false positives.
+	</Card>
+</CardGrid>
+
+## Testing Strategies
+
+<Steps>
+1. **Sequential ID Testing**
+
+   Test endpoints with sequential IDs to identify predictable patterns:
+
+   ```python
+   # Test sequential IDs
+   test_endpoints = [f"/api/users/{i}" for i in range(1, 101)]
+   ```
+
+   This approach helps identify applications that use predictable ID sequences.
+
+2. **Pattern-Based Testing**
+
+   Test with common patterns and keywords that might be used in production:
+
+   ```python
+   # Test common patterns
+   patterns = ["admin", "user", "guest", "test", "demo"]
+   test_endpoints = [f"/api/users/{pattern}" for pattern in patterns]
+   ```
+
+   Useful for finding hardcoded or predictable usernames/IDs.
+
+3. **Random ID Testing**
+
+   Test with random IDs to identify applications that might be vulnerable to enumeration:
+
+   ```python
+   import random
+
+   # Test random IDs
+   random_ids = [random.randint(1000, 9999) for _ in range(50)]
+   test_endpoints = [f"/api/users/{id}" for id in random_ids]
+   ```
+
+   This helps identify applications that don't properly validate ID existence.
+</Steps>
+
+## Response Analysis
+
+### Understanding Results
+
+```python
+async def analyze_results(results):
+    for result in results:
+        print(f"Endpoint: {result.endpoint}")
+        print(f"Status Code: {result.status_code}")
+        print(f"Is Vulnerable: {result.is_vulnerable}")
+        print(f"Response Size: {len(result.response_data)}")
+
+        # Check for specific indicators
+        if result.status_code == 200:
+            print("✅ Endpoint accessible")
+        elif result.status_code == 403:
+            print("🔒 Access denied (good)")
+        elif result.status_code == 404:
+            print("❌ Not found")
+        else:
+            print(f"⚠️  Unexpected status: {result.status_code}")
+```
+
+### Custom Analysis
+
+```python
+def custom_vulnerability_check(result):
+    """Custom logic to determine if a result indicates a vulnerability"""
+
+    # Check for specific response patterns
+    if "unauthorized" in result.response_data.lower():
+        return False  # Not vulnerable
+
+    if result.status_code == 200 and len(result.response_data) > 100:
+        return True  # Potentially vulnerable
+
+    return False
+```
+
+## Best Practices
+
+<CardGrid stagger>
+<Card title="Test Multiple User Roles" icon="users">
+Always test with different user roles to identify privilege escalation vulnerabilities. Test both authenticated and unauthenticated access patterns.
+</Card>
+
+<Card title="Use Realistic Test Data" icon="database">
+Use realistic ID ranges and patterns that match your application's data structure. Avoid testing with obviously invalid data.
+</Card>
+
+<Card title="Test Multiple HTTP Methods" icon="globe">
+Test different HTTP methods (GET, POST, PUT, DELETE) as access control might vary by method.
+</Card>
+
+<Card title="Validate Response Patterns" icon="search">
+Implement custom validation logic to reduce false positives and identify genuine vulnerabilities.
+</Card>
+</CardGrid>
+
+### Implementation Examples
+
+<Tabs>
+<TabItem label="Multi-Role Testing">
+```python
+# Test with different user accounts
+user_roles = [
+    {"username": "admin", "password": "admin123"},
+    {"username": "user", "password": "user123"},
+    {"username": "guest", "password": "guest123"}
+]
+
+for role in user_roles:
+    auth_config = AuthConfig(**role)
+    # Run tests for each role
+```
+</TabItem>
+
+<TabItem label="Realistic Test Data">
+```python
+# Use realistic ID ranges
+realistic_ids = [1, 2, 3, 10, 11, 12, 100, 101, 102]
+test_endpoints = [f"/api/users/{id}" for id in realistic_ids]
+```
+</TabItem>
+
+<TabItem label="HTTP Method Testing">
+```python
+# Test different HTTP methods
+methods = ["GET", "POST", "PUT", "DELETE"]
+for method in methods:
+    # Configure runner for specific method
+    # Run tests
+```
+</TabItem>
+</Tabs>
+
+## Integration with Other Tools
+
+### CI/CD Integration
+
+```python
+# Example for CI/CD pipeline
+async def ci_access_test():
+    results = await detect_idor_flaws(
+        runner=runner,
+        base_url=os.getenv("TEST_URL"),
+        auth_config=AuthConfig(
+            username=os.getenv("TEST_USER"),
+            password=os.getenv("TEST_PASSWORD")
+        ),
+        test_endpoints=load_test_endpoints()
+    )
+
+    # Fail build if vulnerabilities found
+    vulnerabilities = [r for r in results if r.is_vulnerable]
+    if vulnerabilities:
+        print(f"❌ Found {len(vulnerabilities)} vulnerabilities")
+        exit(1)
+    else:
+        print("✅ No vulnerabilities found")
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**False Positives**: Adjust your analysis logic to account for expected responses:
+```python
+def is_vulnerable(result):
+    # Exclude expected 404s for non-existent resources
+    if result.status_code == 404:
+        return False
+
+    # Check for specific error messages
+    if "not found" in result.response_data.lower():
+        return False
+
+    return result.status_code == 200
+```
+
+**Authentication Issues**: Ensure your auth configuration is correct:
+```python
+# Test authentication first
+async def test_auth():
+    async with AsyncRequestRunner() as runner:
+        response = await runner.send_request(
+            "GET",
+            "https://example.com/api/profile",
+            auth_config=auth_config
+        )
+        print(f"Auth test status: {response.status_code}")
+```
+
+## Related Guides
+
+<CardGrid stagger>
+<Card title="Async Runner" icon="rocket" link="/guides/async-runner/">
+Learn about high-performance asynchronous request handling for security testing.
+</Card>
+
+<Card title="Exploit Engine" icon="shield" link="/guides/exploit-engine/">
+Discover advanced exploit chain execution and validation capabilities.
+</Card>
+
+<Card title="API Reference" icon="book" link="/api-reference/">
+Browse the complete API documentation for all LogicPWN components.
+</Card>
+</CardGrid>
+
+## Next Steps
+
+Now that you understand access detection, you can:
+
+1. **Integrate with Async Runner** for high-performance testing
+2. **Chain exploits** using the Exploit Engine for complex attack scenarios
+3. **Explore the API** to customize your testing approach
+4. **Check out examples** in the `/examples` directory for real-world implementations

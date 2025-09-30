@@ -1,0 +1,516 @@
+---
+title: Performance
+description: API documentation for the Performance module in LogicPwn framework
+category: Utilities
+sidebar:
+  order: 11
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Utilities
+**Navigation:** [API Reference](../)
+
+API documentation for the `logicpwn.core.performance` module.
+
+## Import
+
+```python
+import logicpwn.core.performance
+# or
+from logicpwn.core.performance import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 4 class(es) for utilities.
+:::
+
+### MemoryProfiler
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class MemoryProfiler:
+    """
+    Class documentation.
+    """
+```
+
+The `MemoryProfiler` class provides core functionality for this module.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self)
+```
+
+Initialize a new instance of `MemoryProfiler`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### get_memory_growth
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_memory_growth(self) -> list[dict[str, typing.Any]]
+```
+
+Documentation for `get_memory_growth` is not available.
+
+##### get_optimization_recommendations
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_optimization_recommendations(self) -> list[str]
+```
+
+Documentation for `get_optimization_recommendations` is not available.
+
+##### take_snapshot
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def take_snapshot(self, label: str = 'snapshot') -> dict[str, typing.Any]
+```
+
+Documentation for `take_snapshot` is not available.
+
+
+---
+
+### PerformanceBenchmark
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class PerformanceBenchmark:
+    """
+    Performance benchmarking for LogicPwn operations
+    """
+```
+
+Performance benchmarking for LogicPwn operations.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, iterations: int = 10)
+```
+
+Initialize a new instance of `PerformanceBenchmark`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### benchmark_batch_requests
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def benchmark_batch_requests(self, request_configs: list[dict[str, typing.Any]], max_concurrent: int = 10) -> dict[str, typing.Any]
+```
+
+Documentation for `benchmark_batch_requests` is not available.
+
+##### benchmark_request
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def benchmark_request(self, url: str, method: str = 'GET', headers: Optional[dict] = None) -> dict[str, typing.Any]
+```
+
+Documentation for `benchmark_request` is not available.
+
+##### run_comprehensive_benchmark
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def run_comprehensive_benchmark(self) -> dict[str, typing.Any]
+```
+
+Documentation for `run_comprehensive_benchmark` is not available.
+
+
+---
+
+### PerformanceMetrics
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class PerformanceMetrics:
+    """
+    Performance metrics for a single operation
+    """
+```
+
+Performance metrics for a single operation.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, operation_name: str, duration: float, memory_before: float, memory_after: float, memory_peak: float, cpu_percent: float, timestamp: float = <factory>, metadata: dict[str, typing.Any] = <factory>) -> None
+```
+
+Initialize a new instance of `PerformanceMetrics`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>memory_delta</code></summary>
+
+Memory usage change.
+
+</details>
+
+<details>
+<summary><code>memory_usage_mb</code></summary>
+
+Memory usage in MB.
+
+</details>
+
+
+---
+
+### PerformanceMonitor
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class PerformanceMonitor:
+    """
+    Real-time performance monitoring
+    """
+```
+
+Real-time performance monitoring.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self)
+```
+
+Initialize a new instance of `PerformanceMonitor`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### get_metrics
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_metrics(self) -> list[logicpwn.core.performance.performance_metrics.PerformanceMetrics]
+```
+
+Documentation for `get_metrics` is not available.
+
+##### get_summary
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_summary(self) -> dict[str, typing.Any]
+```
+
+Documentation for `get_summary` is not available.
+
+##### monitor_operation
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def monitor_operation(self, operation_name: str)
+```
+
+Documentation for `monitor_operation` is not available.
+
+##### start_monitoring
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def start_monitoring(self, operation_name: str = 'default')
+```
+
+Documentation for `start_monitoring` is not available.
+
+##### stop_monitoring
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def stop_monitoring(self) -> Optional[logicpwn.core.performance.performance_metrics.PerformanceMetrics]
+```
+
+Documentation for `stop_monitoring` is not available.
+
+
+---
+
+## Functions
+
+:::note[Available Functions]
+This module provides 5 function(s) for direct use.
+:::
+
+### get_performance_summary
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_performance_summary() -> dict[str, typing.Any]
+```
+
+Get a summary of all performance metrics collected so far.
+
+### monitor_async_performance
+
+:::note[Function]
+Module function
+:::
+
+```python
+def monitor_async_performance(operation_name: str)
+```
+
+Decorator for monitoring performance of an async function.
+
+### monitor_performance
+
+:::note[Function]
+Module function
+:::
+
+```python
+def monitor_performance(operation_name: str)
+```
+
+Decorator for monitoring performance of a function.
+
+### performance_context
+
+:::note[Function]
+Module function
+:::
+
+```python
+def performance_context(operation_name: str)
+```
+
+Context manager for performance monitoring.
+
+### run_performance_benchmark
+
+:::note[Function]
+Module function
+:::
+
+```python
+def run_performance_benchmark() -> dict[str, typing.Any]
+```
+
+Convenience function to run a performance benchmark.
+
+
+## Related Modules
+
+:::tip[Utilities Modules]
+Explore other modules in the Utilities category:
+
+- **[Utils](./utils)** - General utilities
+- **[Config](./config)** - Configuration management
+- **[Cache](./cache)** - Caching utilities
+:::

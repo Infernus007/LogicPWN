@@ -1,0 +1,702 @@
+---
+title: Reliability
+description: Reliability module for LogicPwn - Circuit Breakers, Rate Limiting, Security Metrics, and Fault To...
+category: Reliability
+sidebar:
+  order: 39
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Reliability
+**Navigation:** [API Reference](../)
+
+Reliability module for LogicPwn - Circuit Breakers, Rate Limiting, Security Metrics, and Fault Tolerance.
+
+## Import
+
+```python
+import logicpwn.core.reliability
+# or
+from logicpwn.core.reliability import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 12 class(es) for reliability.
+:::
+
+### AdaptiveRateLimiter
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AdaptiveRateLimiter:
+    """
+    Adaptive rate limiter that adjusts delays based on server response patterns
+    """
+```
+
+Adaptive rate limiter that adjusts delays based on server response patterns.
+
+Features:
+- Exponential backoff on rate limiting
+- Adaptive delay based on response times
+- Recovery on successful requests
+- Circuit breaker integration
+- Comprehensive metrics collection
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, name: str, config: Optional[logicpwn.core.reliability.adaptive_rate_limiter.RateLimitConfig] = None)
+```
+
+Initialize a new instance of `AdaptiveRateLimiter`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### get_metrics
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_metrics(self) -> dict[str, typing.Any]
+```
+
+Get current rate limiter metrics.
+
+##### record_request
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def record_request(self, response_time: float, status_code: int, exception: Optional[Exception] = None) -> None
+```
+
+Record request results and adapt rate limiting accordingly.
+
+**Args:**
+- **response_time**: Time taken for the request in seconds
+
+- **status_code**: HTTP status code received
+
+- **exception**: Exception that occurred during request (if any)
+
+##### reset
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def reset(self) -> None
+```
+
+Reset rate limiter to initial state.
+
+##### wait_if_needed
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wait_if_needed(self) -> float
+```
+
+Apply rate limiting delay if needed.
+
+**Returns:**
+ Actual delay applied in seconds
+
+
+---
+
+### CircuitBreaker
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CircuitBreaker:
+    """
+    Circuit breaker implementation for reliable service calls
+    """
+```
+
+Circuit breaker implementation for reliable service calls.
+
+The circuit breaker prevents cascading failures by:
+1. CLOSED: Normal operation, monitoring for failures
+2. OPEN: Fast-fail mode, rejecting calls without attempting them
+3. HALF_OPEN: Testing mode, allowing limited calls to test recovery
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, name: str, config: Optional[logicpwn.core.reliability.circuit_breaker.CircuitBreakerConfig] = None)
+```
+
+Initialize a new instance of `CircuitBreaker`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### call
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def call(self, func: Callable, *args, **kwargs) -> Any
+```
+
+Execute function with circuit breaker protection.
+
+**Args:**
+- **func**: Function to execute
+
+- ***args**: Positional arguments for function
+
+- ****kwargs**: Keyword arguments for function
+
+**Returns:**
+ Function result
+
+**Raises:**
+
+- **CircuitBreakerOpenException**: If circuit breaker is open Any exception raised by the function
+
+##### force_close
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def force_close(self) -> None
+```
+
+Force circuit breaker to CLOSED state (for testing/manual intervention).
+
+##### force_open
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def force_open(self) -> None
+```
+
+Force circuit breaker to OPEN state (for testing/manual intervention).
+
+##### get_metrics
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_metrics(self) -> dict[str, typing.Any]
+```
+
+Get current circuit breaker metrics.
+
+##### reset
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def reset(self) -> None
+```
+
+Reset circuit breaker to initial state.
+
+
+---
+
+### CircuitBreakerConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CircuitBreakerConfig:
+    """
+    Configuration for circuit breaker behavior
+    """
+```
+
+Configuration for circuit breaker behavior.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, failure_threshold: int = 5, recovery_timeout: float = 60.0, success_threshold: int = 3, timeout: float = 10.0, exception_whitelist: list[type] = <factory>) -> None
+```
+
+Initialize a new instance of `CircuitBreakerConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### CircuitBreakerMetrics
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CircuitBreakerMetrics:
+    """
+    Metrics tracking for circuit breaker
+    """
+```
+
+Metrics tracking for circuit breaker.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, total_requests: int = 0, successful_requests: int = 0, failed_requests: int = 0, consecutive_failures: int = 0, consecutive_successes: int = 0, last_failure_time: Optional[float] = None, state_changes: int = 0) -> None
+```
+
+Initialize a new instance of `CircuitBreakerMetrics`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### CircuitBreakerOpenException
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CircuitBreakerOpenException (Exception):
+    """
+    Exception raised when circuit breaker is open
+    """
+```
+
+Exception raised when circuit breaker is open.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, name: str, failure_count: int)
+```
+
+Initialize a new instance of `CircuitBreakerOpenException`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### CircuitBreakerState
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CircuitBreakerState (Enum):
+    """
+    Circuit breaker states
+    """
+```
+
+Circuit breaker states.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `CircuitBreakerState`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RateLimitConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RateLimitConfig:
+    """
+    Configuration for adaptive rate limiting
+    """
+```
+
+Configuration for adaptive rate limiting.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, base_delay: float = 1.0, max_delay: float = 30.0, min_delay: float = 0.1, backoff_multiplier: float = 2.0, recovery_factor: float = 0.8, rate_limit_status_codes: list[int] = <factory>, error_status_codes: list[int] = <factory>, response_time_threshold: float = 5.0, window_size: int = 10, adaptation_sensitivity: float = 0.1) -> None
+```
+
+Initialize a new instance of `RateLimitConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RequestMetrics
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RequestMetrics:
+    """
+    Metrics for a single request
+    """
+```
+
+Metrics for a single request.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, timestamp: float, response_time: float, status_code: int, success: bool, rate_limited: bool, error: bool) -> None
+```
+
+Initialize a new instance of `RequestMetrics`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SecurityEvent
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SecurityEvent:
+    """
+    Represents a security-related event
+    """
+```
+
+Represents a security-related event.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, timestamp: float, event_type: logicpwn.core.reliability.security_metrics.SecurityEventType, severity: logicpwn.core.reliability.security_metrics.SecuritySeverity, message: str, metadata: dict[str, typing.Any] = <factory>, source_module: Optional[str] = None, user_id: Optional[str] = None, session_id: Optional[str] = None) -> None
+```
+
+Initialize a new instance of `SecurityEvent`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SecurityEventType
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SecurityEventType (Enum):
+    """
+    Types of security events to monitor
+    """
+```
+
+Types of security events to monitor.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `SecurityEventType`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SecurityMetricsCollector
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SecurityMetricsCollector:
+    """
+    Collects and analyzes security metrics across LogicPwn components
+    """
+```
+
+Collects and analyzes security metrics across LogicPwn components.
+Thread-safe implementation with configurable retention and alerting.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, max_events: int = 10000, retention_hours: int = 24, enable_alerts: bool = True)
+```
+
+Initialize a new instance of `SecurityMetricsCollector`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### add_alert_handler
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def add_alert_handler(self, handler: Callable[[logicpwn.core.reliability.security_metrics.SecurityEvent], NoneType]) -> None
+```
+
+Add an alert handler function.
+
+**Args:**
+- **handler**: Function to call when security alerts are triggered
+
+##### get_metrics
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_metrics(self) -> logicpwn.core.reliability.security_metrics.SecurityMetrics
+```
+
+Get current security metrics.
+
+##### get_metrics_summary
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_metrics_summary(self) -> dict[str, typing.Any]
+```
+
+Get a comprehensive metrics summary for reporting.
+
+##### get_recent_events
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_recent_events(self, event_type: Optional[logicpwn.core.reliability.security_metrics.SecurityEventType] = None, severity: Optional[logicpwn.core.reliability.security_metrics.SecuritySeverity] = None, limit: int = 100) -> list[logicpwn.core.reliability.security_metrics.SecurityEvent]
+```
+
+Get recent security events with optional filtering.
+
+**Args:**
+- **event_type**: Filter by event type
+
+- **severity**: Filter by severity level
+
+- **limit**: Maximum number of events to return
+
+**Returns:**
+ List of recent security events
+
+##### record_event
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def record_event(self, event: logicpwn.core.reliability.security_metrics.SecurityEvent) -> None
+```
+
+Record a security event.
+
+**Args:**
+- **event**: Security event to record
+
+##### record_request_time
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def record_request_time(self, duration: float) -> None
+```
+
+Record request execution time for performance metrics.
+
+
+---
+
+### SecuritySeverity
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SecuritySeverity (Enum):
+    """
+    Severity levels for security events
+    """
+```
+
+Severity levels for security events.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `SecuritySeverity`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+## Functions
+
+:::note[Available Functions]
+This module provides 1 function(s) for direct use.
+:::
+
+### record_security_event
+
+:::note[Function]
+Module function
+:::
+
+```python
+def record_security_event(event_type: logicpwn.core.reliability.security_metrics.SecurityEventType, severity: logicpwn.core.reliability.security_metrics.SecuritySeverity, message: str, metadata: Optional[dict[str, Any]] = None, source_module: Optional[str] = None) -> None
+```
+
+Convenience function to record a security event.
+
+**Args:**
+- **event_type**: Type of security event
+
+- **severity**: Severity level
+
+- **message**: Human-readable message
+
+- **metadata**: Additional event metadata
+
+- **source_module**: Source module name
+
+
+## Related Modules
+
+:::tip[Reliability Modules]
+Explore other modules in the Reliability category:
+
+- **[Reliability › Circuit Breaker](./reliability/circuit-breaker)** - Circuit breaker implementation
+- **[Reliability › Adaptive Rate Limiter](./reliability/adaptive-rate-limiter)** - Adaptive rate limiting
+- **[Reliability › Security Metrics](./reliability/security-metrics)** - Security metrics collection
+:::

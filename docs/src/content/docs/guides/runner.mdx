@@ -1,0 +1,232 @@
+---
+title: Runner Module
+description: Unified sync/async HTTP runner with rate limiting, SSL/TLS hardening, retries, and streaming.
+---
+
+### Overview
+The Runner module provides a unified interface for sending HTTP requests synchronously or asynchronously with:
+- Rate limiting (simple, token bucket, sliding window, adaptive)
+- SSL/TLS verification controls with strong defaults and explicit warnings
+- Retries with exponential backoff and jitter
+- Response streaming for large payloads
+- Logging, basic caching for successful GETs, and performance timing
+
+This guide reflects the current, verified implementation and usage patterns.
+
+### Key Classes
+- `HttpRunner`: Unified sync/async HTTP runner
+- `RunnerConfig`: Top-level runner configuration
+- `RateLimitConfig`: Rate limiting options
+- `SSLConfig`: SSL/TLS controls (min TLS version, client certs, relaxed/disabled modes)
+- `RetryConfig`: Retry strategy configuration
+- `RequestBuilder` and `CommonRequests`: Convenience builders for request configs
+
+### Installation
+Make sure you can import the package from your project root or install it in your environment. When running examples directly from the repo, you can set `PYTHONPATH` to the repository root.
+
+```bash
+PYTHONPATH=$(pwd) python3 examples/runner_enhanced_example.py
+```
+
+### Quick Start
+Synchronous request with secure defaults:
+```python
+from logicpwn.core.runner import HttpRunner, RunnerConfig
+
+runner = HttpRunner(RunnerConfig())
+result = runner.send_request("https://example.com", method="GET")
+print(result.status_code)
+```
+
+Asynchronous request with context manager:
+```python
+import asyncio
+from logicpwn.core.runner import HttpRunner, RunnerConfig
+
+async def main():
+    async with HttpRunner(RunnerConfig()) as runner:
+        result = await runner.send_request_async("https://httpbin.org/get")
+        print(result.status_code)
+
+asyncio.run(main())
+```
+
+### Rate Limiting
+Supported algorithms:
+- Simple (fixed interval)
+- Token Bucket (with `burst_size`)
+- Sliding Window
+- Adaptive (responds to observed response times)
+
+Example (token bucket):
+```python
+from logicpwn.core.runner import HttpRunner, RunnerConfig, RateLimitConfig, RateLimitAlgorithm
+
+rate = RateLimitConfig(
+    algorithm=RateLimitAlgorithm.TOKEN_BUCKET,
+    requests_per_second=2.0,
+    burst_size=3,
+)
+runner = HttpRunner(RunnerConfig(rate_limit=rate))
+```
+
+### SSL/TLS Hardening
+`SSLConfig` supports:
+- `verification_level`: `STRICT`, `RELAXED`, `DISABLED`
+- `min_tls_version`: "TLSv1.2" or "TLSv1.3"
+- Optional `client_cert`, `client_key`, and custom CA bundle
+
+Notes:
+- Relaxed or disabled verification emits explicit warnings. Only disable verification in controlled testing.
+- HTTP/2 support: When `enable_http2=True` and `httpx` is available, true HTTP/2 is used. Otherwise falls back to HTTP/1.1 with aiohttp.
+
+```python
+from logicpwn.core.runner import HttpRunner, RunnerConfig, SSLConfig, SSLVerificationLevel
+
+ssl = SSLConfig(
+    verification_level=SSLVerificationLevel.STRICT,
+    min_tls_version="TLSv1.3",
+)
+runner = HttpRunner(RunnerConfig(ssl=ssl))
+```
+
+### Retries with Exponential Backoff
+`RetryConfig` controls resilience behavior:
+- `max_attempts`, `base_delay`, `max_delay`, `exponential_base`, `jitter`
+- `retryable_status_codes`: e.g. `{500, 502, 503, 504, 429}`
+- `respect_retry_after`: optionally use `Retry-After` header when present
+
+```python
+from logicpwn.core.runner import HttpRunner, RunnerConfig, RetryConfig
+
+retry = RetryConfig(
+    max_attempts=3,
+    base_delay=1.0,
+    exponential_base=2.0,
+    jitter=True,
+    retryable_status_codes={500, 502, 503, 504, 429},
+)
+runner = HttpRunner(RunnerConfig(retry=retry))
+```
+
+Presets are available:
+```python
+retry = RetryConfig.balanced()      # default-friendly
+# Or:
+retry = RetryConfig.conservative()  # fewer attempts, shorter window
+retry = RetryConfig.aggressive()    # more attempts for idempotent calls
+```
+
+Per-request override:
+```python
+runner.send_request(
+  "https://httpbin.org/get",
+  retry_config=RetryConfig.conservative(),
+)
+```
+
+Backward compatibility: legacy `retry_attempts` and `retry_backoff` on `RunnerConfig` are automatically mapped to the new `RetryConfig` at runtime.
+
+### Streaming Large Responses (Async)
+For large payloads, stream to avoid high memory usage:
+```python
+import asyncio
+from logicpwn.core.runner import HttpRunner, RunnerConfig
+
+async def stream(url: str):
+    async with HttpRunner(RunnerConfig()) as runner:
+        total = 0
+        async for chunk in runner.send_request_streaming(url, chunk_size=1024):
+            total += len(chunk)
+        print(f"streamed: {total} bytes")
+
+asyncio.run(stream("https://httpbin.org/bytes/10000"))
+```
+
+### Request Builders
+Use `RequestBuilder` and `CommonRequests` for fluent, validated config construction:
+```python
+from logicpwn.core.runner import RequestBuilder, CommonRequests
+
+cfg = (
+    RequestBuilder("https://httpbin.org/post")
+    .post()
+    .json_data({"message": "Hello"})
+    .header("X-Trace", "demo")
+    .timeout(30)
+    .verify_ssl(True)
+    .build()
+)
+
+auth_get = CommonRequests.authenticated_get(
+    "https://httpbin.org/get", token="demo-token", auth_type="Bearer"
+)
+```
+
+### HTTP/2 Support
+True HTTP/2 support is available when `httpx` is installed:
+
+```python
+# Install httpx for HTTP/2 support
+pip install httpx
+
+# Configure for HTTP/2
+config = RunnerConfig(
+    session=SessionConfig(
+        enable_http2=True,
+        http2_implementation="httpx"  # or "auto" to detect httpx
+    )
+)
+```
+
+### Behavior Notes (Verified)
+- GET requests with status 200 are cached via the response cache.
+- Global toggle: `RunnerConfig.enable_response_cache` (default: True).
+- Per-request bypass: `disable_cache=True` on `send_request`.
+- Retry logic applies to selected exceptions and status codes; non-retryable errors surface immediately.
+- `Retry-After` header is honored when `respect_retry_after=True`.
+- Session health helpers:
+  - `validate_session_health()` returns False until a session is initialized by a prior request, and may still return False depending on environment/network.
+  - `validate_session_health_async()` behaves similarly for async sessions.
+- HTTP/2: When `httpx` is available, true HTTP/2 is used. Otherwise falls back to HTTP/1.1 with aiohttp.
+
+### Rate Limiting Overrides
+You can override rate limiting per request without mutating the runner:
+```python
+from logicpwn.core.runner import RateLimitConfig, RateLimitAlgorithm
+
+result = runner.send_request(
+  "https://httpbin.org/get",
+  rate_limit_config=RateLimitConfig(
+    algorithm=RateLimitAlgorithm.SLIDING_WINDOW,
+    requests_per_second=5.0,
+    window_size=10,
+  ),
+)
+```
+
+Thread-safety note: `SimpleRateLimiter.acquire()` uses a threading lock for mixed-thread sync usage; prefer not to share a single `HttpRunner` across threads unless intended.
+
+### End-to-End Example
+A complete, working demo resides at `examples/runner_enhanced_example.py`. It showcases:
+- Retry mechanism
+- Rate limiting
+- Session health checks
+- SSL/TLS configuration
+- Streaming
+- Async usage
+
+Run it from the repo root:
+```bash
+PYTHONPATH=$(pwd) python3 examples/runner_enhanced_example.py
+```
+
+### Troubleshooting
+- If imports fail when running examples, set `PYTHONPATH` to the repo root.
+- If you disable SSL verification, you’ll see warnings; this is expected and intended to prevent misuse in production.
+- High 5xx/429 rates will trigger retries; adjust `RetryConfig` to tune behavior.
+
+### Roadmap
+- Optional first-class HTTP/2 client integration where available
+- Additional retry policies (e.g., per-method defaults, idempotency-aware)
+- Pluggable circuit breaker middleware (composable with runner)

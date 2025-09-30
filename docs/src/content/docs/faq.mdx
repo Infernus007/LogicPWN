@@ -1,0 +1,438 @@
+---
+title: FAQ
+description: Frequently Asked Questions about LogicPWN
+category:
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid, TabItem, Tabs } from '@astrojs/starlight/components';
+
+
+## General Questions
+
+### What is LogicPWN?
+
+LogicPWN is a comprehensive security testing framework designed to help developers and security professionals identify vulnerabilities in web applications. It provides tools for access control testing, authentication testing, performance testing, and exploit chain execution.
+
+### What types of vulnerabilities can LogicPWN detect?
+
+LogicPWN can detect various types of vulnerabilities including:
+- **IDOR (Insecure Direct Object Reference)** vulnerabilities
+- **Authentication bypass** issues
+- **Authorization flaws**
+- **Input validation** problems
+- **Session management** issues
+- **Rate limiting** bypasses
+
+### Is LogicPWN suitable for production testing?
+
+Yes, LogicPWN is designed to be safe for production testing when used responsibly. It includes built-in rate limiting, configurable timeouts, and non-destructive testing modes. However, always ensure you have proper authorization before testing any system.
+
+## Installation and Setup
+
+### How do I install LogicPWN?
+
+<Tabs>
+  <TabItem label="pip">
+    ```bash
+    pip install logicpwn
+    ```
+  </TabItem>
+  <TabItem label="poetry">
+    ```bash
+    poetry add logicpwn
+    ```
+  </TabItem>
+  <TabItem label="Development">
+    ```bash
+    git clone https://github.com/Infernus007/LogicPWN.git
+    cd LogicPWN
+    poetry install
+    ```
+  </TabItem>
+</Tabs>
+
+### What are the system requirements?
+
+- **Python**: 3.8 or higher
+- **Memory**: 512MB minimum (2GB recommended for large-scale testing)
+- **Network**: Internet connection for downloading dependencies
+- **OS**: Windows, macOS, or Linux
+
+### How do I configure authentication?
+
+```python
+from logicpwn.core.auth import AuthConfig
+
+# Basic authentication
+auth_config = AuthConfig(
+    username="your-username",
+    password="your-password"
+)
+
+# Advanced authentication
+from logicpwn.core.auth import AdvancedAuthConfig
+
+advanced_auth = AdvancedAuthConfig(
+    username="your-username",
+    password="your-password",
+    custom_headers={
+        "X-API-Key": "your-api-key",
+        "Authorization": "Bearer your-token"
+    }
+)
+```
+
+## Usage Questions
+
+### How do I test for IDOR vulnerabilities?
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.runner import AsyncRequestRunner
+
+async def test_idor():
+    async with AsyncRequestRunner() as runner:
+        results = await detect_idor_flaws(
+            runner=runner,
+            base_url="https://example.com",
+            auth_config=auth_config,
+            test_endpoints=[
+                "/api/users/1",
+                "/api/users/2",
+                "/api/users/3"
+            ]
+        )
+
+        for result in results:
+            if result.is_vulnerable:
+                print(f"IDOR found: {result.endpoint}")
+```
+
+### How do I run performance tests?
+
+```python
+from logicpwn.core.stress import StressTester
+
+async def performance_test():
+    async with AsyncRequestRunner() as runner:
+        stress_config = {
+            "concurrent_users": 100,
+            "requests_per_user": 10,
+            "test_duration": 60
+        }
+
+        results = await StressTester(runner).run_stress_test(
+            base_url="https://example.com",
+            config=stress_config
+        )
+
+        return results
+```
+
+### How do I configure rate limiting?
+
+```python
+from logicpwn.core.reliability import AdaptiveRateLimiter, RateLimitConfig
+
+# Configure rate limiting
+rate_config = RateLimitConfig(
+    requests_per_second=5,
+    burst_size=10
+)
+
+rate_limiter = AdaptiveRateLimiter(rate_config)
+
+# Use with runner
+async with AsyncRequestRunner(rate_limiter=rate_limiter) as runner:
+    # Your requests here
+    pass
+```
+
+## Configuration Questions
+
+### How do I set up environment variables?
+
+```bash
+# Set default configuration
+export LOGICPWN_BASE_URL="https://your-app.com"
+export LOGICPWN_USERNAME="test-user"
+export LOGICPWN_PASSWORD="test-password"
+export LOGICPWN_TIMEOUT="30"
+export LOGICPWN_MAX_CONCURRENT="10"
+```
+
+### How do I create a configuration file?
+
+Create a `config.yaml` file:
+
+```yaml
+base_url: "https://your-app.com"
+auth:
+  username: "test-user"
+  password: "test-password"
+runner:
+  timeout: 30
+  max_concurrent: 10
+  retry_attempts: 3
+access_testing:
+  test_endpoints:
+    - "/api/users/{id}"
+    - "/api/orders/{id}"
+    - "/api/profile"
+```
+
+### How do I configure SSL/TLS settings?
+
+```python
+import requests
+from logicpwn.core.runner import AsyncRequestRunner
+
+# Configure SSL settings
+ssl_config = {
+    "verify": True,  # Verify SSL certificates
+    "cert": ("client.crt", "client.key"),  # Client certificates
+    "timeout": 30
+}
+
+# Use with requests session
+session = requests.Session()
+session.verify = ssl_config["verify"]
+session.cert = ssl_config["cert"]
+session.timeout = ssl_config["timeout"]
+
+# Use with runner
+async with AsyncRequestRunner(session=session) as runner:
+    # Your requests here
+    pass
+```
+
+## Troubleshooting
+
+### Common Issues
+
+<CardGrid stagger>
+	<Card title="Import Errors" icon="warning">
+		Make sure you're using the correct import paths and have installed all dependencies.
+	</Card>
+	<Card title="Authentication Failures" icon="key">
+		Verify your credentials and check if the target application requires specific headers.
+	</Card>
+	<Card title="Timeout Issues" icon="timer">
+		Increase timeout values and check network connectivity.
+	</Card>
+	<Card title="Memory Issues" icon="memory">
+		Reduce concurrent requests and process data in smaller batches.
+	</Card>
+</CardGrid>
+
+### Import Errors
+
+**Problem**: `ModuleNotFoundError: No module named 'logicpwn'`
+
+**Solution**: Install LogicPWN properly:
+```bash
+pip install logicpwn
+# or
+poetry add logicpwn
+```
+
+**Problem**: `ImportError: cannot import name 'detect_idor_flaws'`
+
+**Solution**: Use correct import path:
+```python
+# Correct
+from logicpwn.core.access import detect_idor_flaws
+
+# Incorrect
+from logicpwn.access import detect_idor_flaws
+```
+
+### Authentication Issues
+
+**Problem**: Authentication always fails
+
+**Solution**: Check your credentials and headers:
+```python
+# Test authentication first
+async def test_auth():
+    async with AsyncRequestRunner() as runner:
+        response = await runner.send_request(
+            "GET",
+            "https://example.com/api/profile",
+            auth_config=auth_config
+        )
+        print(f"Auth test status: {response.status_code}")
+```
+
+**Problem**: Custom headers not working
+
+**Solution**: Verify header format:
+```python
+# Correct
+headers = {
+    "X-API-Key": "your-api-key",
+    "Authorization": "Bearer your-token"
+}
+
+# Incorrect
+headers = {
+    "x-api-key": "your-api-key",  # Case sensitive
+    "authorization": "Bearer your-token"
+}
+```
+
+### Performance Issues
+
+**Problem**: Requests timing out
+
+**Solution**: Increase timeout values:
+```python
+async with AsyncRequestRunner(timeout=60) as runner:
+    # Your requests here
+```
+
+**Problem**: Memory usage too high
+
+**Solution**: Reduce concurrent requests:
+```python
+async with AsyncRequestRunner(max_concurrent=5) as runner:
+    # Your requests here
+```
+
+**Problem**: Rate limiting errors
+
+**Solution**: Configure rate limiting:
+```python
+rate_config = RateLimitConfig(
+    requests_per_second=2,  # Reduce rate
+    burst_size=5
+)
+```
+
+## Integration Questions
+
+### How do I integrate with CI/CD?
+
+```python
+import os
+import sys
+
+async def ci_test():
+    results = await detect_idor_flaws(
+        runner=runner,
+        base_url=os.getenv("TEST_URL"),
+        auth_config=AuthConfig(
+            username=os.getenv("TEST_USER"),
+            password=os.getenv("TEST_PASSWORD")
+        ),
+        test_endpoints=load_test_endpoints()
+    )
+
+    # Fail build if vulnerabilities found
+    vulnerabilities = [r for r in results if r.is_vulnerable]
+    if vulnerabilities:
+        print(f"❌ Found {len(vulnerabilities)} vulnerabilities")
+        sys.exit(1)
+    else:
+        print("✅ No vulnerabilities found")
+```
+
+### How do I generate reports?
+
+```python
+from logicpwn.core.reporter import ReportGenerator
+
+async def generate_report():
+    # Run tests
+    results = await detect_idor_flaws(...)
+
+    # Generate report
+    report = ReportGenerator()
+    report_data = report.generate_report(
+        results=results,
+        format="json"  # or "html", "markdown"
+    )
+
+    # Save report
+    with open("security_report.json", "w") as f:
+        f.write(report_data)
+```
+
+### How do I use with other security tools?
+
+```python
+# Example integration with custom security scanner
+class CustomSecurityScanner:
+    def __init__(self, logicpwn_runner):
+        self.runner = logicpwn_runner
+
+    async def scan(self, url):
+        # Use LogicPWN for access testing
+        access_results = await detect_idor_flaws(
+            runner=self.runner,
+            base_url=url,
+            auth_config=auth_config
+        )
+
+        # Combine with other security tests
+        combined_results = {
+            "access_control": access_results,
+            "other_tests": await self.other_tests(url)
+        }
+
+        return combined_results
+```
+
+## Security Questions
+
+### Is LogicPWN safe to use?
+
+Yes, LogicPWN is designed with safety in mind:
+- **Non-destructive**: Only reads data, doesn't modify or delete
+- **Rate limited**: Built-in rate limiting to avoid overwhelming targets
+- **Configurable**: All parameters can be adjusted for your needs
+- **Transparent**: All actions are logged and can be reviewed
+
+### What should I do if I find vulnerabilities?
+
+1. **Document the findings** with detailed information
+2. **Report to the appropriate team** or security contact
+3. **Follow responsible disclosure** practices
+4. **Verify the fixes** after remediation
+5. **Update your tests** to prevent regression
+
+### How do I ensure I have permission to test?
+
+Always ensure you have proper authorization:
+- **Written permission** from system owners
+- **Scope definition** of what can be tested
+- **Time windows** for testing activities
+- **Contact information** for emergency situations
+
+## Getting Help
+
+### Where can I get support?
+
+- **Documentation**: Browse the guides and API reference
+- **Examples**: Check out the examples folder for real-world usage
+- **GitHub Issues**: Report bugs or request features
+- **Discussions**: Join the community discussions
+
+### How do I contribute?
+
+1. **Fork the repository**
+2. **Create a feature branch**
+3. **Make your changes**
+4. **Add tests** for new functionality
+5. **Submit a pull request**
+
+### How do I report bugs?
+
+When reporting bugs, please include:
+- **Python version** and operating system
+- **LogicPWN version**
+- **Complete error message** and stack trace
+- **Steps to reproduce** the issue
+- **Expected vs actual behavior**

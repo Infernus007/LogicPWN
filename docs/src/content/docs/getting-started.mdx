@@ -1,0 +1,254 @@
+---
+title: Getting Started
+description: Quick start guide for LogicPWN
+category:
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, TabItem, Tabs } from '@astrojs/starlight/components';
+
+## Installation
+
+<Tabs>
+  <TabItem label="pip">
+    ```bash
+    pip install logicpwn
+    ```
+  </TabItem>
+  <TabItem label="poetry">
+    ```bash
+    poetry add logicpwn
+    ```
+  </TabItem>
+</Tabs>
+
+## Quick Start
+
+### 1. Basic Authentication Test
+
+```python
+from logicpwn.core.auth import AuthManager
+from logicpwn.core.runner import HTTPRunner
+
+# Initialize authentication manager
+auth_manager = AuthManager()
+
+# Create HTTP runner
+runner = HTTPRunner()
+
+# Test basic authentication
+result = await auth_manager.test_basic_auth(
+    runner=runner,
+    target_url="https://example.com/login",
+    username="admin",
+    password="password"
+)
+
+print(f"Authentication result: {result}")
+```
+
+### 2. Access Control Testing
+
+```python
+from logicpwn.core.access import AccessDetector
+
+# Initialize access detector
+detector = AccessDetector()
+
+# Test for IDOR vulnerabilities
+idor_results = await detector.detect_idor_flaws(
+    session=runner.session,
+    base_url="https://api.example.com",
+    endpoint_template="/api/users/{id}",
+    test_ids=["1", "2", "3", "admin", "999"]
+)
+
+print(f"IDOR vulnerabilities found: {len(idor_results)}")
+```
+
+### 3. Exploit Engine Usage
+
+```python
+from logicpwn.core.exploit_engine import ExploitEngine
+
+# Initialize exploit engine
+engine = ExploitEngine()
+
+# Load exploit chain
+exploit_chain = {
+    "name": "SQL Injection Chain",
+    "steps": [
+        {
+            "name": "SQL Injection Test",
+            "request_config": {
+                "method": "GET",
+                "url": "https://example.com/search",
+                "params": {"q": "' OR 1=1 --"}
+            },
+            "success_indicators": ["error", "database", "mysql"]
+        }
+    ]
+}
+
+# Execute exploit chain
+results = await engine.execute_chain(exploit_chain)
+print(f"Exploit results: {results}")
+```
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# Set default configuration
+export LOGICPWN_TIMEOUT=30
+export LOGICPWN_MAX_RETRIES=3
+export LOGICPWN_LOG_LEVEL=INFO
+```
+
+### Configuration File
+
+Create a `logicpwn.yaml` file:
+
+```yaml
+# logicpwn.yaml
+defaults:
+  timeout: 30
+  max_retries: 3
+  log_level: INFO
+
+auth:
+  session_timeout: 3600
+  max_sessions: 10
+
+security:
+  sensitive_headers:
+    - "Authorization"
+    - "X-API-Key"
+  redaction_string: "[REDACTED]"
+```
+
+## Advanced Usage
+
+### Custom Request Configuration
+
+```python
+from logicpwn.models import RequestConfig
+
+# Create custom request configuration
+config = RequestConfig(
+    method="POST",
+    url="https://api.example.com/data",
+    headers={
+        "Content-Type": "application/json",
+        "Authorization": "Bearer token123"
+    },
+    data={"key": "value"},
+    timeout=60,
+    max_retries=5
+)
+
+# Use with runner
+result = await runner.execute_request(config)
+```
+
+### Stress Testing
+
+```python
+from logicpwn.core.stress import StressTester
+
+# Initialize stress tester
+tester = StressTester(max_concurrent=50, duration=300)
+
+# Run stress test
+results = await tester.run_stress_test([
+    {
+        "url": "https://api.example.com/endpoint",
+        "method": "GET",
+        "headers": {"Authorization": "Bearer token"}
+    }
+])
+
+print(f"Stress test results: {results}")
+```
+
+### Validation and Reporting
+
+```python
+from logicpwn.core.validator import Validator
+from logicpwn.core.reporter import SecurityReporter
+
+# Initialize validator
+validator = Validator()
+
+# Validate response
+validation_result = validator.validate_response(
+    response=result,
+    expected_status=200,
+    required_headers=["Content-Type"],
+    required_content=["success"]
+)
+
+# Generate security report
+reporter = SecurityReporter()
+report = await reporter.generate_report(
+    test_results=[result],
+    validation_results=[validation_result]
+)
+
+print(f"Security report: {report}")
+```
+
+## Best Practices
+
+<Card title="Security Testing Guidelines">
+- Always test on authorized systems only
+- Use appropriate rate limiting to avoid overwhelming targets
+- Implement proper error handling and logging
+- Validate all inputs and outputs
+- Follow responsible disclosure practices
+</Card>
+
+<Card title="Performance Considerations">
+- Use connection pooling for multiple requests
+- Implement proper timeout handling
+- Monitor memory usage during stress tests
+- Use async/await for concurrent operations
+</Card>
+
+## Troubleshooting
+
+### Common Issues
+
+**Import Errors:**
+```bash
+# Ensure all dependencies are installed
+pip install -r requirements.txt
+```
+
+**Authentication Failures:**
+```python
+# Check credentials and network connectivity
+import requests
+response = requests.get("https://target.com")
+print(f"Status: {response.status_code}")
+```
+
+**Timeout Issues:**
+```python
+# Increase timeout for slow networks
+config = RequestConfig(timeout=120)
+```
+
+## Next Steps
+
+- Explore the [API Reference](../api-reference/) for detailed documentation
+- Check out [Guides](../guides/) for step-by-step tutorials
+- Review [FAQ](../faq/) for common questions and answers
+
+## Support
+
+- **Documentation**: [LogicPWN Docs](https://docs.logicpwn.com)
+- **Issues**: [GitHub Issues](https://github.com/logicpwn/logicpwn/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/logicpwn/logicpwn/discussions)

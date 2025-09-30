@@ -1,0 +1,686 @@
+---
+title: Performance Monitoring & Optimization
+description: Comprehensive guide to performance monitoring, optimization, and system resource management in LogicPWN
+category: Guides
+sidebar:
+  order: 6
+---
+import { Card, CardGrid, Steps, TabItem, Tabs } from '@astrojs/starlight/components';
+
+## Overview
+
+LogicPWN provides comprehensive performance monitoring and optimization capabilities for security testing workflows. This includes real-time performance metrics, memory profiling, CPU monitoring, and optimization recommendations.
+
+<Card title="Key Features" icon="chart">
+- Real-time performance monitoring
+- Memory and CPU profiling
+- Performance benchmarking
+- Optimization recommendations
+- Resource usage tracking
+- Performance metrics collection
+- System resource monitoring
+</Card>
+
+## Quick Start
+
+<Steps>
+1. **Basic Performance Monitoring**
+
+   ```python
+   from logicpwn.core.performance import PerformanceMonitor
+
+   # Monitor performance
+   with PerformanceMonitor() as monitor:
+       # Your code here
+       response = requests.get("https://target.com/api/data")
+
+       # Get metrics
+       metrics = monitor.get_summary()
+       print(f"Duration: {metrics['total_duration']:.3f}s")
+   ```
+
+2. **Decorator-based Monitoring**
+
+   ```python
+   from logicpwn.core.performance import monitor_performance
+
+   @monitor_performance("api_request")
+   def make_api_request(url):
+       return requests.get(url)
+
+   # Function will be automatically monitored
+   response = make_api_request("https://target.com/api/data")
+   ```
+
+3. **Performance Benchmarking**
+
+   ```python
+   from logicpwn.core.performance import PerformanceBenchmark
+
+   # Run performance benchmark
+   benchmark = PerformanceBenchmark()
+   results = await benchmark.run_benchmark(
+       target_urls=["https://target.com/api/users/1"],
+       concurrent_users=[10, 25, 50, 100],
+       test_duration=60
+   )
+   ```
+</Steps>
+
+## Basic Performance Monitoring
+
+### Context Manager Approach
+
+```python
+from logicpwn.core.performance import PerformanceMonitor
+
+# Basic performance monitoring
+with PerformanceMonitor() as monitor:
+    # Your code here
+    response = requests.get("https://target.com/api/data")
+
+    # Get performance metrics
+    metrics = monitor.get_summary()
+    print(f"Total duration: {metrics['total_duration']:.3f}s")
+    print(f"Peak memory: {metrics['peak_memory_mb']:.2f} MB")
+    print(f"Average CPU: {metrics['avg_cpu_percent']:.2f}%")
+```
+
+### Manual Performance Monitoring
+
+```python
+# Manual performance monitoring
+monitor = PerformanceMonitor()
+
+# Start monitoring
+monitor.start_monitoring("api_request")
+
+# Your code here
+response = requests.get("https://target.com/api/data")
+
+# Stop monitoring and get metrics
+metrics = monitor.stop_monitoring()
+if metrics:
+    print(f"Operation: {metrics.operation_name}")
+    print(f"Duration: {metrics.duration:.3f}s")
+    print(f"Memory usage: {metrics.memory_after_mb:.2f} MB")
+    print(f"CPU usage: {metrics.cpu_percent:.2f}%")
+```
+
+## Advanced Performance Monitoring
+
+### Decorator-based Monitoring
+
+```python
+from logicpwn.core.performance import monitor_performance
+
+# Monitor specific functions
+@monitor_performance("database_query")
+def query_database(query):
+    # Database query logic
+    return database.execute(query)
+
+@monitor_performance("api_request")
+def make_api_request(url, headers=None):
+    return requests.get(url, headers=headers)
+
+# Use monitored functions
+result = query_database("SELECT * FROM users")
+response = make_api_request("https://target.com/api/users")
+```
+
+### Custom Performance Monitoring
+
+```python
+import time
+import psutil
+from logicpwn.core.performance import PerformanceMetrics
+
+class CustomPerformanceMonitor:
+    def __init__(self):
+        self.metrics = []
+        self.start_time = None
+        self.start_memory = None
+
+    def start_monitoring(self, operation_name):
+        self.operation_name = operation_name
+        self.start_time = time.time()
+        self.start_memory = psutil.Process().memory_info().rss
+
+    def stop_monitoring(self):
+        if not self.start_time:
+            return None
+
+        end_time = time.time()
+        end_memory = psutil.Process().memory_info().rss
+
+        metrics = PerformanceMetrics(
+            operation_name=self.operation_name,
+            duration=end_time - self.start_time,
+            memory_before=self.start_memory,
+            memory_after=end_memory,
+            memory_peak=max(self.start_memory, end_memory),
+            cpu_percent=psutil.cpu_percent()
+        )
+
+        self.metrics.append(metrics)
+        return metrics
+
+    def get_summary(self):
+        if not self.metrics:
+            return {}
+
+        return {
+            "total_operations": len(self.metrics),
+            "total_duration": sum(m.duration for m in self.metrics),
+            "avg_duration": sum(m.duration for m in self.metrics) / len(self.metrics),
+            "peak_memory_mb": max(m.memory_peak for m in self.metrics) / 1024 / 1024,
+            "avg_cpu_percent": sum(m.cpu_percent for m in self.metrics) / len(self.metrics)
+        }
+
+# Use custom monitor
+monitor = CustomPerformanceMonitor()
+monitor.start_monitoring("custom_operation")
+# Your code here
+metrics = monitor.stop_monitoring()
+```
+
+## Memory Profiling
+
+### Memory Usage Monitoring
+
+```python
+import psutil
+from logicpwn.core.performance import PerformanceMonitor
+
+# Monitor memory usage
+with PerformanceMonitor() as monitor:
+    # Your code here
+    data = []
+    for i in range(1000):
+        data.append(f"Item {i}")
+
+    # Get memory metrics
+    metrics = monitor.get_summary()
+    print(f"Peak memory: {metrics['peak_memory_mb']:.2f} MB")
+    print(f"Memory before: {metrics['memory_before_mb']:.2f} MB")
+    print(f"Memory after: {metrics['memory_after_mb']:.2f} MB")
+```
+
+### Memory Leak Detection
+
+```python
+import gc
+from logicpwn.core.performance import PerformanceMonitor
+
+def detect_memory_leaks():
+    """Detect potential memory leaks"""
+    monitor = PerformanceMonitor()
+
+    # Monitor multiple iterations
+    for i in range(10):
+        monitor.start_monitoring(f"iteration_{i}")
+
+        # Your code here
+        data = [f"Item {j}" for j in range(1000)]
+        # Process data
+        del data
+
+        # Force garbage collection
+        gc.collect()
+
+        metrics = monitor.stop_monitoring()
+        if metrics:
+            print(f"Iteration {i}: {metrics.memory_after_mb:.2f} MB")
+
+    # Check for memory leaks
+    summary = monitor.get_summary()
+    if summary['peak_memory_mb'] > 100:  # 100MB threshold
+        print("Potential memory leak detected!")
+```
+
+## CPU Monitoring
+
+### CPU Usage Tracking
+
+```python
+import psutil
+from logicpwn.core.performance import PerformanceMonitor
+
+# Monitor CPU usage
+with PerformanceMonitor() as monitor:
+    # CPU-intensive operation
+    result = sum(i**2 for i in range(1000000))
+
+    # Get CPU metrics
+    metrics = monitor.get_summary()
+    print(f"CPU usage: {metrics['avg_cpu_percent']:.2f}%")
+    print(f"Peak CPU: {metrics['peak_cpu_percent']:.2f}%")
+```
+
+### CPU Performance Analysis
+
+```python
+import time
+import psutil
+from logicpwn.core.performance import PerformanceMonitor
+
+def analyze_cpu_performance():
+    """Analyze CPU performance during operation"""
+    monitor = PerformanceMonitor()
+
+    # Monitor CPU usage over time
+    cpu_samples = []
+    start_time = time.time()
+
+    while time.time() - start_time < 10:  # 10 seconds
+        cpu_percent = psutil.cpu_percent(interval=0.1)
+        cpu_samples.append(cpu_percent)
+
+    # Analyze CPU usage
+    avg_cpu = sum(cpu_samples) / len(cpu_samples)
+    peak_cpu = max(cpu_samples)
+
+    print(f"Average CPU usage: {avg_cpu:.2f}%")
+    print(f"Peak CPU usage: {peak_cpu:.2f}%")
+
+    if peak_cpu > 80:
+        print("High CPU usage detected!")
+    elif avg_cpu > 50:
+        print("Moderate CPU usage detected")
+    else:
+        print("Low CPU usage")
+```
+
+## Performance Benchmarking
+
+### Basic Benchmarking
+
+```python
+from logicpwn.core.performance import PerformanceBenchmark
+
+# Create benchmark
+benchmark = PerformanceBenchmark()
+
+# Run benchmark
+results = await benchmark.run_benchmark(
+    target_urls=["https://target.com/api/users/1"],
+    concurrent_users=[10, 25, 50, 100],
+    test_duration=60
+)
+
+print(f"Benchmark results: {results}")
+```
+
+### Advanced Benchmarking
+
+```python
+# Advanced benchmarking with multiple scenarios
+benchmark = PerformanceBenchmark()
+
+# Test different scenarios
+scenarios = [
+    {
+        "name": "Low Load",
+        "concurrent_users": [5, 10, 15],
+        "test_duration": 30
+    },
+    {
+        "name": "Medium Load",
+        "concurrent_users": [25, 50, 75],
+        "test_duration": 60
+    },
+    {
+        "name": "High Load",
+        "concurrent_users": [100, 200, 300],
+        "test_duration": 120
+    }
+]
+
+# Run benchmarks for each scenario
+for scenario in scenarios:
+    results = await benchmark.run_benchmark(
+        target_urls=["https://target.com/api/users/1"],
+        concurrent_users=scenario["concurrent_users"],
+        test_duration=scenario["test_duration"]
+    )
+
+    print(f"{scenario['name']} Results:")
+    print(f"  Requests/sec: {results.get('requests_per_second', 0):.2f}")
+    print(f"  Error rate: {results.get('error_rate', 0):.2f}%")
+    print(f"  Avg response time: {results.get('average_response_time', 0):.3f}s")
+```
+
+## System Resource Monitoring
+
+### System-wide Monitoring
+
+```python
+import psutil
+import time
+from logicpwn.core.performance import PerformanceMonitor
+
+def monitor_system_resources(duration=60):
+    """Monitor system resources over time"""
+    monitor = PerformanceMonitor()
+
+    # Monitor system resources
+    start_time = time.time()
+    samples = []
+
+    while time.time() - start_time < duration:
+        sample = {
+            "timestamp": time.time(),
+            "cpu_percent": psutil.cpu_percent(),
+            "memory_percent": psutil.virtual_memory().percent,
+            "disk_usage": psutil.disk_usage('/').percent,
+            "network_io": psutil.net_io_counters()
+        }
+        samples.append(sample)
+        time.sleep(1)
+
+    # Analyze system resources
+    avg_cpu = sum(s["cpu_percent"] for s in samples) / len(samples)
+    avg_memory = sum(s["memory_percent"] for s in samples) / len(samples)
+    avg_disk = sum(s["disk_usage"] for s in samples) / len(samples)
+
+    print(f"Average CPU usage: {avg_cpu:.2f}%")
+    print(f"Average memory usage: {avg_memory:.2f}%")
+    print(f"Average disk usage: {avg_disk:.2f}%")
+
+    return samples
+```
+
+### Resource Alerting
+
+```python
+def check_resource_thresholds():
+    """Check if system resources exceed thresholds"""
+    cpu_percent = psutil.cpu_percent()
+    memory_percent = psutil.virtual_memory().percent
+    disk_percent = psutil.disk_usage('/').percent
+
+    alerts = []
+
+    if cpu_percent > 80:
+        alerts.append(f"High CPU usage: {cpu_percent:.2f}%")
+
+    if memory_percent > 80:
+        alerts.append(f"High memory usage: {memory_percent:.2f}%")
+
+    if disk_percent > 90:
+        alerts.append(f"High disk usage: {disk_percent:.2f}%")
+
+    if alerts:
+        print("Resource alerts:")
+        for alert in alerts:
+            print(f"  - {alert}")
+    else:
+        print("System resources within normal limits")
+
+    return alerts
+```
+
+## Performance Optimization
+
+### Optimization Recommendations
+
+```python
+from logicpwn.core.performance import PerformanceMonitor
+
+def get_optimization_recommendations():
+    """Get performance optimization recommendations"""
+    monitor = PerformanceMonitor()
+
+    # Monitor current performance
+    with monitor:
+        # Your code here
+        response = requests.get("https://target.com/api/data")
+
+    # Get performance metrics
+    metrics = monitor.get_summary()
+    recommendations = []
+
+    # Analyze metrics and provide recommendations
+    if metrics['peak_memory_mb'] > 100:
+        recommendations.append("Consider reducing memory usage or implementing memory pooling")
+
+    if metrics['avg_cpu_percent'] > 70:
+        recommendations.append("Consider optimizing CPU-intensive operations or adding caching")
+
+    if metrics['total_duration'] > 5:
+        recommendations.append("Consider optimizing slow operations or adding parallel processing")
+
+    return recommendations
+```
+
+### Performance Tuning
+
+```python
+import asyncio
+from logicpwn.core.performance import PerformanceMonitor
+
+async def optimize_async_operations():
+    """Optimize async operations for better performance"""
+    monitor = PerformanceMonitor()
+
+    # Monitor async operations
+    with monitor:
+        # Run operations concurrently
+        tasks = [
+            requests.get("https://target.com/api/users/1"),
+            requests.get("https://target.com/api/users/2"),
+            requests.get("https://target.com/api/users/3")
+        ]
+
+        # Use asyncio for concurrent execution
+        results = await asyncio.gather(*tasks)
+
+    # Get performance metrics
+    metrics = monitor.get_summary()
+    print(f"Concurrent execution time: {metrics['total_duration']:.3f}s")
+
+    # Compare with sequential execution
+    monitor2 = PerformanceMonitor()
+    with monitor2:
+        # Sequential execution
+        results = []
+        for url in ["https://target.com/api/users/1",
+                   "https://target.com/api/users/2",
+                   "https://target.com/api/users/3"]:
+            results.append(requests.get(url))
+
+    metrics2 = monitor2.get_summary()
+    print(f"Sequential execution time: {metrics2['total_duration']:.3f}s")
+    print(f"Performance improvement: {metrics2['total_duration'] / metrics['total_duration']:.2f}x")
+```
+
+## Integration Examples
+
+### With Stress Testing
+
+```python
+from logicpwn.core.stress import StressTester
+from logicpwn.core.performance import PerformanceMonitor
+
+# Monitor performance during stress testing
+with PerformanceMonitor() as monitor:
+    async with StressTester() as tester:
+        results = await tester.run_stress_test(target_configs)
+
+    # Get performance metrics
+    metrics = monitor.get_summary()
+    print(f"Stress test performance:")
+    print(f"  Duration: {metrics['total_duration']:.3f}s")
+    print(f"  Peak memory: {metrics['peak_memory_mb']:.2f} MB")
+    print(f"  CPU usage: {metrics['avg_cpu_percent']:.2f}%")
+```
+
+### With Access Detection
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.performance import PerformanceMonitor
+
+# Monitor performance during access detection
+with PerformanceMonitor() as monitor:
+    results = await detect_idor_flaws(
+        runner=runner,
+        base_url="https://target.com",
+        auth_config=auth_config,
+        test_endpoints=["/api/users/1", "/api/users/2"]
+    )
+
+    # Get performance metrics
+    metrics = monitor.get_summary()
+    print(f"Access detection performance:")
+    print(f"  Duration: {metrics['total_duration']:.3f}s")
+    print(f"  Memory usage: {metrics['peak_memory_mb']:.2f} MB")
+```
+
+## Best Practices
+
+<CardGrid stagger>
+<Card title="Monitor Key Operations" icon="chart">
+Focus on monitoring the most critical and resource-intensive operations.
+</Card>
+
+<Card title="Set Performance Baselines" icon="target">
+Establish performance baselines to identify regressions and improvements.
+</Card>
+
+<Card title="Use Appropriate Metrics" icon="search">
+Choose relevant performance metrics for your specific use case.
+</Card>
+
+<Card title="Optimize Based on Data" icon="tool">
+Use performance data to guide optimization efforts.
+</Card>
+</CardGrid>
+
+### 1. Focus on Critical Operations
+
+```python
+# Good: Monitor critical operations
+@monitor_performance("database_query")
+def query_database(query):
+    return database.execute(query)
+
+@monitor_performance("api_request")
+def make_api_request(url):
+    return requests.get(url)
+
+# Bad: Monitor everything
+@monitor_performance("variable_assignment")
+def assign_variable(value):
+    return value
+```
+
+### 2. Set Performance Baselines
+
+```python
+# Good: Establish baselines
+baseline_metrics = {
+    "api_request_duration": 0.5,  # 500ms
+    "database_query_duration": 0.1,  # 100ms
+    "memory_usage_mb": 50
+}
+
+# Monitor and compare
+with PerformanceMonitor() as monitor:
+    response = requests.get("https://target.com/api/data")
+
+    metrics = monitor.get_summary()
+    if metrics['total_duration'] > baseline_metrics['api_request_duration'] * 2:
+        print("Performance regression detected!")
+```
+
+### 3. Use Relevant Metrics
+
+```python
+# Good: Use relevant metrics
+with PerformanceMonitor() as monitor:
+    # Your operation
+    pass
+
+    metrics = monitor.get_summary()
+    relevant_metrics = {
+        "duration": metrics['total_duration'],
+        "memory": metrics['peak_memory_mb'],
+        "cpu": metrics['avg_cpu_percent']
+    }
+
+# Bad: Ignore metrics
+with PerformanceMonitor() as monitor:
+    # Your operation
+    pass
+    # No analysis of metrics
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**High Memory Usage**: Check for memory leaks:
+```python
+# Monitor memory usage over time
+monitor = PerformanceMonitor()
+for i in range(10):
+    monitor.start_monitoring(f"iteration_{i}")
+    # Your code here
+    metrics = monitor.stop_monitoring()
+    if metrics and metrics.memory_after_mb > 100:
+        print(f"High memory usage at iteration {i}")
+```
+
+**Slow Performance**: Identify bottlenecks:
+```python
+# Monitor different operations
+operations = ["database_query", "api_request", "data_processing"]
+for op in operations:
+    with PerformanceMonitor() as monitor:
+        # Execute operation
+        pass
+
+    metrics = monitor.get_summary()
+    if metrics['total_duration'] > 1.0:  # 1 second threshold
+        print(f"Slow operation: {op}")
+```
+
+**CPU Overload**: Monitor CPU usage:
+```python
+# Check CPU usage
+cpu_percent = psutil.cpu_percent()
+if cpu_percent > 80:
+    print(f"High CPU usage: {cpu_percent:.2f}%")
+    print("Consider optimizing CPU-intensive operations")
+```
+
+## Related Guides
+
+<CardGrid stagger>
+<Card title="Stress Testing" icon="chart" link="/guides/stress-testing/">
+Learn about stress testing and load testing with performance monitoring.
+</Card>
+
+<Card title="Async Runner" icon="rocket" link="/guides/async-runner/">
+Explore high-performance asynchronous request handling.
+</Card>
+
+<Card title="Validation" icon="shield" link="/guides/validation/">
+Discover response validation with performance considerations.
+</Card>
+
+<Card title="API Reference" icon="book" link="/api-reference/">
+Browse the complete API documentation for performance modules.
+</Card>
+</CardGrid>
+
+## Next Steps
+
+Now that you understand performance monitoring in LogicPWN, you can:
+
+1. **Integrate with Stress Testing** for comprehensive performance analysis
+2. **Use with Async Runner** for high-performance request handling
+3. **Explore Optimization Techniques** for better system performance
+4. **Check out examples** in the `/examples` directory for real-world implementations

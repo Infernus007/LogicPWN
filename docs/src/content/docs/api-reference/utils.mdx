@@ -1,0 +1,256 @@
+---
+title: Utils
+description: API documentation for the Utils module in LogicPwn framework
+category: Utilities
+sidebar:
+  order: 92
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Utilities
+**Navigation:** [API Reference](../)
+
+API documentation for the `logicpwn.core.utils` module.
+
+## Import
+
+```python
+import logicpwn.core.utils
+# or
+from logicpwn.core.utils import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 2 class(es) for utilities.
+:::
+
+### ExtractionMethod
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ExtractionMethod (Enum):
+    """
+    Supported extraction methods
+    """
+```
+
+Supported extraction methods
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `ExtractionMethod`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### ExtractionResult
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ExtractionResult:
+    """
+    Result of an extraction operation
+    """
+```
+
+Result of an extraction operation
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, method: logicpwn.core.utils.response_extractor.ExtractionMethod, pattern: str, matches: list[typing.Any], success: bool, error: Optional[str] = None) -> None
+```
+
+Initialize a new instance of `ExtractionResult`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>first_match</code></summary>
+
+Get the first match if available
+
+</details>
+
+
+---
+
+## Functions
+
+:::note[Available Functions]
+This module provides 6 function(s) for direct use.
+:::
+
+### check_indicators
+
+:::note[Function]
+Module function
+:::
+
+```python
+def check_indicators(text: str, indicators: list[str], indicator_type: str = 'indicator') -> tuple[bool, list[str]]
+```
+
+Check if any of the given indicators are present in the text (case-insensitive).
+Returns (is_match, matched_indicators).
+
+### extract_csrf_token
+
+:::note[Function]
+Module function
+:::
+
+```python
+def extract_csrf_token(response: Any, patterns: list[str]) -> Optional[str]
+```
+
+Convenience function for extracting CSRF tokens using multiple patterns
+
+**Args:**
+- **response**: The response object to extract from
+
+- **patterns**: List of regex patterns to try for CSRF token extraction
+
+**Returns:**
+ First CSRF token found or None
+
+### extract_from_response
+
+:::note[Function]
+Module function
+:::
+
+```python
+def extract_from_response(response: Any, pattern: str, method: Union[logicpwn.core.utils.response_extractor.ExtractionMethod, str] = <ExtractionMethod.REGEX: 'regex'>, **kwargs) -> list[typing.Any]
+```
+
+Convenience function for extracting data from response
+
+**Returns:**
+ List of matches (for backward compatibility)
+
+### extract_session_id
+
+:::note[Function]
+Module function
+:::
+
+```python
+def extract_session_id(response: Any) -> Optional[str]
+```
+
+Convenience function for extracting session IDs
+
+**Returns:**
+ First session ID found or None
+
+### prepare_request_kwargs
+
+:::note[Function]
+Module function
+:::
+
+```python
+def prepare_request_kwargs(method: str, url: str, credentials: Optional[dict[str, str]] = None, headers: Optional[dict[str, str]] = None, timeout: Optional[int] = None, verify_ssl: Optional[bool] = True, data: Optional[Any] = None, params: Optional[dict[str, Any]] = None, json_data: Optional[dict[str, Any]] = None, raw_body: Optional[str] = None) -> dict[str, typing.Any]
+```
+
+Prepare kwargs for requests.Session.request() or similar, supporting form, JSON, and raw body.
+Used by both auth and runner modules.
+
+### validate_config
+
+:::note[Function]
+Module function
+:::
+
+```python
+def validate_config(config: Union[dict, Any], model_class: type) -> Any
+```
+
+Validate and convert a configuration dict or model instance to a model instance.
+**Args:**
+- **config**: dict or model instance
+
+- **model_class**: the Pydantic model class to use
+**Returns:**
+ Validated model instance
+**Raises:**
+
+- **ValueError**: if config is not valid
+
+
+## Related Modules
+
+:::tip[Utilities Modules]
+Explore other modules in the Utilities category:
+
+- **[Config](./config)** - Configuration management
+- **[Performance](./performance)** - Performance monitoring
+- **[Cache](./cache)** - Caching utilities
+:::

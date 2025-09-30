@@ -1,0 +1,508 @@
+---
+title: Async Runner
+description: Guide to async runner in LogicPWN
+category: Guides
+sidebar:
+  order: 41
+---
+import { Card, CardGrid, Steps, TabItem, Tabs } from '@astrojs/starlight/components';
+
+
+## Overview
+
+The Async Runner provides high-performance asynchronous request handling for security testing. It's designed to handle large numbers of concurrent requests efficiently while maintaining proper rate limiting and error handling.
+
+<Card title="Key Features" icon="rocket">
+- High-performance concurrent request handling
+- Built-in rate limiting and retry logic
+- Session management and authentication
+- Memory-efficient batch processing
+- Comprehensive error handling
+</Card>
+
+## Quick Start
+
+<Steps>
+1. **Import Async Runner**
+
+   ```python
+   from logicpwn.core.runner import AsyncRequestRunner
+   import asyncio
+   ```
+
+2. **Basic Usage**
+
+   ```python
+   async def basic_async_test():
+       async with AsyncRequestRunner() as runner:
+           response = await runner.send_request(
+               method="GET",
+               url="https://example.com/api/users/1"
+           )
+           print(f"Status: {response.status_code}")
+   ```
+
+3. **Concurrent Requests**
+
+   ```python
+   async def concurrent_requests():
+       async with AsyncRequestRunner() as runner:
+           urls = [
+               "https://example.com/api/users/1",
+               "https://example.com/api/users/2",
+               "https://example.com/api/users/3"
+           ]
+
+           tasks = [runner.send_request("GET", url) for url in urls]
+           responses = await asyncio.gather(*tasks)
+
+           for i, response in enumerate(responses):
+               print(f"Request {i+1}: {response.status_code}")
+   ```
+</Steps>
+
+## Basic Usage
+
+### Simple Async Requests
+
+```python
+from logicpwn.core.runner import AsyncRequestRunner
+import asyncio
+
+async def basic_async_test():
+    async with AsyncRequestRunner() as runner:
+        # Send a single request
+        response = await runner.send_request(
+            method="GET",
+            url="https://example.com/api/users/1"
+        )
+
+        print(f"Status: {response.status_code}")
+        print(f"Response: {response.text[:100]}...")
+```
+
+### Multiple Concurrent Requests
+
+```python
+async def concurrent_requests():
+    async with AsyncRequestRunner() as runner:
+        # Send multiple requests concurrently
+        urls = [
+            "https://example.com/api/users/1",
+            "https://example.com/api/users/2",
+            "https://example.com/api/users/3"
+        ]
+
+        # Create tasks for concurrent execution
+        tasks = [
+            runner.send_request("GET", url)
+            for url in urls
+        ]
+
+        # Wait for all requests to complete
+        responses = await asyncio.gather(*tasks)
+
+        for i, response in enumerate(responses):
+            print(f"Request {i+1}: {response.status_code}")
+```
+
+## Advanced Configuration
+
+<Tabs>
+<TabItem label="Custom Session Configuration">
+```python
+from logicpwn.core.runner import AsyncRequestRunner
+from logicpwn.core.auth import AuthConfig
+
+async def configured_runner():
+    # Configure authentication
+    auth_config = AuthConfig(
+        username="admin",
+        password="password"
+    )
+
+    # Create runner with custom configuration
+    async with AsyncRequestRunner(
+        timeout=30,
+        max_concurrent=10,
+        auth_config=auth_config
+    ) as runner:
+
+        # Your requests here
+        response = await runner.send_request(
+            method="GET",
+            url="https://example.com/api/profile"
+        )
+
+        return response
+```
+</TabItem>
+
+<TabItem label="Rate Limiting">
+```python
+from logicpwn.core.reliability import AdaptiveRateLimiter, RateLimitConfig
+
+async def rate_limited_requests():
+    # Configure rate limiting
+    rate_config = RateLimitConfig(
+        requests_per_second=5,
+        burst_size=10
+    )
+
+    rate_limiter = AdaptiveRateLimiter(rate_config)
+
+    async with AsyncRequestRunner(
+        rate_limiter=rate_limiter
+    ) as runner:
+
+        # Requests will be rate limited automatically
+        for i in range(20):
+            response = await runner.send_request(
+                method="GET",
+                url=f"https://example.com/api/users/{i}"
+            )
+            print(f"Request {i}: {response.status_code}")
+```
+</TabItem>
+
+<TabItem label="Custom Headers">
+```python
+async def custom_headers():
+    async with AsyncRequestRunner() as runner:
+        # Set custom headers
+        headers = {
+            "X-API-Key": "your-api-key",
+            "User-Agent": "LogicPWN/1.0",
+            "Accept": "application/json"
+        }
+
+        response = await runner.send_request(
+            method="GET",
+            url="https://example.com/api/data",
+            headers=headers
+        )
+
+        return response
+```
+</TabItem>
+</Tabs>
+
+## Session Management
+
+### Persistent Sessions
+
+```python
+from logicpwn.core.runner import AsyncSessionManager
+
+async def session_management():
+    async with AsyncSessionManager() as session:
+        # Login to get session
+        login_response = await session.send_request(
+            method="POST",
+            url="https://example.com/login",
+            data={
+                "username": "admin",
+                "password": "password"
+            }
+        )
+
+        if login_response.status_code == 200:
+            # Use authenticated session
+            profile_response = await session.send_request(
+                method="GET",
+                url="https://example.com/api/profile"
+            )
+
+            return profile_response
+```
+
+### Custom Headers and Cookies
+
+```python
+async def custom_headers():
+    async with AsyncRequestRunner() as runner:
+        # Set custom headers
+        headers = {
+            "X-API-Key": "your-api-key",
+            "User-Agent": "LogicPWN/1.0",
+            "Accept": "application/json"
+        }
+
+        response = await runner.send_request(
+            method="GET",
+            url="https://example.com/api/data",
+            headers=headers
+        )
+
+        return response
+```
+
+## Error Handling
+
+### Retry Logic
+
+```python
+async def retry_requests():
+    async with AsyncRequestRunner(
+        retry_attempts=3,
+        retry_delay=1.0
+    ) as runner:
+
+        try:
+            response = await runner.send_request(
+                method="GET",
+                url="https://example.com/api/unstable"
+            )
+            return response
+        except Exception as e:
+            print(f"Request failed: {e}")
+            # Runner will automatically retry based on configuration
+```
+
+### Custom Error Handling
+
+```python
+async def custom_error_handling():
+    async with AsyncRequestRunner() as runner:
+        try:
+            response = await runner.send_request(
+                method="GET",
+                url="https://example.com/api/data"
+            )
+
+            if response.status_code >= 400:
+                print(f"HTTP Error: {response.status_code}")
+                return None
+
+            return response
+
+        except asyncio.TimeoutError:
+            print("Request timed out")
+            return None
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            return None
+```
+
+## Performance Optimization
+
+<Steps>
+1. **Batch Processing**
+
+   Process large numbers of requests in manageable batches to optimize performance:
+
+   ```python
+   async def batch_processing():
+       async with AsyncRequestRunner(max_concurrent=20) as runner:
+           # Process requests in batches
+           batch_size = 50
+           all_urls = [f"https://example.com/api/users/{i}" for i in range(1000)]
+
+           results = []
+           for i in range(0, len(all_urls), batch_size):
+               batch = all_urls[i:i + batch_size]
+
+               # Process batch concurrently
+               tasks = [
+                   runner.send_request("GET", url)
+                   for url in batch
+               ]
+
+               batch_results = await asyncio.gather(*tasks, return_exceptions=True)
+               results.extend(batch_results)
+
+               print(f"Processed batch {i//batch_size + 1}")
+
+           return results
+   ```
+
+   This approach prevents memory issues while maintaining high throughput.
+
+2. **Memory Management**
+
+   For very large datasets, process requests sequentially to minimize memory usage:
+
+   ```python
+   async def memory_efficient_processing():
+       async with AsyncRequestRunner() as runner:
+           # Process requests one at a time to save memory
+           urls = [f"https://example.com/api/users/{i}" for i in range(10000)]
+
+           for url in urls:
+               response = await runner.send_request("GET", url)
+
+               # Process response immediately
+               if response.status_code == 200:
+                   data = response.json()
+                   # Process data here
+                   process_data(data)
+
+               # Response object is automatically cleaned up
+   ```
+
+   This approach trades speed for memory efficiency.
+
+3. **Concurrent Limits**
+
+   Configure appropriate concurrent limits based on your target and system resources:
+
+   ```python
+   # For high-performance testing
+   async with AsyncRequestRunner(max_concurrent=100) as runner:
+       # High concurrency for fast testing
+
+   # For memory-constrained environments
+   async with AsyncRequestRunner(max_concurrent=5) as runner:
+       # Lower concurrency to save memory
+   ```
+</Steps>
+
+## Integration Examples
+
+### With Access Detection
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.runner import AsyncRequestRunner
+
+async def integrated_access_test():
+    async with AsyncRequestRunner() as runner:
+        # Use runner with access detection
+        results = await detect_idor_flaws(
+            runner=runner,
+            base_url="https://example.com",
+            auth_config=auth_config,
+            test_endpoints=["/api/users/1", "/api/users/2"]
+        )
+
+        return results
+```
+
+### With Stress Testing
+
+```python
+from logicpwn.core.stress import StressTester
+
+async def stress_test():
+    async with AsyncRequestRunner() as runner:
+        # Configure stress test
+        stress_config = {
+            "concurrent_users": 100,
+            "requests_per_user": 10,
+            "test_duration": 60
+        }
+
+        # Run stress test
+        results = await StressTester(runner).run_stress_test(
+            base_url="https://example.com",
+            config=stress_config
+        )
+
+        return results
+```
+
+## Best Practices
+
+<CardGrid stagger>
+	<Card title="Use Context Managers" icon="bracket">
+		Always use `async with` to ensure proper resource cleanup and connection management.
+	</Card>
+	<Card title="Configure Rate Limiting" icon="timer">
+		Set appropriate rate limits to avoid overwhelming the target application.
+	</Card>
+	<Card title="Handle Errors Gracefully" icon="warning">
+		Implement proper error handling and retry logic for robust testing.
+	</Card>
+	<Card title="Monitor Performance" icon="chart">
+		Use performance monitoring to optimize your test configurations.
+	</Card>
+</CardGrid>
+
+### 1. Resource Management
+
+```python
+# Good: Use context manager
+async with AsyncRequestRunner() as runner:
+    # Your requests here
+    pass
+
+# Bad: Manual resource management
+runner = AsyncRequestRunner()
+# Forgot to close - resource leak!
+```
+
+### 2. Concurrent Request Limits
+
+```python
+# Good: Set appropriate limits
+async with AsyncRequestRunner(max_concurrent=10) as runner:
+    # Prevents overwhelming the target
+
+# Bad: No limits
+async with AsyncRequestRunner() as runner:
+    # Could overwhelm the target
+```
+
+### 3. Timeout Configuration
+
+```python
+# Good: Set reasonable timeouts
+async with AsyncRequestRunner(timeout=30) as runner:
+    # Prevents hanging requests
+
+# Bad: No timeout
+async with AsyncRequestRunner() as runner:
+    # Requests could hang indefinitely
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Connection Timeouts**: Increase timeout value:
+```python
+async with AsyncRequestRunner(timeout=60) as runner:
+    # Your requests here
+```
+
+**Rate Limiting**: Adjust rate limiter configuration:
+```python
+rate_config = RateLimitConfig(
+    requests_per_second=2,  # Reduce rate
+    burst_size=5
+)
+```
+
+**Memory Issues**: Process requests in smaller batches:
+```python
+# Process in smaller batches
+batch_size = 10
+for i in range(0, len(urls), batch_size):
+    batch = urls[i:i + batch_size]
+    # Process batch
+```
+
+## Related Guides
+
+<CardGrid stagger>
+<Card title="Access Detection" icon="search" link="/guides/access-detection/">
+Learn about IDOR vulnerability detection and access control testing.
+</Card>
+
+<Card title="Exploit Engine" icon="shield" link="/guides/exploit-engine/">
+Discover advanced exploit chain execution and validation capabilities.
+</Card>
+
+<Card title="API Reference" icon="book" link="/api-reference/">
+Browse the complete API documentation for all LogicPWN components.
+</Card>
+</CardGrid>
+
+## Next Steps
+
+Now that you understand the Async Runner, you can:
+
+1. **Combine with Access Detection** for comprehensive security testing
+2. **Use with Exploit Engine** for complex attack chain execution
+3. **Explore performance optimization** techniques for large-scale testing
+4. **Check out examples** in the `/examples` directory for real-world implementations

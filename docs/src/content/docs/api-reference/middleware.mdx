@@ -1,0 +1,152 @@
+---
+title: Middleware
+description: API documentation for the Middleware module in LogicPwn framework
+category: Middleware
+sidebar:
+  order: 85
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Middleware
+**Navigation:** [API Reference](../)
+
+API documentation for the `logicpwn.core.middleware` module.
+
+## Import
+
+```python
+import logicpwn.core.middleware
+# or
+from logicpwn.core.middleware import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 2 class(es) for middleware.
+:::
+
+### MiddlewareContext
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class MiddlewareContext:
+    """
+    Context passed to middleware hooks
+    """
+```
+
+Context passed to middleware hooks.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, request_id: str, url: str, method: str, headers: dict[str, str], params: Optional[dict[str, Any]] = None, body: Optional[Any] = None, timeout: Optional[int] = None, session_data: Optional[dict[str, Any]] = None, metadata: Optional[dict[str, Any]] = None) -> None
+```
+
+Initialize a new instance of `MiddlewareContext`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RetryException
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RetryException (Exception):
+    """
+    Exception raised when a request should be retried
+    """
+```
+
+Exception raised when a request should be retried.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message, original_exception=None, retries=None)
+```
+
+Initialize a new instance of `RetryException`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>retry_count</code></summary>
+
+Property `retry_count` of type `Any`.
+
+</details>
+
+
+---
+
+
+## Related Modules
+
+:::tip[Middleware Modules]
+Explore other modules in the Middleware category:
+
+- **[Middleware › Middleware](./middleware/middleware)** - Main middleware implementation
+- **[Middleware › Circuit Breaker](./middleware/circuit-breaker)** - Middleware circuit breaker
+:::

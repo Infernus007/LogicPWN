@@ -1,0 +1,456 @@
+---
+title: Authentication API
+description: Authentication configuration and management for security testing
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Overview
+
+The authentication module provides configuration and management for various authentication mechanisms used in security testing. It supports basic authentication, advanced authentication with custom headers, and JWT token handling.
+
+## Classes
+
+### AuthConfig
+
+Basic authentication configuration for simple username/password authentication.
+
+```python
+from logicpwn.core.auth import AuthConfig
+
+auth_config = AuthConfig(
+    username="admin",
+    password="password"
+)
+```
+
+#### Parameters
+
+- **username** (`str`): Username for authentication
+- **password** (`str`): Password for authentication
+
+#### Methods
+
+- **to_dict()**: Convert configuration to dictionary
+- **validate()**: Validate the configuration
+
+#### Example
+
+```python
+# Create basic auth configuration
+auth_config = AuthConfig(
+    username="admin",
+    password="password123"
+)
+
+# Validate configuration
+if auth_config.validate():
+    print("Authentication configuration is valid")
+else:
+    print("Authentication configuration is invalid")
+```
+
+### AdvancedAuthConfig
+
+Advanced authentication configuration with custom headers and additional options.
+
+```python
+from logicpwn.core.auth import AdvancedAuthConfig
+
+advanced_auth = AdvancedAuthConfig(
+    username="admin",
+    password="password",
+    custom_headers={
+        "X-API-Key": "your-api-key",
+        "Authorization": "Bearer your-token"
+    }
+)
+```
+
+#### Parameters
+
+- **username** (`str`): Username for authentication
+- **password** (`str`): Password for authentication
+- **custom_headers** (`dict`, optional): Custom headers to include in requests
+- **timeout** (`int`, optional): Request timeout in seconds (default: 30)
+
+#### Methods
+
+- **to_dict()**: Convert configuration to dictionary
+- **validate()**: Validate the configuration
+- **get_headers()**: Get all headers including custom headers
+
+#### Example
+
+```python
+# Create advanced auth configuration
+advanced_auth = AdvancedAuthConfig(
+    username="admin",
+    password="password123",
+    custom_headers={
+        "X-API-Key": "your-api-key",
+        "Authorization": "Bearer your-token",
+        "User-Agent": "LogicPWN/1.0"
+    },
+    timeout=60
+)
+
+# Get headers for requests
+headers = advanced_auth.get_headers()
+print(f"Headers: {headers}")
+```
+
+### JWTHandler
+
+JWT token handling and management for token-based authentication.
+
+```python
+from logicpwn.core.auth import JWTHandler
+
+jwt_handler = JWTHandler(
+    secret_key="your-secret-key",
+    algorithm="HS256"
+)
+```
+
+#### Parameters
+
+- **secret_key** (`str`): Secret key for JWT token validation
+- **algorithm** (`str`, optional): JWT algorithm (default: "HS256")
+
+#### Methods
+
+- **encode(payload)**: Encode payload into JWT token
+- **decode(token)**: Decode JWT token into payload
+- **validate(token)**: Validate JWT token
+- **is_expired(token)**: Check if token is expired
+
+#### Example
+
+```python
+# Create JWT handler
+jwt_handler = JWTHandler(
+    secret_key="your-secret-key",
+    algorithm="HS256"
+)
+
+# Encode payload
+payload = {
+    "user_id": 123,
+    "username": "admin",
+    "exp": 1234567890
+}
+token = jwt_handler.encode(payload)
+print(f"JWT Token: {token}")
+
+# Decode token
+decoded = jwt_handler.decode(token)
+print(f"Decoded payload: {decoded}")
+
+# Validate token
+if jwt_handler.validate(token):
+    print("Token is valid")
+else:
+    print("Token is invalid")
+```
+
+## Functions
+
+### authenticate_session
+
+Authenticate a session with the provided configuration.
+
+```python
+from logicpwn.core.auth import authenticate_session
+
+async def login():
+    auth_config = AuthConfig(
+        username="admin",
+        password="password"
+    )
+
+    session = await authenticate_session(
+        base_url="https://example.com",
+        auth_config=auth_config
+    )
+
+    return session
+```
+
+#### Parameters
+
+- **base_url** (`str`): Base URL for authentication
+- **auth_config** (`AuthConfig`): Authentication configuration
+- **login_endpoint** (`str`, optional): Login endpoint (default: "/login")
+
+#### Returns
+
+- **session**: Authenticated session object
+
+#### Example
+
+```python
+async def authenticate():
+    auth_config = AuthConfig(
+        username="admin",
+        password="password123"
+    )
+
+    try:
+        session = await authenticate_session(
+            base_url="https://example.com",
+            auth_config=auth_config,
+            login_endpoint="/api/auth/login"
+        )
+
+        print("Authentication successful")
+        return session
+    except Exception as e:
+        print(f"Authentication failed: {e}")
+        return None
+```
+
+## Configuration Examples
+
+### Basic Authentication
+
+```python
+from logicpwn.core.auth import AuthConfig
+
+# Simple username/password authentication
+auth_config = AuthConfig(
+    username="test-user",
+    password="test-password"
+)
+```
+
+### API Key Authentication
+
+```python
+from logicpwn.core.auth import AdvancedAuthConfig
+
+# API key authentication
+api_auth = AdvancedAuthConfig(
+    username="api-user",
+    password="",  # No password needed
+    custom_headers={
+        "X-API-Key": "your-api-key"
+    }
+)
+```
+
+### Bearer Token Authentication
+
+```python
+from logicpwn.core.auth import AdvancedAuthConfig
+
+# Bearer token authentication
+token_auth = AdvancedAuthConfig(
+    username="token-user",
+    password="",  # No password needed
+    custom_headers={
+        "Authorization": "Bearer your-bearer-token"
+    }
+)
+```
+
+### JWT Token Authentication
+
+```python
+from logicpwn.core.auth import AdvancedAuthConfig, JWTHandler
+
+# JWT token authentication
+jwt_handler = JWTHandler(secret_key="your-secret-key")
+token = jwt_handler.encode({"user_id": 123, "username": "admin"})
+
+jwt_auth = AdvancedAuthConfig(
+    username="jwt-user",
+    password="",  # No password needed
+    custom_headers={
+        "Authorization": f"Bearer {token}"
+    }
+)
+```
+
+## Integration Examples
+
+### With Access Detection
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig
+from logicpwn.core.runner import AsyncRequestRunner
+
+async def authenticated_access_test():
+    # Configure authentication
+    auth_config = AuthConfig(
+        username="admin",
+        password="password"
+    )
+
+    # Run access tests
+    async with AsyncRequestRunner() as runner:
+        results = await detect_idor_flaws(
+            runner=runner,
+            base_url="https://example.com",
+            auth_config=auth_config,
+            test_endpoints=["/api/users/1", "/api/users/2"]
+        )
+
+        return results
+```
+
+### With Exploit Engine
+
+```python
+from logicpwn.core.exploit_engine import ExploitEngine, ExploitChain
+from logicpwn.core.auth import AdvancedAuthConfig
+
+async def authenticated_exploit_test():
+    # Configure advanced authentication
+    auth_config = AdvancedAuthConfig(
+        username="admin",
+        password="password",
+        custom_headers={
+            "X-API-Key": "your-api-key"
+        }
+    )
+
+    # Create exploit chain
+    chain = ExploitChain(
+        name="Authenticated Exploit Chain",
+        description="Test authenticated endpoints"
+    )
+
+    # Add authenticated steps
+    chain.add_step(
+        name="Authenticated Access",
+        method="GET",
+        url="https://example.com/api/protected",
+        auth_config=auth_config,
+        expected_status=200
+    )
+
+    # Execute chain
+    async with AsyncRequestRunner() as runner:
+        engine = ExploitEngine(runner)
+        results = await engine.execute_chain(chain)
+
+        return results
+```
+
+## Best Practices
+
+<CardGrid stagger>
+	<Card title="Secure Storage" icon="lock">
+		Store credentials securely using environment variables or secure configuration files.
+	</Card>
+	<Card title="Token Management" icon="key">
+		Implement proper token refresh and expiration handling for JWT tokens.
+	</Card>
+	<Card title="Error Handling" icon="warning">
+		Handle authentication failures gracefully with proper error messages.
+	</Card>
+	<Card title="Validation" icon="check">
+		Always validate authentication configurations before use.
+	</Card>
+</CardGrid>
+
+### 1. Secure Credential Storage
+
+```python
+import os
+
+# Use environment variables for credentials
+auth_config = AuthConfig(
+    username=os.getenv("TEST_USERNAME"),
+    password=os.getenv("TEST_PASSWORD")
+)
+```
+
+### 2. Token Refresh
+
+```python
+async def refresh_token_if_needed(jwt_handler, token):
+    if jwt_handler.is_expired(token):
+        # Refresh token logic here
+        new_token = await refresh_token()
+        return new_token
+    return token
+```
+
+### 3. Error Handling
+
+```python
+async def safe_authentication():
+    try:
+        auth_config = AuthConfig(
+            username="admin",
+            password="password"
+        )
+
+        session = await authenticate_session(
+            base_url="https://example.com",
+            auth_config=auth_config
+        )
+
+        return session
+    except AuthenticationError as e:
+        print(f"Authentication failed: {e}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return None
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Authentication Failures**: Check credentials and endpoint configuration:
+```python
+# Test authentication first
+async def test_auth():
+    auth_config = AuthConfig(
+        username="admin",
+        password="password"
+    )
+
+    try:
+        session = await authenticate_session(
+            base_url="https://example.com",
+            auth_config=auth_config
+        )
+        print("Authentication successful")
+    except Exception as e:
+        print(f"Authentication failed: {e}")
+```
+
+**Token Expiration**: Implement token refresh logic:
+```python
+# Check token expiration
+if jwt_handler.is_expired(token):
+    print("Token expired, refreshing...")
+    new_token = await refresh_token()
+```
+
+**Header Issues**: Verify header format and case sensitivity:
+```python
+# Correct header format
+headers = {
+    "Authorization": "Bearer your-token",
+    "X-API-Key": "your-api-key"
+}
+
+# Incorrect header format
+headers = {
+    "authorization": "Bearer your-token",  # Case sensitive
+    "x-api-key": "your-api-key"
+}
+```
+
+## Next Steps
+
+- **Access Control**: Learn about [access control testing](/api-reference/access/)
+- **Async Runner**: Explore [high-performance testing](/api-reference/runner/)
+- **Exploit Engine**: Master [exploit chain execution](/api-reference/exploit-engine/)

@@ -1,0 +1,1803 @@
+---
+title: Validator
+description: API documentation for the Validator module in LogicPwn framework
+category: Validation
+sidebar:
+  order: 45
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Validation
+**Navigation:** [API Reference](../)
+
+API documentation for the `logicpwn.core.validator` module.
+
+## Import
+
+```python
+import logicpwn.core.validator
+# or
+from logicpwn.core.validator import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 16 class(es) for validation.
+:::
+
+### AdaptiveConfidenceWeights
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AdaptiveConfidenceWeights:
+    """
+    Adaptive weights for confidence scoring
+    """
+```
+
+Adaptive weights for confidence scoring.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, pattern_match_weight: float = 0.4, status_code_weight: float = 0.2, response_time_weight: float = 0.1, header_analysis_weight: float = 0.1, content_length_weight: float = 0.05, multiple_indicators_bonus: float = 0.15, critical_vuln_multiplier: float = 1.2, authenticated_context_multiplier: float = 1.1, production_env_multiplier: float = 0.9) -> None
+```
+
+Initialize a new instance of `AdaptiveConfidenceWeights`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### adjust_for_vulnerability_type
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def adjust_for_vulnerability_type(self, vuln_type: str) -> 'AdaptiveConfidenceWeights'
+```
+
+Adjust weights based on vulnerability type.
+
+
+---
+
+### BusinessLogicRule
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class BusinessLogicRule:
+    """
+    Business logic validation rule
+    """
+```
+
+Business logic validation rule.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, name: str, description: str, validator_function: Callable[[Any, dict[str, Any]], bool], expected_behavior: str, severity: logicpwn.core.validator.validator_models.SeverityLevel = <SeverityLevel.MEDIUM: 'medium'>, confidence_weight: float = 0.5) -> None
+```
+
+Initialize a new instance of `BusinessLogicRule`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### BusinessLogicTemplate
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class BusinessLogicTemplate:
+    """
+    Template for business logic testing workflows
+    """
+```
+
+Template for business logic testing workflows.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, name: str, description: str, workflow_steps: list[str], validation_rules: list[logicpwn.core.validator.validator_models.BusinessLogicRule], context_requirements: list[str], expected_outcomes: dict[str, typing.Any]) -> None
+```
+
+Initialize a new instance of `BusinessLogicTemplate`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### banking_transaction_limits
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def banking_transaction_limits() -> 'BusinessLogicTemplate'
+```
+
+Template for banking transaction limit testing.
+
+##### ecommerce_price_manipulation
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def ecommerce_price_manipulation() -> 'BusinessLogicTemplate'
+```
+
+Template for e-commerce price manipulation testing.
+
+
+---
+
+### ConfidenceLevel
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ConfidenceLevel (Enum):
+    """
+    Confidence level classifications
+    """
+```
+
+Confidence level classifications.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `ConfidenceLevel`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RegexComplexityError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RegexComplexityError (ValidationError):
+    """
+    Raised when regex pattern is too complex and may cause ReDoS
+    """
+```
+
+Raised when regex pattern is too complex and may cause ReDoS.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, pattern: str, complexity_score: float)
+```
+
+Initialize a new instance of `RegexComplexityError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RegexSecurityValidator
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RegexSecurityValidator:
+    """
+    Validates regex patterns for security and performance issues
+    """
+```
+
+Validates regex patterns for security and performance issues.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, max_complexity: float = 5.0)
+```
+
+Initialize a new instance of `RegexSecurityValidator`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### analyze_pattern_complexity
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def analyze_pattern_complexity(self, pattern: str) -> float
+```
+
+Analyze regex pattern complexity to detect potential ReDoS.
+
+**Args:**
+- **pattern**: Regex pattern to analyze
+
+**Returns:**
+ Complexity score (higher = more complex/dangerous)
+
+##### validate_pattern_safety
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_pattern_safety(self, pattern: str) -> tuple[bool, typing.Optional[str]]
+```
+
+Validate if a regex pattern is safe to use.
+
+**Args:**
+- **pattern**: Regex pattern to validate
+
+**Returns:**
+ Tuple of (is_safe, warning_message)
+
+
+---
+
+### RegexTimeoutError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RegexTimeoutError (ValidationError):
+    """
+    Raised when regex execution exceeds timeout limit
+    """
+```
+
+Raised when regex execution exceeds timeout limit.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, pattern: str, timeout: float)
+```
+
+Initialize a new instance of `RegexTimeoutError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### ResponseProcessor
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ResponseProcessor:
+    """
+    Processes HTTP responses with configurable size handling
+    """
+```
+
+Processes HTTP responses with configurable size handling.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, config: Optional[logicpwn.core.validator.response_handler.ResponseSizeConfig] = None)
+```
+
+Initialize a new instance of `ResponseProcessor`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### process_response
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def process_response(self, response: requests.models.Response, patterns: Optional[list[str]] = None) -> dict[str, typing.Any]
+```
+
+Process response with size-aware handling.
+
+**Args:**
+- **response**: HTTP response object
+
+- **patterns**: Regex patterns for evidence extraction
+
+**Returns:**
+ Dictionary containing processed response data
+
+
+---
+
+### ResponseSizeConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ResponseSizeConfig:
+    """
+    Configuration for response size handling
+    """
+```
+
+Configuration for response size handling.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, max_response_size: int = 10485760, warning_size: int = 1048576, truncation_size: int = 512000, preserve_evidence: bool = True, evidence_window_size: int = 1024, max_evidence_chunks: int = 50, sanitize_sensitive_data: bool = True, log_size_warnings: bool = True, compress_large_responses: bool = True, text_content_types: list[str] = None, binary_content_types: list[str] = None) -> None
+```
+
+Initialize a new instance of `ResponseSizeConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SafeRegexMatcher
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SafeRegexMatcher:
+    """
+    Thread-safe regex matcher with timeout and complexity protection
+    """
+```
+
+Thread-safe regex matcher with timeout and complexity protection.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, timeout: float = 1.0, max_complexity: float = 5.0, cache_size: int = 256)
+```
+
+Initialize a new instance of `SafeRegexMatcher`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### findall_with_timeout
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def findall_with_timeout(self, pattern: str, text: str, timeout: Optional[float] = None, max_matches: int = 1000) -> list[str]
+```
+
+Find all matches with timeout and result limit protection.
+
+**Args:**
+- **pattern**: Regex pattern to search for
+
+- **text**: Text to search in
+
+- **timeout**: Timeout in seconds
+
+- **max_matches**: Maximum number of matches to return
+
+**Returns:**
+ List of matched strings (limited by max_matches)
+
+##### finditer_with_timeout
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def finditer_with_timeout(self, pattern: str, text: str, timeout: Optional[float] = None, max_matches: int = 1000) -> list[typing.Union[re.Match, _regex.Match]]
+```
+
+Find all match objects with timeout protection.
+
+**Args:**
+- **pattern**: Regex pattern to search for
+
+- **text**: Text to search in
+
+- **timeout**: Timeout in seconds
+
+- **max_matches**: Maximum number of matches to return
+
+**Returns:**
+ List of match objects (limited by max_matches)
+
+##### search_with_timeout
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def search_with_timeout(self, pattern: str, text: str, timeout: Optional[float] = None) -> Union[re.Match, _regex.Match, NoneType]
+```
+
+Search text with regex pattern using timeout protection.
+
+**Args:**
+- **pattern**: Regex pattern to search for
+
+- **text**: Text to search in
+
+- **timeout**: Timeout in seconds (uses instance default if None)
+
+**Returns:**
+ Match object or None if no match found
+
+**Raises:**
+
+- **RegexTimeoutError**: If regex execution exceeds timeout
+
+- **RegexComplexityError**: If pattern is too complex
+
+
+---
+
+### SeverityLevel
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SeverityLevel (Enum):
+    """
+    Vulnerability severity levels
+    """
+```
+
+Vulnerability severity levels.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `SeverityLevel`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### ValidationConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ValidationConfig (BaseModel):
+    """
+    Enhanced configuration model for response validation
+    """
+```
+
+Enhanced configuration model for response validation.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, **data: 'Any') -> 'None'
+```
+
+Initialize a new instance of `ValidationConfig`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>model_extra</code></summary>
+
+Get extra fields set during validation.
+
+**Returns:**
+ A dictionary of extra fields, or `None` if `config.extra` is not set to `"allow"`.
+
+</details>
+
+<details>
+<summary><code>model_fields_set</code></summary>
+
+Returns the set of fields that have been explicitly set on this model instance.
+
+**Returns:**
+ A set of strings representing the fields that have been set,
+ i.e. that were not filled from defaults.
+
+</details>
+
+#### Methods
+
+##### construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Documentation for `construct` is not available.
+
+##### copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None, exclude: 'AbstractSetIntStr | MappingIntStrAny | None' = None, update: 'Dict[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+Returns a copy of the model.
+
+!!! warning "Deprecated"
+ This method is now deprecated; use `model_copy` instead.
+
+If you need `include` or `exclude`, use:
+
+```python {test="skip" lint="skip"}
+data = self.model_dump(include=include, exclude=exclude, round_trip=True)
+data = {**data, **(update or {})}
+copied = self.model_validate(data)
+```
+
+**Args:**
+- **include**: Optional set or mapping specifying which fields to include in the copied model.
+
+- **exclude**: Optional set or mapping specifying which fields to exclude in the copied model.
+
+- **update**: Optional dictionary of field-value pairs to override field values in the copied model.
+
+- **deep**: If True, the values of fields that are Pydantic models will be deep-copied.
+
+**Returns:**
+ A copy of the model with included, excluded and updated fields as specified.
+
+##### dict
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def dict(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False) -> 'Dict[str, Any]'
+```
+
+Documentation for `dict` is not available.
+
+##### from_orm
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def from_orm(obj: 'Any') -> 'Self'
+```
+
+Documentation for `from_orm` is not available.
+
+##### get_confidence_weights
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_confidence_weights(self) -> logicpwn.core.validator.validator_models.AdaptiveConfidenceWeights
+```
+
+Get confidence weights, creating adaptive ones if needed.
+
+##### json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def json(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, encoder: 'Callable[[Any], Any] | None' = PydanticUndefined, models_as_dict: 'bool' = PydanticUndefined, **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `json` is not available.
+
+##### model_construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Creates a new instance of the `Model` class with validated data.
+
+Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
+Default values are respected, but no other validation is performed.
+
+!!! note
+ `model_construct()` generally respects the `model_config.extra` setting on the provided model.
+ That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
+ and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
+ Because no validation is performed with a call to `model_construct()`, having `model_config.extra == 'forbid'` does not result in
+ an error if extra values are passed, but they will be ignored.
+
+**Args:**
+- **_fields_set**: A set of field names that were originally explicitly set during instantiation. If provided, this is directly used for the [`model_fields_set`][pydantic.BaseModel.model_fields_set] attribute. Otherwise, the field names from the `values` argument will be used.
+
+- **values**: Trusted or pre-validated data dictionary.
+
+**Returns:**
+ A new instance of the `Model` class with validated data.
+
+##### model_copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Returns a copy of the model.
+
+!!! note
+ The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
+ might have unexpected side effects if you store anything in it, on top of the model
+ fields (e.g. the value of [cached properties][functools.cached_property]).
+
+**Args:**
+- **update**: Values to change/add in the new model. Note: the data is not validated before creating the new model. You should trust this data.
+
+- **deep**: Set to `True` to make a deep copy of the model.
+
+**Returns:**
+ New model instance.
+
+##### model_dump
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
+```
+
+!!! abstract "Usage Documentation"
+
+Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
+
+**Args:**
+- **mode**: The mode in which `to_python` should run. If mode is 'json', the output will only contain JSON serializable types. If mode is 'python', the output may contain non-JSON-serializable Python objects.
+
+- **include**: A set of fields to include in the output.
+
+- **exclude**: A set of fields to exclude from the output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to use the field's alias in the dictionary key if defined.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A dictionary representation of the model.
+
+##### model_dump_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
+```
+
+!!! abstract "Usage Documentation"
+
+Generates a JSON representation of the model using Pydantic's `to_json` method.
+
+**Args:**
+- **indent**: Indentation to use in the JSON output. If None is passed, the output will be compact.
+
+- **include**: Field(s) to include in the JSON output.
+
+- **exclude**: Field(s) to exclude from the JSON output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to serialize using field aliases.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A JSON string representation of the model.
+
+##### model_json_schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_json_schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', schema_generator: 'type[GenerateJsonSchema]' = <class 'pydantic.json_schema.GenerateJsonSchema'>, mode: 'JsonSchemaMode' = 'validation') -> 'dict[str, Any]'
+```
+
+Generates a JSON schema for a model class.
+
+**Args:**
+- **by_alias**: Whether to use attribute aliases or not.
+
+- **ref_template**: The reference template.
+
+- **schema_generator**: To override the logic used to generate the JSON schema, as a subclass of `GenerateJsonSchema` with your desired modifications
+
+- **mode**: The mode in which to generate the schema.
+
+**Returns:**
+ The JSON schema for the given model class.
+
+##### model_parametrized_name
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_parametrized_name(params: 'tuple[type[Any], ...]') -> 'str'
+```
+
+Compute the class name for parametrizations of generic classes.
+
+This method can be overridden to achieve a custom naming scheme for generic BaseModels.
+
+**Args:**
+- **params**: Tuple of types of the class. Given a generic class `Model` with 2 type variables and a concrete model `Model[str, int]`, the value `(str, int)` would be passed to `params`.
+
+**Returns:**
+ String representing the new class where `params` are passed to `cls` as type variables.
+
+**Raises:**
+
+- **TypeError**: Raised when trying to generate concrete names for non-generic models.
+
+##### model_post_init
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_post_init(self, context: 'Any', /) -> 'None'
+```
+
+Override this method to perform additional initialization after `__init__` and `model_construct`.
+This is useful if you want to do some validation that requires the entire model to be initialized.
+
+##### model_rebuild
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_rebuild(*, force: 'bool' = False, raise_errors: 'bool' = True, _parent_namespace_depth: 'int' = 2, _types_namespace: 'MappingNamespace | None' = None) -> 'bool | None'
+```
+
+Try to rebuild the pydantic-core schema for the model.
+
+This may be necessary when one of the annotations is a ForwardRef which could not be resolved during
+the initial attempt to build the schema, and automatic rebuilding fails.
+
+**Args:**
+- **force**: Whether to force the rebuilding of the model schema, defaults to `False`.
+
+- **raise_errors**: Whether to raise errors, defaults to `True`.
+
+- **_parent_namespace_depth**: The depth level of the parent namespace, defaults to 2.
+
+- **_types_namespace**: The types namespace, defaults to `None`.
+
+**Returns:**
+ Returns `None` if the schema is already "complete" and rebuilding was not required.
+ If rebuilding _was_ required, returns `True` if rebuilding was successful, otherwise `False`.
+
+##### model_validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate(obj: 'Any', *, strict: 'bool | None' = None, from_attributes: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate a pydantic model instance.
+
+**Args:**
+- **obj**: The object to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **from_attributes**: Whether to extract data from object attributes.
+
+- **context**: Additional context to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Raises:**
+
+- **ValidationError**: If the object could not be validated.
+
+**Returns:**
+ The validated model instance.
+
+##### model_validate_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Validate the given JSON data against the Pydantic model.
+
+**Args:**
+- **json_data**: The JSON data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+**Raises:**
+
+- **ValidationError**: If `json_data` is not a JSON string or the object could not be validated.
+
+##### model_validate_strings
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_strings(obj: 'Any', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate the given object with string data against the Pydantic model.
+
+**Args:**
+- **obj**: The object containing string data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+##### parse_file
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_file(path: 'str | Path', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_file` is not available.
+
+##### parse_obj
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_obj(obj: 'Any') -> 'Self'
+```
+
+Documentation for `parse_obj` is not available.
+
+##### parse_raw
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_raw(b: 'str | bytes', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_raw` is not available.
+
+##### schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}') -> 'Dict[str, Any]'
+```
+
+Documentation for `schema` is not available.
+
+##### schema_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema_json(*, by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `schema_json` is not available.
+
+##### update_forward_refs
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def update_forward_refs(**localns: 'Any') -> 'None'
+```
+
+Documentation for `update_forward_refs` is not available.
+
+##### validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate(value: 'Any') -> 'Self'
+```
+
+Documentation for `validate` is not available.
+
+##### validate_confidence_threshold
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_confidence_threshold(v: float) -> float
+```
+
+Ensure confidence threshold is in valid range.
+
+##### validate_regex_patterns
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_regex_patterns(v: list[str]) -> list[str]
+```
+
+Validate regex patterns are compilable.
+
+##### validate_status_codes
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_status_codes(v: list[int]) -> list[int]
+```
+
+Validate HTTP status codes are in valid range.
+
+
+---
+
+### ValidationPresets
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ValidationPresets:
+    """
+    Pre-configured validation profiles for common security testing scenarios
+    """
+```
+
+Pre-configured validation profiles for common security testing scenarios.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, *args, **kwargs)
+```
+
+Initialize a new instance of `ValidationPresets`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### api_success_validation
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def api_success_validation() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for successful API responses.
+
+##### authentication_bypass
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def authentication_bypass() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for authentication bypass detection.
+
+##### business_logic_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def business_logic_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for Business Logic vulnerability detection.
+
+##### command_injection_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def command_injection_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for Command Injection vulnerability detection.
+
+##### csrf_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def csrf_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for CSRF token detection and validation.
+
+##### custom_preset
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def custom_preset(success_patterns: list[str] = None, failure_patterns: list[str] = None, status_codes: list[int] = None, confidence_threshold: float = 0.3) -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Create a custom validation preset with specified parameters.
+
+##### directory_traversal_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def directory_traversal_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for directory traversal vulnerability detection.
+
+##### error_page_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def error_page_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for error page detection.
+
+##### information_disclosure
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def information_disclosure() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for information disclosure detection.
+
+##### lfi_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def lfi_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for Local File Inclusion (LFI) vulnerability detection.
+
+##### login_success_validation
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def login_success_validation() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for successful login attempts.
+
+##### open_redirect_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def open_redirect_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for Open Redirect vulnerability detection.
+
+##### rfi_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def rfi_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for Remote File Inclusion (RFI) vulnerability detection.
+
+##### sql_injection_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def sql_injection_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for SQL injection vulnerability detection.
+
+##### ssrf_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def ssrf_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for Server-Side Request Forgery (SSRF) vulnerability detection.
+
+##### timing_attack_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def timing_attack_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for Timing Attack vulnerability detection.
+
+##### xss_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def xss_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for Cross-Site Scripting (XSS) vulnerability detection.
+
+##### xxe_detection
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def xxe_detection() -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Validation preset for XXE (XML External Entity) vulnerability detection.
+
+
+---
+
+### ValidationResult
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ValidationResult:
+    """
+    Enhanced structured result from response validation
+    """
+```
+
+Enhanced structured result from response validation.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, is_valid: bool = False, matched_patterns: list[str] = <factory>, extracted_data: dict[str, typing.Any] = <factory>, confidence_score: float = 0.0, confidence_level: Optional[logicpwn.core.validator.validator_models.ConfidenceLevel] = None, severity: Optional[logicpwn.core.validator.validator_models.SeverityLevel] = None, vulnerability_type: Optional[str] = None, metadata: dict[str, typing.Any] = <factory>, validation_type: Optional[logicpwn.core.validator.validator_models.ValidationType] = None, error_message: Optional[str] = None, response_time: Optional[float] = None, evidence: list[str] = <factory>, false_positive_indicators: list[str] = <factory>) -> None
+```
+
+Initialize a new instance of `ValidationResult`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### to_dict
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def to_dict(self) -> dict[str, typing.Any]
+```
+
+Convert validation result to dictionary.
+
+
+---
+
+### ValidationType
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ValidationType (Enum):
+    """
+    Types of validation criteria
+    """
+```
+
+Types of validation criteria.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `ValidationType`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### VulnerabilityPatterns
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class VulnerabilityPatterns:
+    """
+    Pre-defined patterns for common vulnerability detection
+    """
+```
+
+Pre-defined patterns for common vulnerability detection.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, *args, **kwargs)
+```
+
+Initialize a new instance of `VulnerabilityPatterns`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+## Functions
+
+:::note[Available Functions]
+This module provides 15 function(s) for direct use.
+:::
+
+### create_custom_preset
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_custom_preset(name: str, success_patterns: Optional[list[str]] = None, failure_patterns: Optional[list[str]] = None, regex_patterns: Optional[list[str]] = None, status_codes: Optional[list[int]] = None, confidence_threshold: float = 0.3, vulnerability_type: Optional[str] = None) -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Create a custom validation preset.
+
+**Args:**
+- **name**: Name for the custom preset
+
+- **success_patterns**: Success indicator patterns
+
+- **failure_patterns**: Failure indicator patterns
+
+- **regex_patterns**: Regular expression patterns
+
+- **status_codes**: Expected status codes
+
+- **confidence_threshold**: Minimum confidence threshold
+
+- **vulnerability_type**: Type of vulnerability being tested
+
+**Returns:**
+ ValidationConfig object
+
+### create_response_processor
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_response_processor(max_size: Optional[int] = None, preserve_evidence: bool = True, sanitize_data: bool = True) -> logicpwn.core.validator.response_handler.ResponseProcessor
+```
+
+Create a response processor with custom configuration.
+
+**Args:**
+- **max_size**: Maximum response size to process (bytes)
+
+- **preserve_evidence**: Whether to preserve evidence chunks
+
+- **sanitize_data**: Whether to sanitize sensitive data
+
+**Returns:**
+ Configured ResponseProcessor instance
+
+### extract_from_response
+
+:::note[Function]
+Module function
+:::
+
+```python
+def extract_from_response(response: requests.models.Response, regex: str, group_names: Optional[list[str]] = None, extract_all: bool = False) -> Union[list[str], dict[str, str]]
+```
+
+Extract data from response using regex patterns.
+
+**Args:**
+- **response**: HTTP response object
+
+- **regex**: Regular expression pattern
+
+- **group_names**: Named groups to extract
+
+- **extract_all**: Extract all matches or just the first
+
+**Returns:**
+ List of matches or dictionary of named groups
+
+### get_preset
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_preset(preset_name: str) -> logicpwn.core.validator.validator_models.ValidationConfig
+```
+
+Get a validation preset by name.
+
+**Args:**
+- **preset_name**: Name of the preset to retrieve
+
+**Returns:**
+ ValidationConfig object for the specified preset
+
+**Raises:**
+
+- **ValueError**: If preset name is not found
+
+### list_all_presets
+
+:::note[Function]
+Module function
+:::
+
+```python
+def list_all_presets() -> list[str]
+```
+
+List all available validation presets.
+
+### list_available_presets
+
+:::note[Function]
+Module function
+:::
+
+```python
+def list_available_presets() -> list[str]
+```
+
+List all available validation presets.
+
+**Returns:**
+ List of preset names
+
+### list_critical_presets
+
+:::note[Function]
+Module function
+:::
+
+```python
+def list_critical_presets() -> list[str]
+```
+
+List critical vulnerability detection presets.
+
+### list_vulnerability_presets
+
+:::note[Function]
+Module function
+:::
+
+```python
+def list_vulnerability_presets() -> list[str]
+```
+
+List critical vulnerability detection presets.
+
+**Returns:**
+ List of critical vulnerability preset names
+
+### process_response_safely
+
+:::note[Function]
+Module function
+:::
+
+```python
+def process_response_safely(response: requests.models.Response, patterns: Optional[list[str]] = None, max_size: Optional[int] = None) -> dict[str, typing.Any]
+```
+
+Safely process HTTP response with size limits and evidence preservation.
+
+**Args:**
+- **response**: HTTP response object
+
+- **patterns**: Regex patterns for evidence extraction
+
+- **max_size**: Maximum response size to process
+
+**Returns:**
+ Processed response data
+
+### safe_regex_findall
+
+:::note[Function]
+Module function
+:::
+
+```python
+def safe_regex_findall(pattern: str, text: str, timeout: float = 1.0, max_matches: int = 1000) -> list[str]
+```
+
+Safe regex findall with timeout protection.
+
+### safe_regex_search
+
+:::note[Function]
+Module function
+:::
+
+```python
+def safe_regex_search(pattern: str, text: str, timeout: float = 1.0) -> Union[re.Match, _regex.Match, NoneType]
+```
+
+Safe regex search with timeout protection.
+
+### validate_business_logic
+
+:::note[Function]
+Module function
+:::
+
+```python
+def validate_business_logic(response: requests.models.Response, business_rules: list[dict[str, typing.Any]], context_data: Optional[dict[str, Any]] = None) -> logicpwn.core.validator.validator_models.ValidationResult
+```
+
+Validate business logic rules against response.
+
+**Args:**
+- **response**: HTTP response object
+
+- **business_rules**: List of business logic rules to validate
+
+- **context_data**: Additional context for validation
+
+**Returns:**
+ ValidationResult object
+
+### validate_json_response
+
+:::note[Function]
+Module function
+:::
+
+```python
+def validate_json_response(response: requests.models.Response, json_schema: Optional[dict] = None, required_keys: Optional[list[str]] = None, forbidden_keys: Optional[list[str]] = None) -> logicpwn.core.validator.validator_models.ValidationResult
+```
+
+Validate JSON response structure and content.
+
+**Args:**
+- **response**: HTTP response object
+
+- **json_schema**: JSON schema for validation
+
+- **required_keys**: Keys that must be present
+
+- **forbidden_keys**: Keys that must not be present
+
+**Returns:**
+ ValidationResult object
+
+### validate_regex_pattern
+
+:::note[Function]
+Module function
+:::
+
+```python
+def validate_regex_pattern(pattern: str, max_complexity: float = 5.0) -> tuple[bool, typing.Optional[str]]
+```
+
+Validate regex pattern for safety.
+
+### validate_timing_attack
+
+:::note[Function]
+Module function
+:::
+
+```python
+def validate_timing_attack(responses: list[requests.models.Response], response_times: list[float], timing_threshold: float = 1.0) -> logicpwn.core.validator.validator_models.ValidationResult
+```
+
+Validate potential timing attack vulnerabilities.
+
+**Args:**
+- **responses**: List of HTTP response objects
+
+- **response_times**: List of response times
+
+- **timing_threshold**: Threshold for timing difference detection
+
+**Returns:**
+ ValidationResult object
+
+
+## Related Modules
+
+:::tip[Validation Modules]
+Explore other modules in the Validation category:
+
+- **[Validator › Validator Api](./validator/validator-api)** - Validation API
+- **[Validator › Validator Models](./validator/validator-models)** - Validation data models
+:::

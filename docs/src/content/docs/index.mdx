@@ -1,0 +1,85 @@
+---
+title: LogicPWN Documentation
+description: Comprehensive security testing framework for web applications
+template: splash
+hero:
+  tagline: Advanced Security Testing Framework
+  image:
+    file: ../../assets/houston.webp
+  actions:
+    - text: Get Started
+      link: /getting-started/
+      icon: right-arrow
+    - text: Install from PyPI
+      link: https://pypi.org/project/logicpwn/
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+
+## Quick Start
+
+<CardGrid stagger>
+	<Card title="Getting Started" icon="rocket">
+		Learn how to set up LogicPWN and run your first security tests.
+	</Card>
+	<Card title="Access Detection" icon="shield">
+		Detect IDOR vulnerabilities and access control flaws.
+	</Card>
+	<Card title="Async Runner" icon="lightning">
+		High-performance asynchronous request handling.
+	</Card>
+	<Card title="Exploit Engine" icon="bug">
+		Advanced exploit chain execution and validation.
+	</Card>
+</CardGrid>
+
+## Features
+
+LogicPWN is a comprehensive security testing framework that provides:
+
+- **Access Control Testing**: Detect IDOR vulnerabilities and privilege escalation
+- **Authentication Testing**: Test various authentication mechanisms
+- **Performance Testing**: Stress testing and rate limiting
+- **Exploit Engine**: Chain exploits and validate security controls
+- **Reporting**: Generate detailed security reports
+- **Async Support**: High-performance concurrent testing
+
+## Quick Example
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig
+from logicpwn.core.runner import AsyncRequestRunner
+
+# Configure authentication
+auth_config = AuthConfig(
+    username="admin",
+    password="password"
+)
+
+# Detect IDOR vulnerabilities
+async def test_access_control():
+    async with AsyncRequestRunner() as runner:
+        results = await detect_idor_flaws(
+            runner=runner,
+            base_url="https://example.com",
+            auth_config=auth_config,
+            test_endpoints=["/api/users/1", "/api/users/2"]
+        )
+
+        for result in results:
+            print(f"Vulnerability: {result.vulnerability_type}")
+            print(f"Severity: {result.severity}")
+            print(f"Details: {result.details}")
+```
+
+## Getting Help
+
+- **Documentation**: Browse the guides and API reference
+- **Examples**: Check out the examples folder for real-world usage
+- **Installation**: Install from [PyPI](https://pypi.org/project/logicpwn/)
+- **Issues**: Report bugs or request features on GitHub
+- **Discussions**: Join the community discussions

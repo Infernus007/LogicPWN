@@ -1,0 +1,176 @@
+---
+title: Logging Redactor
+description: Redaction utilities for LogicPwn logging
+category: Logging
+sidebar:
+  order: 6
+---
+
+import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Category:** Logging
+**Navigation:** [API Reference](../) › [Logging](../logging)
+
+Redaction utilities for LogicPwn logging.
+
+## Import
+
+```python
+import logicpwn.core.logging.redactor
+# or
+from logicpwn.core.logging.redactor import *
+```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 1 class(es) for logging.
+:::
+
+### SensitiveDataRedactor
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SensitiveDataRedactor:
+    """
+    Handles redaction of sensitive data from logs
+    """
+```
+
+Handles redaction of sensitive data from logs.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self)
+```
+
+Initialize a new instance of `SensitiveDataRedactor`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### redact_form_data
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def redact_form_data(self, data: dict[str, typing.Any]) -> dict[str, typing.Any]
+```
+
+Documentation for `redact_form_data` is not available.
+
+##### redact_headers
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def redact_headers(self, headers: dict[str, str]) -> dict[str, str]
+```
+
+Documentation for `redact_headers` is not available.
+
+##### redact_json_body
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def redact_json_body(self, body: Union[str, dict, list]) -> str
+```
+
+Documentation for `redact_json_body` is not available.
+
+##### redact_string_body
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def redact_string_body(self, body: str) -> str
+```
+
+Documentation for `redact_string_body` is not available.
+
+##### redact_url_params
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def redact_url_params(self, url: str) -> str
+```
+
+Documentation for `redact_url_params` is not available.
+
+
+---
+
+
+## Related Modules
+
+:::tip[Logging Modules]
+Explore other modules in the Logging category:
+
+- **[Logging](../logging)** - Core logging functionality
+- **[Logging › Logger](../logging/logger)** - Main logger implementation
+:::

@@ -1,0 +1,606 @@
+---
+title: Response Validation & Security Analysis
+description: Comprehensive guide to response validation, security analysis, and vulnerability detection in LogicPWN
+category: Guides
+sidebar:
+  order: 4
+---
+import { Card, CardGrid, Steps, TabItem, Tabs } from '@astrojs/starlight/components';
+
+## Overview
+
+LogicPWN provides comprehensive response validation and security analysis capabilities. This includes vulnerability detection presets, business logic validation, adaptive confidence scoring, and secure regex processing.
+
+<Card title="Key Features" icon="shield">
+- Vulnerability detection presets (SQL injection, XSS, CSRF, etc.)
+- Business logic validation
+- Adaptive confidence scoring
+- Secure regex processing with ReDoS protection
+- Response size and security handling
+- Custom validation patterns
+- Performance-optimized validation
+</Card>
+
+## Quick Start
+
+<Steps>
+1. **Basic Response Validation**
+
+   ```python
+   from logicpwn.core.validator import validate_response
+
+   # Validate response
+   is_valid = validate_response(
+       response=response,
+       success_criteria=["Welcome", "Success"],
+       failure_criteria=["Error", "Failed"],
+       status_codes=[200]
+   )
+   ```
+
+2. **Vulnerability Detection**
+
+   ```python
+   from logicpwn.core.validator import validate_with_preset
+
+   # Detect SQL injection
+   result = validate_with_preset(
+       response=response,
+       preset_name="sql_injection"
+   )
+
+   if result.is_valid:
+       print("SQL injection vulnerability detected!")
+   ```
+
+3. **Business Logic Validation**
+
+   ```python
+   from logicpwn.core.validator import validate_business_logic
+
+   # Validate business logic
+   result = validate_business_logic(
+       response=response,
+       rules=[
+           {"field": "user_id", "expected": "123", "actual": "456"},
+           {"field": "role", "expected": "admin", "actual": "user"}
+       ]
+   )
+   ```
+</Steps>
+
+## Basic Response Validation
+
+### Simple Validation
+
+```python
+from logicpwn.core.validator import validate_response
+
+# Basic validation
+is_valid = validate_response(
+    response=response,
+    success_criteria=["Welcome", "Dashboard"],
+    failure_criteria=["Login failed", "Error"],
+    status_codes=[200, 201]
+)
+
+print(f"Response is valid: {is_valid}")
+```
+
+### Advanced Validation
+
+```python
+# Advanced validation with multiple criteria
+result = validate_response(
+    response=response,
+    success_criteria=["Welcome", "Success", "OK"],
+    failure_criteria=["Error", "Failed", "Invalid"],
+    regex_patterns=[r"user_id:\s*(\d+)", r"role:\s*(\w+)"],
+    status_codes=[200],
+    headers_criteria={"Content-Type": "application/json"},
+    json_paths=["$.user.id", "$.user.role"],
+    return_structured=True,
+    confidence_threshold=0.7
+)
+
+if result.is_valid:
+    print(f"Validation passed with confidence: {result.confidence_score}")
+    print(f"Matched patterns: {result.matched_patterns}")
+else:
+    print(f"Validation failed: {result.failure_reasons}")
+```
+
+## Vulnerability Detection Presets
+
+### SQL Injection Detection
+
+```python
+from logicpwn.core.validator import validate_with_preset
+
+# Detect SQL injection
+result = validate_with_preset(
+    response=response,
+    preset_name="sql_injection"
+)
+
+if result.is_valid:
+    print("SQL injection vulnerability detected!")
+    print(f"Confidence: {result.confidence_score}")
+    print(f"Matched patterns: {result.matched_patterns}")
+```
+
+### XSS Detection
+
+```python
+# Detect XSS vulnerabilities
+result = validate_with_preset(
+    response=response,
+    preset_name="xss"
+)
+
+if result.is_valid:
+    print("XSS vulnerability detected!")
+```
+
+### Directory Traversal Detection
+
+```python
+# Detect directory traversal
+result = validate_with_preset(
+    response=response,
+    preset_name="directory_traversal"
+)
+
+if result.is_valid:
+    print("Directory traversal vulnerability detected!")
+```
+
+### Complete Vulnerability Scan
+
+```python
+from logicpwn.core.validator import list_critical_presets
+
+# Get all critical vulnerability presets
+critical_presets = list_critical_presets()
+
+# Test all critical vulnerabilities
+vulnerabilities = []
+for preset_name in critical_presets:
+    result = validate_with_preset(
+        response=response,
+        preset_name=preset_name
+    )
+
+    if result.is_valid:
+        vulnerabilities.append({
+            "type": preset_name,
+            "confidence": result.confidence_score,
+            "patterns": result.matched_patterns
+        })
+
+print(f"Found {len(vulnerabilities)} vulnerabilities")
+for vuln in vulnerabilities:
+    print(f"- {vuln['type']}: {vuln['confidence']:.2f} confidence")
+```
+
+## Business Logic Validation
+
+### Basic Business Logic Rules
+
+```python
+from logicpwn.core.validator import validate_business_logic
+
+# Define business logic rules
+rules = [
+    {
+        "field": "user_id",
+        "expected": "123",
+        "actual": "456",
+        "severity": "high"
+    },
+    {
+        "field": "role",
+        "expected": "admin",
+        "actual": "user",
+        "severity": "critical"
+    },
+    {
+        "field": "permissions",
+        "expected": ["read", "write"],
+        "actual": ["read"],
+        "severity": "medium"
+    }
+]
+
+# Validate business logic
+result = validate_business_logic(
+    response=response,
+    rules=rules
+)
+
+if result.is_valid:
+    print("Business logic validation passed")
+else:
+    print(f"Business logic violations: {result.violations}")
+    for violation in result.violations:
+        print(f"- {violation['field']}: {violation['severity']}")
+```
+
+### Advanced Business Logic Templates
+
+```python
+from logicpwn.core.validator import BusinessLogicTemplate
+
+# Create business logic template
+template = BusinessLogicTemplate(
+    name="User Access Control",
+    rules=[
+        {
+            "field": "user_id",
+            "validation": "equals",
+            "expected": "123"
+        },
+        {
+            "field": "role",
+            "validation": "in",
+            "expected": ["admin", "user"]
+        },
+        {
+            "field": "permissions",
+            "validation": "contains",
+            "expected": "read"
+        }
+    ]
+)
+
+# Apply template
+result = template.validate(response)
+```
+
+## Custom Validation Patterns
+
+### Custom Presets
+
+```python
+from logicpwn.core.validator import create_custom_preset
+
+# Create custom validation preset
+custom_preset = create_custom_preset(
+    success_patterns=["Custom Success", "OK"],
+    failure_patterns=["Custom Error", "Failed"],
+    status_codes=[200, 201],
+    confidence_threshold=0.8
+)
+
+# Use custom preset
+result = validate_with_preset(
+    response=response,
+    preset_name="custom_preset"
+)
+```
+
+### Regex Pattern Validation
+
+```python
+from logicpwn.core.validator import validate_response
+
+# Custom regex patterns
+result = validate_response(
+    response=response,
+    regex_patterns=[
+        r"user_id:\s*(\d+)",
+        r"role:\s*(\w+)",
+        r"permissions:\s*\[(.*?)\]"
+    ],
+    return_structured=True
+)
+
+if result.is_valid:
+    print(f"Extracted data: {result.extracted_data}")
+```
+
+## Secure Regex Processing
+
+### Safe Regex Patterns
+
+```python
+from logicpwn.core.validator import SafeRegexMatcher, RegexSecurityValidator
+
+# Create secure regex matcher
+matcher = SafeRegexMatcher(
+    timeout=2.0,
+    max_complexity=5.0
+)
+
+# Validate regex pattern
+validator = RegexSecurityValidator()
+is_safe, warning = validator.validate_pattern_safety(r"user_id:\s*(\d+)")
+
+if is_safe:
+    # Use pattern safely
+    matches = matcher.findall(response.text, r"user_id:\s*(\d+)")
+    print(f"Found matches: {matches}")
+else:
+    print(f"Pattern unsafe: {warning}")
+```
+
+### ReDoS Protection
+
+```python
+# Check for ReDoS vulnerabilities
+validator = RegexSecurityValidator()
+
+# This pattern is safe
+safe_pattern = r"user_id:\s*(\d+)"
+is_safe, warning = validator.validate_pattern_safety(safe_pattern)
+print(f"Safe pattern: {is_safe}")
+
+# This pattern might be dangerous
+dangerous_pattern = r"(a+)+$"
+is_safe, warning = validator.validate_pattern_safety(dangerous_pattern)
+print(f"Safe pattern: {is_safe}, Warning: {warning}")
+```
+
+## Response Processing
+
+### Safe Response Processing
+
+```python
+from logicpwn.core.validator import process_response_safely
+
+# Process response safely
+processed = process_response_safely(
+    response=response,
+    max_size=1024*1024,  # 1MB limit
+    patterns=[r"user_id:\s*(\d+)"]
+)
+
+print(f"Processed content: {processed['content']}")
+print(f"Size: {processed['size']}")
+print(f"Truncated: {processed['truncated']}")
+```
+
+### Response Size Handling
+
+```python
+from logicpwn.core.validator import ResponseProcessor
+
+# Create response processor
+processor = ResponseProcessor(
+    max_size=1024*1024,  # 1MB
+    enable_security=True
+)
+
+# Process response
+result = processor.process(response)
+print(f"Content size: {result.size}")
+print(f"Security warnings: {result.security_warnings}")
+```
+
+## Performance Optimization
+
+### Batch Validation
+
+```python
+from logicpwn.core.validator import chain_validations
+
+# Chain multiple validations
+validation_chain = [
+    {
+        "name": "status_check",
+        "type": "status_code",
+        "expected": [200]
+    },
+    {
+        "name": "content_check",
+        "type": "content",
+        "patterns": ["Welcome", "Success"]
+    },
+    {
+        "name": "header_check",
+        "type": "headers",
+        "expected": {"Content-Type": "application/json"}
+    }
+]
+
+# Execute validation chain
+results = chain_validations(response, validation_chain)
+
+for result in results:
+    print(f"{result.name}: {result.is_valid}")
+```
+
+### Cached Validation
+
+```python
+from logicpwn.core.validator import validate_response
+from logicpwn.core.cache import cached
+
+# Cached validation function
+@cached(ttl=300)  # Cache for 5 minutes
+def validate_response_cached(response, criteria):
+    return validate_response(
+        response=response,
+        success_criteria=criteria
+    )
+
+# Use cached validation
+result = validate_response_cached(response, ["Welcome", "Success"])
+```
+
+## Integration Examples
+
+### With Access Detection
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.validator import validate_with_preset
+
+# Run access detection
+access_results = await detect_idor_flaws(
+    runner=runner,
+    base_url="https://target.com",
+    auth_config=auth_config,
+    test_endpoints=["/api/users/1", "/api/users/2"]
+)
+
+# Validate results
+for result in access_results:
+    if result.is_vulnerable:
+        # Validate vulnerability type
+        vuln_result = validate_with_preset(
+            response=result.response,
+            preset_name="idor"
+        )
+
+        if vuln_result.is_valid:
+            print(f"Confirmed IDOR vulnerability: {result.endpoint}")
+```
+
+### With Exploit Engine
+
+```python
+from logicpwn.core.exploit_engine import ExploitEngine, ExploitChain
+from logicpwn.core.validator import validate_with_preset
+
+# Create exploit chain with validation
+chain = ExploitChain(name="Validated Exploit")
+chain.add_step(
+    name="SQL Injection Test",
+    method="GET",
+    url="https://target.com/api/users/1' OR '1'='1",
+    validator=lambda response: validate_with_preset(
+        response=response,
+        preset_name="sql_injection"
+    ).is_valid
+)
+
+# Execute chain
+engine = ExploitEngine(runner)
+results = await engine.execute_chain(chain)
+```
+
+## Best Practices
+
+<CardGrid stagger>
+<Card title="Use Appropriate Presets" icon="shield">
+Choose the right vulnerability detection presets for your testing scenario.
+</Card>
+
+<Card title="Validate Business Logic" icon="check">
+Always validate business logic rules to detect logic flaws.
+</Card>
+
+<Card title="Use Secure Regex" icon="lock">
+Use secure regex patterns to avoid ReDoS vulnerabilities.
+</Card>
+
+<Card title="Monitor Performance" icon="chart">
+Monitor validation performance and optimize as needed.
+</Card>
+</CardGrid>
+
+### 1. Choose Right Presets
+
+```python
+# Good: Use specific presets
+result = validate_with_preset(
+    response=response,
+    preset_name="sql_injection"  # Specific vulnerability
+)
+
+# Bad: Use generic validation
+result = validate_response(
+    response=response,
+    success_criteria=["Success"]  # Too generic
+)
+```
+
+### 2. Business Logic Validation
+
+```python
+# Good: Comprehensive business logic rules
+rules = [
+    {"field": "user_id", "expected": "123", "actual": "456"},
+    {"field": "role", "expected": "admin", "actual": "user"},
+    {"field": "permissions", "expected": ["read", "write"], "actual": ["read"]}
+]
+
+# Bad: No business logic validation
+result = validate_response(response, success_criteria=["OK"])
+```
+
+### 3. Secure Regex Usage
+
+```python
+# Good: Validate regex patterns
+validator = RegexSecurityValidator()
+is_safe, warning = validator.validate_pattern_safety(pattern)
+
+if is_safe:
+    # Use pattern
+    matches = re.findall(pattern, text)
+else:
+    print(f"Pattern unsafe: {warning}")
+
+# Bad: Use unvalidated patterns
+matches = re.findall(pattern, text)  # Potential ReDoS
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**High False Positives**: Adjust confidence thresholds:
+```python
+# Increase confidence threshold
+result = validate_with_preset(
+    response=response,
+    preset_name="sql_injection",
+    confidence_threshold=0.8  # Increase from default 0.3
+)
+```
+
+**Performance Issues**: Use cached validation:
+```python
+# Use cached validation
+@cached(ttl=300)
+def validate_response_cached(response, preset_name):
+    return validate_with_preset(response, preset_name)
+```
+
+**Regex Timeouts**: Use safe regex matcher:
+```python
+# Use safe regex matcher
+matcher = SafeRegexMatcher(timeout=2.0)
+matches = matcher.findall(text, pattern)
+```
+
+## Related Guides
+
+<CardGrid stagger>
+<Card title="Access Detection" icon="search" link="/guides/access-detection/">
+Learn about IDOR vulnerability detection with validation.
+</Card>
+
+<Card title="Exploit Engine" icon="shield" link="/guides/exploit-engine/">
+Discover advanced exploit chain execution with validation.
+</Card>
+
+<Card title="Stress Testing" icon="chart" link="/guides/stress-testing/">
+Explore performance testing with validation.
+</Card>
+
+<Card title="API Reference" icon="book" link="/api-reference/">
+Browse the complete API documentation for validation modules.
+</Card>
+</CardGrid>
+
+## Next Steps
+
+Now that you understand validation in LogicPWN, you can:
+
+1. **Integrate with Access Detection** for comprehensive vulnerability testing
+2. **Use with Exploit Engine** for validated exploit chain execution
+3. **Explore Business Logic Validation** for logic flaw detection
+4. **Check out examples** in the `/examples` directory for real-world implementations
