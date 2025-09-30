@@ -7,6 +7,10 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'LogicPWN Documentation',
+			logo: {
+				src: './public/logo.svg',
+				replacesTitle: true,
+			},
 			social: [{ icon: 'external', label: 'PyPI', href: 'https://pypi.org/project/logicpwn/' }],
 			sidebar: [
 				{
