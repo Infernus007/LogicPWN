@@ -8,7 +8,7 @@ sidebar:
 
 import { Card, CardGrid, Steps, TabItem, Tabs } from '@astrojs/starlight/components';
 
-### Overview
+## Overview
 The Runner module provides a unified interface for sending HTTP requests synchronously or asynchronously with:
 - Rate limiting (simple, token bucket, sliding window, adaptive)
 - SSL/TLS verification controls with strong defaults and explicit warnings
@@ -18,7 +18,7 @@ The Runner module provides a unified interface for sending HTTP requests synchro
 
 This guide reflects the current, verified implementation and usage patterns.
 
-### Key Classes
+## Key Classes
 - `HttpRunner`: Unified sync/async HTTP runner
 - `RunnerConfig`: Top-level runner configuration
 - `RateLimitConfig`: Rate limiting options
@@ -26,14 +26,14 @@ This guide reflects the current, verified implementation and usage patterns.
 - `RetryConfig`: Retry strategy configuration
 - `RequestBuilder` and `CommonRequests`: Convenience builders for request configs
 
-### Installation
+## Installation
 Make sure you can import the package from your project root or install it in your environment. When running examples directly from the repo, you can set `PYTHONPATH` to the repository root.
 
 ```bash
 PYTHONPATH=$(pwd) python3 examples/runner_enhanced_example.py
 ```
 
-### Quick Start
+## Quick Start
 Synchronous request with secure defaults:
 ```python
 from logicpwn.core.runner import HttpRunner, RunnerConfig
@@ -56,7 +56,7 @@ async def main():
 asyncio.run(main())
 ```
 
-### Rate Limiting
+## Rate Limiting
 Supported algorithms:
 - Simple (fixed interval)
 - Token Bucket (with `burst_size`)
@@ -75,7 +75,7 @@ rate = RateLimitConfig(
 runner = HttpRunner(RunnerConfig(rate_limit=rate))
 ```
 
-### SSL/TLS Hardening
+## SSL/TLS Hardening
 `SSLConfig` supports:
 - `verification_level`: `STRICT`, `RELAXED`, `DISABLED`
 - `min_tls_version`: "TLSv1.2" or "TLSv1.3"
@@ -95,7 +95,7 @@ ssl = SSLConfig(
 runner = HttpRunner(RunnerConfig(ssl=ssl))
 ```
 
-### Retries with Exponential Backoff
+## Retries with Exponential Backoff
 `RetryConfig` controls resilience behavior:
 - `max_attempts`, `base_delay`, `max_delay`, `exponential_base`, `jitter`
 - `retryable_status_codes`: e.g. `{500, 502, 503, 504, 429}`
@@ -132,7 +132,7 @@ runner.send_request(
 
 Backward compatibility: legacy `retry_attempts` and `retry_backoff` on `RunnerConfig` are automatically mapped to the new `RetryConfig` at runtime.
 
-### Streaming Large Responses (Async)
+## Streaming Large Responses (Async)
 For large payloads, stream to avoid high memory usage:
 ```python
 import asyncio
@@ -148,7 +148,7 @@ async def stream(url: str):
 asyncio.run(stream("https://httpbin.org/bytes/10000"))
 ```
 
-### Request Builders
+## Request Builders
 Use `RequestBuilder` and `CommonRequests` for fluent, validated config construction:
 ```python
 from logicpwn.core.runner import RequestBuilder, CommonRequests
@@ -168,7 +168,7 @@ auth_get = CommonRequests.authenticated_get(
 )
 ```
 
-### HTTP/2 Support
+## HTTP/2 Support
 True HTTP/2 support is available when `httpx` is installed:
 
 ```python
@@ -184,7 +184,7 @@ config = RunnerConfig(
 )
 ```
 
-### Behavior Notes (Verified)
+## Behavior Notes (Verified)
 - GET requests with status 200 are cached via the response cache.
 - Global toggle: `RunnerConfig.enable_response_cache` (default: True).
 - Per-request bypass: `disable_cache=True` on `send_request`.
@@ -195,7 +195,7 @@ config = RunnerConfig(
   - `validate_session_health_async()` behaves similarly for async sessions.
 - HTTP/2: When `httpx` is available, true HTTP/2 is used. Otherwise falls back to HTTP/1.1 with aiohttp.
 
-### Rate Limiting Overrides
+## Rate Limiting Overrides
 You can override rate limiting per request without mutating the runner:
 ```python
 from logicpwn.core.runner import RateLimitConfig, RateLimitAlgorithm
@@ -212,7 +212,7 @@ result = runner.send_request(
 
 Thread-safety note: `SimpleRateLimiter.acquire()` uses a threading lock for mixed-thread sync usage; prefer not to share a single `HttpRunner` across threads unless intended.
 
-### End-to-End Example
+## End-to-End Example
 A complete, working demo resides at `examples/runner_enhanced_example.py`. It showcases:
 - Retry mechanism
 - Rate limiting
@@ -226,12 +226,12 @@ Run it from the repo root:
 PYTHONPATH=$(pwd) python3 examples/runner_enhanced_example.py
 ```
 
-### Troubleshooting
+## Troubleshooting
 - If imports fail when running examples, set `PYTHONPATH` to the repo root.
 - If you disable SSL verification, you’ll see warnings; this is expected and intended to prevent misuse in production.
 - High 5xx/429 rates will trigger retries; adjust `RetryConfig` to tune behavior.
 
-### Roadmap
+## Roadmap
 - Optional first-class HTTP/2 client integration where available
 - Additional retry policies (e.g., per-method defaults, idempotency-aware)
 - Pluggable circuit breaker middleware (composable with runner)
