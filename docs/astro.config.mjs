@@ -21,8 +21,15 @@ export default defineConfig({
 					label: 'Guides',
 					items: [
 						{ label: 'Access Detection', slug: 'guides/access-detection' },
-						{ label: 'Async Runner', slug: 'guides/async-runner' },
+						{ label: 'Runner Module', slug: 'guides/runner' },
 						{ label: 'Exploit Engine', slug: 'guides/exploit-engine' },
+						{ label: 'Async Runner', slug: 'guides/async-runner' },
+						{ label: 'Authentication & Session Management', slug: 'guides/authentication' },
+						{ label: 'Stress Testing & Performance', slug: 'guides/stress-testing' },
+						{ label: 'Response Validation & Security Analysis', slug: 'guides/validation' },
+						{ label: 'Reporting & Compliance', slug: 'guides/reporting' },
+						{ label: 'Performance Monitoring & Optimization', slug: 'guides/performance-monitoring' },
+						{ label: 'Middleware & Reliability', slug: 'guides/middleware' },
 					],
 				},
 				{
