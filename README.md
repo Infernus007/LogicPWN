@@ -245,7 +245,7 @@ LogicPWN is designed with a modular architecture. By default, `pip install logic
 
 ## 📖 Documentation
 
-Comprehensive documentation is available in the [`doks/`](./doks/) submodule:
+Comprehensive documentation is available in the [`docs/`](./docs/) folder:
 
 - **API Reference** - Complete API documentation
 - **Getting Started** - Quick start guides and tutorials
@@ -331,7 +331,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-- **Documentation**: [doks/](./doks/) submodule
+- **Documentation**: [docs/](./docs/) folder
 - **Issues**: [GitHub Issues](https://github.com/Infernus007/LogicPWN/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/Infernus007/LogicPWN/discussions)
 
@@ -380,7 +380,7 @@ clear_all_caches()
 
 ### Getting Help
 
-1. **Check the documentation** in the [`doks/`](./doks/) submodule
+1. **Check the documentation** in the [`docs/`](./docs/) folder
 2. **Search existing issues** on GitHub
 3. **Create a new issue** with:
    - Python version
@@ -392,7 +392,7 @@ clear_all_caches()
 ## 🔗 Links
 
 - **Repository**: [https://github.com/Infernus007/LogicPWN](https://github.com/Infernus007/LogicPWN)
-- **Documentation**: [doks/](./doks/) submodule
+- **Documentation**: [docs/](./docs/) folder
 - **PyPI**: [https://pypi.org/project/logicpwn/](https://pypi.org/project/logicpwn/)
 
 ---

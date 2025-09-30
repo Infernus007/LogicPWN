@@ -128,7 +128,7 @@ All scripts provide colored output:
 
 The scripts generate:
 
-- `doks/purple-atmosphere/src/content/docs/api-reference/*.mdx` - API docs
+- `docs/src/content/docs/api-reference/*.mdx` - API docs
 - Organized directory structure matching module hierarchy
 - Navigation-ready MDX files with proper frontmatter
 

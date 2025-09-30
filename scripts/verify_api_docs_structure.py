@@ -133,8 +133,8 @@ def check_consistency(docs_dir: Path) -> dict[str, list[str]]:
 def main():
     """Main verification function."""
     project_root = Path(__file__).parent.parent
-    astro_config = project_root / "doks" / "purple-atmosphere" / "astro.config.mjs"
-    docs_dir = project_root / "doks" / "purple-atmosphere" / "src" / "content" / "docs"
+    astro_config = project_root / "docs" / "astro.config.mjs"
+    docs_dir = project_root / "docs" / "src" / "content" / "docs"
 
     print("🔍 Verifying API Documentation Structure...")
     print("=" * 50)

@@ -130,7 +130,7 @@ extend-exclude = '''
   | buck-out
   | build
   | dist
-  | doks
+  | docs
 )/
 '''
 

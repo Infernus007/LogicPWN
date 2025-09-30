@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Auto-update docs submodule script
-# This script updates the doks submodule and commits the changes
+# Auto-update docs folder script
+# This script updates the docs folder and commits the changes
 
 set -e
 
@@ -25,137 +25,90 @@ check_git_repo() {
     fi
 }
 
-# Function to check if docs submodule exists
-check_docs_submodule() {
+# Function to check if docs folder exists
+check_docs_folder() {
     if [ ! -d "docs" ]; then
         print_message "${RED}❌ Error: docs directory not found${NC}"
         exit 1
     fi
 
-    # Check if docs is a git repository (either submodule or nested repo)
-    if [ ! -d "docs/.git" ]; then
-        print_message "${RED}❌ Error: docs is not a git repository${NC}"
-        exit 1
-    fi
+    print_message "${BLUE}ℹ️  Docs is a regular folder in the main repository${NC}"
+}
 
-    # Check if it's a submodule or nested repo
-    if git submodule status docs > /dev/null 2>&1; then
-        print_message "${BLUE}ℹ️  Docs is configured as a git submodule${NC}"
+# Function to update docs folder
+update_docs_folder() {
+    print_message "${BLUE}🔄 Checking docs folder...${NC}"
+
+    # Check if docs folder has any changes
+    if git diff --quiet docs/; then
+        print_message "${GREEN}✅ Docs folder is up to date${NC}"
+        return 0
     else
-        print_message "${BLUE}ℹ️  Docs is a nested git repository${NC}"
+        print_message "${BLUE}📝 Changes detected in docs folder${NC}"
+        return 1
     fi
 }
 
-# Function to update docs submodule
-update_docs_submodule() {
-    print_message "${BLUE}🔄 Updating docs submodule...${NC}"
-
-    # Go into docs directory
-    cd docs
-
-    # Check if this is a local nested git repo (no remote)
-    if ! git remote | grep -q origin; then
-        print_message "${BLUE}ℹ️  Docs is a local nested git repository (no remote origin)${NC}"
-        print_message "${GREEN}✅ Local docs repository is up to date${NC}"
-        cd ..
-        return 0
-    fi
-
-    # Check if remote repository exists
-    if ! git ls-remote origin > /dev/null 2>&1; then
-        print_message "${YELLOW}⚠️  Remote repository not found or not accessible${NC}"
-        print_message "${YELLOW}   Docs is working as a local repository${NC}"
-        cd ..
-        return 0
-    fi
-
-    # For nested git repos with remote, try to fetch and pull
-    git fetch origin
-
-    # Check if we're ahead of origin (local commits not pushed)
-    if git status --porcelain=v1 | grep -q "ahead"; then
-        print_message "${YELLOW}ℹ️  Docs submodule has local commits ahead of origin${NC}"
-        print_message "${YELLOW}   Consider pushing local changes first${NC}"
-    fi
-
-    # Try to pull latest changes
-    if git pull origin main; then
-        print_message "${GREEN}✅ Docs submodule updated from remote${NC}"
-    else
-        print_message "${YELLOW}⚠️  Could not pull from remote, keeping local changes${NC}"
-    fi
-
-    cd ..
-    print_message "${GREEN}✅ Docs submodule update completed${NC}"
-}
-
-# Function to check if submodule has changes
-check_submodule_changes() {
-    if git diff --quiet docs; then
-        print_message "${YELLOW}ℹ️  No changes in docs submodule${NC}"
+# Function to check if docs folder has changes
+check_docs_changes() {
+    if git diff --quiet docs/; then
+        print_message "${YELLOW}ℹ️  No changes in docs folder${NC}"
         return 1
     else
-        print_message "${BLUE}📝 Changes detected in docs submodule${NC}"
+        print_message "${BLUE}📝 Changes detected in docs folder${NC}"
         return 0
     fi
 }
 
-# Function to commit submodule changes
-commit_submodule_changes() {
+# Function to commit docs changes
+commit_docs_changes() {
     local commit_message="$1"
 
-    print_message "${BLUE}📦 Staging docs submodule changes...${NC}"
-    git add docs
+    print_message "${BLUE}📦 Staging docs folder changes...${NC}"
+    git add docs/
 
-    print_message "${BLUE}💾 Committing docs submodule changes...${NC}"
+    print_message "${BLUE}💾 Committing docs folder changes...${NC}"
     git commit -m "$commit_message"
 
-    print_message "${GREEN}✅ Docs submodule changes committed${NC}"
+    print_message "${GREEN}✅ Docs folder changes committed${NC}"
 }
 
-# Function to show submodule status
-show_submodule_status() {
-    print_message "${BLUE}📊 Docs repository status:${NC}"
-    if git submodule status docs > /dev/null 2>&1; then
-        git submodule status docs
-    else
-        cd docs
-        print_message "  Current commit: $(git rev-parse --short HEAD)"
-        print_message "  Branch: $(git branch --show-current)"
-        cd ..
-    fi
+# Function to show docs status
+show_docs_status() {
+    print_message "${BLUE}📊 Docs folder status:${NC}"
+    git status --porcelain docs/ || true
 }
 
 # Main function
 main() {
-    print_message "${BLUE}🚀 Starting docs submodule auto-update...${NC}"
+    print_message "${BLUE}🚀 Starting docs folder auto-update...${NC}"
 
     # Check prerequisites
     check_git_repo
-    check_docs_submodule
+    check_docs_folder
 
     # Show current status
-    show_submodule_status
+    show_docs_status
 
-    # Update submodule
-    update_docs_submodule
+    # Update docs folder
+    update_docs_folder
 
     # Check for changes
-    if check_submodule_changes; then
+    if check_docs_changes; then
         # Generate commit message
         local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-        local commit_message="docs: Auto-update doks submodule - $timestamp"
+        local commit_message="docs: Auto-update docs folder - $timestamp"
 
         # Commit changes
-        commit_submodule_changes "$commit_message"
+        commit_docs_changes "$commit_message"
 
-        print_message "${GREEN}🎉 Doks submodule auto-update completed successfully!${NC}"
+        print_message "${GREEN}🎉 Docs folder auto-update completed successfully!${NC}"
     else
-        print_message "${GREEN}✅ Doks submodule is already up to date${NC}"
+        print_message "${GREEN}✅ Docs folder is already up to date${NC}"
     fi
 
     # Show final status
-    show_submodule_status
+    show_docs_status
 }
 
 # Parse command line arguments
@@ -169,7 +122,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --dry-run      Show what would be done without making changes"
             echo "  --force        Force update even if no changes detected"
             echo ""
-            echo "This script automatically updates the doks submodule and commits changes."
+            echo "This script automatically updates the docs folder and commits changes."
             exit 0
             ;;
         --dry-run)

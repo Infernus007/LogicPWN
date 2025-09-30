@@ -84,7 +84,7 @@ def main():
     project_root = Path(__file__).parent.parent
     api_ref_dir = (
         project_root
-        / "doks"
+        / "docs"
         / "purple-atmosphere"
         / "src"
         / "content"
