@@ -17,6 +17,94 @@ def remove_source_code_sections(content: str) -> str:
     return re.sub(pattern, "", content, flags=re.DOTALL)
 
 
+def fix_markdown_formatting(content: str) -> str:
+    """Fix markdown formatting issues in generated documentation"""
+
+    # Fix !!! abstract syntax to proper Astro/Starlight format
+    content = re.sub(
+        r'!!! abstract "([^"]*)"\s*\n\n', r'<Aside type="note" title="\1">\n\n', content
+    )
+
+    # Fix !!! note syntax
+    content = re.sub(
+        r'!!! note "([^"]*)"\s*\n\n', r'<Aside type="note" title="\1">\n\n', content
+    )
+
+    # Fix !!! warning syntax
+    content = re.sub(
+        r'!!! warning "([^"]*)"\s*\n\n',
+        r'<Aside type="warning" title="\1">\n\n',
+        content,
+    )
+
+    # Fix !!! info syntax
+    content = re.sub(
+        r'!!! info "([^"]*)"\s*\n\n', r'<Aside type="info" title="\1">\n\n', content
+    )
+
+    # Fix standalone !!! abstract without quotes
+    content = re.sub(r"!!! abstract\s*\n\n", r'<Aside type="note">\n\n', content)
+
+    # Fix standalone !!! note without quotes
+    content = re.sub(r"!!! note\s*\n\n", r'<Aside type="note">\n\n', content)
+
+    # Fix broken Pydantic model documentation
+    content = re.sub(
+        r'!!! abstract "Usage Documentation"\s*\n\nA base class for creating Pydantic models\.',
+        r'<Aside type="note" title="Base Model">\n\nThis is a Pydantic BaseModel class that provides data validation and serialization capabilities.\n\n</Aside>',
+        content,
+    )
+
+    # Fix broken links in docstrings
+    content = re.sub(r"\[([^\]]+)\]\(\.\.\/concepts\/[^)]+\)", r"\1", content)
+
+    # Fix malformed docstring content
+    content = re.sub(r'\[Models\]\(\s*\n\s*"""', r'"""', content)
+
+    # Fix !!! syntax inside code blocks (remove them)
+    content = re.sub(r'(\s*)!!! abstract "([^"]*)"\s*\n', r"\1# \2\n", content)
+
+    content = re.sub(r'(\s*)!!! note "([^"]*)"\s*\n', r"\1# \2\n", content)
+
+    content = re.sub(r'(\s*)!!! warning "([^"]*)"\s*\n', r"\1# \2\n", content)
+
+    content = re.sub(r'(\s*)!!! info "([^"]*)"\s*\n', r"\1# \2\n", content)
+
+    # Fix standalone !!! syntax inside code blocks
+    content = re.sub(r"(\s*)!!! abstract\s*\n", r"\1# Documentation\n", content)
+
+    content = re.sub(r"(\s*)!!! note\s*\n", r"\1# Note\n", content)
+
+    # Fix broken docstring patterns
+    content = re.sub(
+        r'"""\s*\n\s*!!! abstract "([^"]*)"\s*\n\s*"""',
+        r'"""\n    \1\n    """',
+        content,
+    )
+
+    # Remove problematic <Aside> tags that are causing errors
+    # Replace with simple markdown formatting
+    content = re.sub(
+        r"<Aside[^>]*>(?!.*</Aside>)(.*?)(?=\n\n|\n##|\n###|\n####|\n#####|\n######|\Z)",
+        r"**Note:** \1\n\n",
+        content,
+        flags=re.DOTALL,
+    )
+
+    # Also remove any remaining unclosed <Aside> tags
+    content = re.sub(r"<Aside[^>]*>(?!.*</Aside>)", "", content)
+
+    # Fix JSON syntax in code blocks that's causing MDX parsing errors
+    # Escape curly braces in JSON objects within code blocks
+    content = re.sub(
+        r'(\{[^}]*"url"[^}]*\})',
+        lambda m: m.group(1).replace("{", "&#123;").replace("}", "&#125;"),
+        content,
+    )
+
+    return content
+
+
 def fix_exploit_engine_examples(content: str) -> str:
     """Fix exploit engine examples to match the corrected YAML"""
 
@@ -157,6 +245,7 @@ def process_mdx_file(file_path: Path) -> None:
 
     # Apply fixes
     content = remove_source_code_sections(content)
+    content = fix_markdown_formatting(content)
     content = fix_exploit_engine_examples(content)
     content = add_better_examples(content)
 
@@ -201,6 +290,7 @@ def main():
     print()
     print("Summary of changes:")
     print("  • Removed source code tip sections")
+    print("  • Fixed markdown formatting issues (!!! syntax)")
     print("  • Updated exploit engine examples")
     print("  • Added practical usage examples")
     print("  • Improved documentation quality")

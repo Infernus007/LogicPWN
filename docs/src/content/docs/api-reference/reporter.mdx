@@ -3,7 +3,7 @@ title: Reporter
 description: LogicPWN Reporter - Enhanced for Indian Law Enforcement
 category: Reporting & Compliance
 sidebar:
-  order: 89
+  order: 69
 ---
 
 import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
@@ -24,6 +24,194 @@ import logicpwn.core.reporter
 # or
 from logicpwn.core.reporter import *
 ```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
 
 
 ## Quick Examples
@@ -533,7 +721,7 @@ def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None,
 
 Returns a copy of the model.
 
-!!! warning "Deprecated"
+# Deprecated
  This method is now deprecated; use `model_copy` instead.
 
 If you need `include` or `exclude`, use:
@@ -607,7 +795,7 @@ Creates a new instance of the `Model` class with validated data.
 Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
 Default values are respected, but no other validation is performed.
 
-!!! note
+# Note
  `model_construct()` generally respects the `model_config.extra` setting on the provided model.
  That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
  and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
@@ -632,11 +820,13 @@ Instance method
 def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Returns a copy of the model.
 
-!!! note
+# Note
  The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
  might have unexpected side effects if you store anything in it, on top of the model
  fields (e.g. the value of [cached properties][functools.cached_property]).
@@ -659,7 +849,9 @@ Instance method
 def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
 
@@ -701,7 +893,9 @@ Instance method
 def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generates a JSON representation of the model using Pydantic's `to_json` method.
 
@@ -864,7 +1058,9 @@ Instance method
 def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Validate the given JSON data against the Pydantic model.
 
@@ -1601,7 +1797,7 @@ def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None,
 
 Returns a copy of the model.
 
-!!! warning "Deprecated"
+# Deprecated
  This method is now deprecated; use `model_copy` instead.
 
 If you need `include` or `exclude`, use:
@@ -1675,7 +1871,7 @@ Creates a new instance of the `Model` class with validated data.
 Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
 Default values are respected, but no other validation is performed.
 
-!!! note
+# Note
  `model_construct()` generally respects the `model_config.extra` setting on the provided model.
  That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
  and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
@@ -1700,11 +1896,13 @@ Instance method
 def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Returns a copy of the model.
 
-!!! note
+# Note
  The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
  might have unexpected side effects if you store anything in it, on top of the model
  fields (e.g. the value of [cached properties][functools.cached_property]).
@@ -1727,7 +1925,9 @@ Instance method
 def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
 
@@ -1769,7 +1969,9 @@ Instance method
 def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generates a JSON representation of the model using Pydantic's `to_json` method.
 
@@ -1932,7 +2134,9 @@ Instance method
 def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Validate the given JSON data against the Pydantic model.
 
@@ -2142,7 +2346,7 @@ def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None,
 
 Returns a copy of the model.
 
-!!! warning "Deprecated"
+# Deprecated
  This method is now deprecated; use `model_copy` instead.
 
 If you need `include` or `exclude`, use:
@@ -2216,7 +2420,7 @@ Creates a new instance of the `Model` class with validated data.
 Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
 Default values are respected, but no other validation is performed.
 
-!!! note
+# Note
  `model_construct()` generally respects the `model_config.extra` setting on the provided model.
  That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
  and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
@@ -2241,11 +2445,13 @@ Instance method
 def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Returns a copy of the model.
 
-!!! note
+# Note
  The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
  might have unexpected side effects if you store anything in it, on top of the model
  fields (e.g. the value of [cached properties][functools.cached_property]).
@@ -2268,7 +2474,9 @@ Instance method
 def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
 
@@ -2310,7 +2518,9 @@ Instance method
 def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generates a JSON representation of the model using Pydantic's `to_json` method.
 
@@ -2473,7 +2683,9 @@ Instance method
 def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Validate the given JSON data against the Pydantic model.
 
@@ -2890,12 +3102,13 @@ Initialize a new instance of `PrivilegesRequired`.
 ```python
 class RedactionRule (BaseModel):
     """
-    !!! abstract "Usage Documentation"
-    [Models](
+    # Usage Documentation
     """
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 A base class for creating Pydantic models.
 
@@ -2986,7 +3199,7 @@ def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None,
 
 Returns a copy of the model.
 
-!!! warning "Deprecated"
+# Deprecated
  This method is now deprecated; use `model_copy` instead.
 
 If you need `include` or `exclude`, use:
@@ -3060,7 +3273,7 @@ Creates a new instance of the `Model` class with validated data.
 Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
 Default values are respected, but no other validation is performed.
 
-!!! note
+# Note
  `model_construct()` generally respects the `model_config.extra` setting on the provided model.
  That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
  and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
@@ -3085,11 +3298,13 @@ Instance method
 def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Returns a copy of the model.
 
-!!! note
+# Note
  The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
  might have unexpected side effects if you store anything in it, on top of the model
  fields (e.g. the value of [cached properties][functools.cached_property]).
@@ -3112,7 +3327,9 @@ Instance method
 def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
 
@@ -3154,7 +3371,9 @@ Instance method
 def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generates a JSON representation of the model using Pydantic's `to_json` method.
 
@@ -3317,7 +3536,9 @@ Instance method
 def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Validate the given JSON data against the Pydantic model.
 
@@ -3750,7 +3971,7 @@ def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None,
 
 Returns a copy of the model.
 
-!!! warning "Deprecated"
+# Deprecated
  This method is now deprecated; use `model_copy` instead.
 
 If you need `include` or `exclude`, use:
@@ -3824,7 +4045,7 @@ Creates a new instance of the `Model` class with validated data.
 Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
 Default values are respected, but no other validation is performed.
 
-!!! note
+# Note
  `model_construct()` generally respects the `model_config.extra` setting on the provided model.
  That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
  and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
@@ -3849,11 +4070,13 @@ Instance method
 def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Returns a copy of the model.
 
-!!! note
+# Note
  The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
  might have unexpected side effects if you store anything in it, on top of the model
  fields (e.g. the value of [cached properties][functools.cached_property]).
@@ -3876,7 +4099,9 @@ Instance method
 def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
 
@@ -3918,7 +4143,9 @@ Instance method
 def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generates a JSON representation of the model using Pydantic's `to_json` method.
 
@@ -4081,7 +4308,9 @@ Instance method
 def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Validate the given JSON data against the Pydantic model.
 
@@ -4291,7 +4520,7 @@ def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None,
 
 Returns a copy of the model.
 
-!!! warning "Deprecated"
+# Deprecated
  This method is now deprecated; use `model_copy` instead.
 
 If you need `include` or `exclude`, use:
@@ -4365,7 +4594,7 @@ Creates a new instance of the `Model` class with validated data.
 Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
 Default values are respected, but no other validation is performed.
 
-!!! note
+# Note
  `model_construct()` generally respects the `model_config.extra` setting on the provided model.
  That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
  and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
@@ -4390,11 +4619,13 @@ Instance method
 def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Returns a copy of the model.
 
-!!! note
+# Note
  The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
  might have unexpected side effects if you store anything in it, on top of the model
  fields (e.g. the value of [cached properties][functools.cached_property]).
@@ -4417,7 +4648,9 @@ Instance method
 def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
 
@@ -4459,7 +4692,9 @@ Instance method
 def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generates a JSON representation of the model using Pydantic's `to_json` method.
 
@@ -4622,7 +4857,9 @@ Instance method
 def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Validate the given JSON data against the Pydantic model.
 
@@ -5011,7 +5248,7 @@ def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None,
 
 Returns a copy of the model.
 
-!!! warning "Deprecated"
+# Deprecated
  This method is now deprecated; use `model_copy` instead.
 
 If you need `include` or `exclude`, use:
@@ -5085,7 +5322,7 @@ Creates a new instance of the `Model` class with validated data.
 Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
 Default values are respected, but no other validation is performed.
 
-!!! note
+# Note
  `model_construct()` generally respects the `model_config.extra` setting on the provided model.
  That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
  and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
@@ -5110,11 +5347,13 @@ Instance method
 def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Returns a copy of the model.
 
-!!! note
+# Note
  The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
  might have unexpected side effects if you store anything in it, on top of the model
  fields (e.g. the value of [cached properties][functools.cached_property]).
@@ -5137,7 +5376,9 @@ Instance method
 def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
 
@@ -5179,7 +5420,9 @@ Instance method
 def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generates a JSON representation of the model using Pydantic's `to_json` method.
 
@@ -5342,7 +5585,9 @@ Instance method
 def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Validate the given JSON data against the Pydantic model.
 
@@ -5737,7 +5982,7 @@ def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None,
 
 Returns a copy of the model.
 
-!!! warning "Deprecated"
+# Deprecated
  This method is now deprecated; use `model_copy` instead.
 
 If you need `include` or `exclude`, use:
@@ -5823,7 +6068,7 @@ Creates a new instance of the `Model` class with validated data.
 Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
 Default values are respected, but no other validation is performed.
 
-!!! note
+# Note
  `model_construct()` generally respects the `model_config.extra` setting on the provided model.
  That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
  and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
@@ -5848,11 +6093,13 @@ Instance method
 def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Returns a copy of the model.
 
-!!! note
+# Note
  The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
  might have unexpected side effects if you store anything in it, on top of the model
  fields (e.g. the value of [cached properties][functools.cached_property]).
@@ -5875,7 +6122,9 @@ Instance method
 def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
 
@@ -5917,7 +6166,9 @@ Instance method
 def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generates a JSON representation of the model using Pydantic's `to_json` method.
 
@@ -6080,7 +6331,9 @@ Instance method
 def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Validate the given JSON data against the Pydantic model.
 
@@ -6435,7 +6688,7 @@ def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None,
 
 Returns a copy of the model.
 
-!!! warning "Deprecated"
+# Deprecated
  This method is now deprecated; use `model_copy` instead.
 
 If you need `include` or `exclude`, use:
@@ -6521,7 +6774,7 @@ Creates a new instance of the `Model` class with validated data.
 Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
 Default values are respected, but no other validation is performed.
 
-!!! note
+# Note
  `model_construct()` generally respects the `model_config.extra` setting on the provided model.
  That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
  and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
@@ -6546,11 +6799,13 @@ Instance method
 def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Returns a copy of the model.
 
-!!! note
+# Note
  The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
  might have unexpected side effects if you store anything in it, on top of the model
  fields (e.g. the value of [cached properties][functools.cached_property]).
@@ -6573,7 +6828,9 @@ Instance method
 def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
 
@@ -6615,7 +6872,9 @@ Instance method
 def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generates a JSON representation of the model using Pydantic's `to_json` method.
 
@@ -6778,7 +7037,9 @@ Instance method
 def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Validate the given JSON data against the Pydantic model.
 
@@ -7231,7 +7492,7 @@ def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None,
 
 Returns a copy of the model.
 
-!!! warning "Deprecated"
+# Deprecated
  This method is now deprecated; use `model_copy` instead.
 
 If you need `include` or `exclude`, use:
@@ -7305,7 +7566,7 @@ Creates a new instance of the `Model` class with validated data.
 Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
 Default values are respected, but no other validation is performed.
 
-!!! note
+# Note
  `model_construct()` generally respects the `model_config.extra` setting on the provided model.
  That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
  and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
@@ -7330,11 +7591,13 @@ Instance method
 def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Returns a copy of the model.
 
-!!! note
+# Note
  The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
  might have unexpected side effects if you store anything in it, on top of the model
  fields (e.g. the value of [cached properties][functools.cached_property]).
@@ -7357,7 +7620,9 @@ Instance method
 def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
 
@@ -7399,7 +7664,9 @@ Instance method
 def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generates a JSON representation of the model using Pydantic's `to_json` method.
 
@@ -7562,7 +7829,9 @@ Instance method
 def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Validate the given JSON data against the Pydantic model.
 
@@ -7772,7 +8041,7 @@ def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None,
 
 Returns a copy of the model.
 
-!!! warning "Deprecated"
+# Deprecated
  This method is now deprecated; use `model_copy` instead.
 
 If you need `include` or `exclude`, use:
@@ -7846,7 +8115,7 @@ Creates a new instance of the `Model` class with validated data.
 Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
 Default values are respected, but no other validation is performed.
 
-!!! note
+# Note
  `model_construct()` generally respects the `model_config.extra` setting on the provided model.
  That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
  and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
@@ -7871,11 +8140,13 @@ Instance method
 def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Returns a copy of the model.
 
-!!! note
+# Note
  The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
  might have unexpected side effects if you store anything in it, on top of the model
  fields (e.g. the value of [cached properties][functools.cached_property]).
@@ -7898,7 +8169,9 @@ Instance method
 def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
 
@@ -7940,7 +8213,9 @@ Instance method
 def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Generates a JSON representation of the model using Pydantic's `to_json` method.
 
@@ -8103,7 +8378,9 @@ Instance method
 def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
 ```
 
-!!! abstract "Usage Documentation"
+**Note:**
+
+
 
 Validate the given JSON data against the Pydantic model.
 
@@ -8346,8 +8623,8 @@ Decorator to validate input data.
 :::tip[Reporting & Compliance Modules]
 Explore other modules in the Reporting & Compliance category:
 
-- **[Reporter › Compliance](./reporter/compliance)** - Indian law enforcement compliance
-- **[Reporter › Law Enforcement](./reporter/law-enforcement)** - Law enforcement reports
+- **[Reporter › Indian Compliance](./reporter/indian-compliance)** - Indian law enforcement compliance
+- **[Reporter › Indian Law Enforcement](./reporter/indian-law-enforcement)** - Law enforcement reports
 - **[Reporter › Framework Mapper](./reporter/framework-mapper)** - Compliance framework mapping
-- **[Reporter › Integration](./reporter/integration)** - Integration utilities
+- **[Reporter › Indian Integration](./reporter/indian-integration)** - Integration utilities
 :::

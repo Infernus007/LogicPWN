@@ -1,9 +1,9 @@
 ---
 title: Reporter Integration
-description: API documentation for the Reporter Integration module in LogicPwn framework
+description: LogicPWN Indian Law Enforcement Integration
 category: Reporting & Compliance
 sidebar:
-  order: 62
+  order: 21
 ---
 
 import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
@@ -11,18 +11,19 @@ import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components
 **Category:** Reporting & Compliance
 **Navigation:** [API Reference](../) › [Reporter](../reporter)
 
-API documentation for the `logicpwn.core.reporter.integration` module.
+LogicPWN Indian Law Enforcement Integration
 
-:::note[Module Import Error]
-This module could not be imported during documentation generation. This may be due to missing dependencies or import errors. The module may still be available at runtime.
-:::
+This module integrates Indian law enforcement reporting capabilities
+```python
+with the core LogicPWN penetration testing framework.
+```
 
 ## Import
 
 ```python
-import logicpwn.core.reporter.integration
+import logicpwn.core.reporter.indian_integration
 # or
-from logicpwn.core.reporter.integration import *
+from logicpwn.core.reporter.indian_integration import *
 ```
 
 
@@ -72,9 +73,322 @@ results = detect_idor_flaws(
 ```
 
 
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+## Classes
+
+:::note[Available Classes]
+This module provides 1 class(es) for reporting & compliance.
+:::
+
+### LogicPWNIndianLawEnforcementIntegrator
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class LogicPWNIndianLawEnforcementIntegrator:
+    """
+    Main integration class that connects LogicPWN testing capabilities
+with Indian law enforcement reporting requirements
+    """
+```
+
+Main integration class that connects LogicPWN testing capabilities
+```python
+with Indian law enforcement reporting requirements.
+```
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, law_enforcement_config: logicpwn.core.reporter.indian_law_enforcement.IndianLawEnforcementConfig)
+```
+
+Initialize a new instance of `LogicPWNIndianLawEnforcementIntegrator`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### create_report_config
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def create_report_config(self, target_url: str, report_title: str = None) -> logicpwn.core.reporter.orchestrator.ReportConfig
+```
+
+Create a report configuration for Indian law enforcement
+
+##### generate_law_enforcement_report
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def generate_law_enforcement_report(self, target_url: str, output_dir: str = './reports') -> dict[str, str]
+```
+
+Generate comprehensive law enforcement report
+
+##### run_comprehensive_security_assessment
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def run_comprehensive_security_assessment(self, target_url: str, auth_config: Optional[logicpwn.core.auth.auth_models.AuthConfig] = None, test_endpoints: Optional[list[str]] = None, test_ids: Optional[list[str]] = None) -> dict[str, typing.Any]
+```
+
+Run comprehensive security assessment using LogicPWN capabilities
+and generate findings for law enforcement reporting.
+
+##### run_stress_test_for_evidence
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def run_stress_test_for_evidence(self, target_urls: list[str], duration: int = 30, max_concurrent: int = 10) -> dict[str, typing.Any]
+```
+
+Run stress test to gather performance evidence
+
+
+---
+
+## Functions
+
+:::note[Available Functions]
+This module provides 2 function(s) for direct use.
+:::
+
+### create_indian_law_enforcement_assessment
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_indian_law_enforcement_assessment(target_url: str, investigating_agency: str, case_reference: str, investigating_officer: str, auth_config: Optional[logicpwn.core.auth.auth_models.AuthConfig] = None, test_endpoints: Optional[list[str]] = None, test_ids: Optional[list[str]] = None, output_dir: str = './reports') -> dict[str, typing.Any]
+```
+
+Convenience function to create a complete Indian law enforcement assessment
+
+### example_indian_law_enforcement_usage
+
+:::note[Function]
+Module function
+:::
+
+```python
+def example_indian_law_enforcement_usage()
+```
+
+Example usage of Indian law enforcement integration
+
+
 ## Related Modules
 
-:::card-grid
-#card-grid
-- **[API Reference](../)** - Complete API documentation
+:::tip[Reporting & Compliance Modules]
+Explore other modules in the Reporting & Compliance category:
+
+- **[Reporter](../reporter)** - Core reporting functionality
+- **[Reporter › Indian Compliance](../reporter/indian-compliance)** - Indian law enforcement compliance
+- **[Reporter › Indian Law Enforcement](../reporter/indian-law-enforcement)** - Law enforcement reports
+- **[Reporter › Framework Mapper](../reporter/framework-mapper)** - Compliance framework mapping
 :::

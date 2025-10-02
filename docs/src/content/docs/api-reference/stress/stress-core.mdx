@@ -3,7 +3,7 @@ title: Stress Stress Core
 description: Core stress testing logic for LogicPwn
 category: Stress Testing
 sidebar:
-  order: 13
+  order: 49
 ---
 
 import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
@@ -20,6 +20,194 @@ import logicpwn.core.stress.stress_core
 # or
 from logicpwn.core.stress.stress_core import *
 ```
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
+
+
+## Quick Examples
+
+### Basic Usage
+
+```python
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
+
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
+```
+
+### Real-World IDOR Testing
+
+```python
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
+
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
+)
+
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
+```
+
 
 
 ## Quick Examples
