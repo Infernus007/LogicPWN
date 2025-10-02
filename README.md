@@ -10,7 +10,7 @@ LogicPWN represents a paradigm shift from traditional security testing toward in
 
 ## 📦 Installation
 
-**Latest Release**: [v0.2.2](https://pypi.org/project/logicpwn/) - Available on PyPI
+**Latest Release**: [v0.3.0](https://pypi.org/project/logicpwn/) - Available on PyPI
 
 ```bash
 # Install from PyPI
@@ -38,6 +38,7 @@ Here's a complete example to get you started:
 ```python
 from logicpwn.core.auth import authenticate_session, AuthConfig
 from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.runner import HttpRunner
 from logicpwn.core.reporter import ReportConfig, ReportGenerator
 
 # 1. Set up authentication
@@ -56,7 +57,12 @@ auth_config = AuthConfig(
 session = authenticate_session(auth_config)
 print(f"✅ Authenticated successfully: {session.cookies}")
 
-# 3. Test for IDOR vulnerabilities
+# 3. Use the new unified HttpRunner for requests
+runner = HttpRunner()
+response = runner.get("https://target.com/api/users/1")
+print(f"📡 Response status: {response.status_code}")
+
+# 4. Test for IDOR vulnerabilities
 idor_results = detect_idor_flaws(
     session=session,
     endpoint_template="https://target.com/api/users/{id}",
@@ -65,7 +71,7 @@ idor_results = detect_idor_flaws(
     failure_indicators=["access_denied", "unauthorized"]
 )
 
-# 4. Generate a security report
+# 5. Generate a security report
 report_config = ReportConfig(
     target_url="https://target.com",
     report_title="Security Assessment Report"
@@ -81,6 +87,35 @@ print(f"📊 Report generated: {len(report.findings)} findings")
 ```
 
 ### 🔍 Common Use Cases
+
+#### **Enhanced HTTP Runner**
+```python
+from logicpwn.core.runner import HttpRunner
+
+# Unified HTTP runner with sync/async support
+runner = HttpRunner()
+
+# Synchronous requests
+response = runner.get("https://api.example.com/users")
+response = runner.post("https://api.example.com/login", json_data={"user": "admin"})
+
+# Asynchronous requests
+async with runner:
+    response = await runner.get_async("https://api.example.com/data")
+    response = await runner.post_async("https://api.example.com/update", json_data={"id": 1})
+
+# Batch processing
+results = await runner.batch([
+    {"url": "https://api.example.com/1", "method": "GET"},
+    {"url": "https://api.example.com/2", "method": "POST", "json_data": {"key": "value"}}
+])
+
+# Convenient HTTP methods
+runner.get("https://example.com")           # GET request
+runner.post("https://example.com", data)    # POST request
+runner.put("https://example.com", data)     # PUT request
+runner.delete("https://example.com")         # DELETE request
+```
 
 #### **IDOR Vulnerability Testing**
 ```python
@@ -171,6 +206,7 @@ logicpwn/
 
 ### Key Components
 
+- **Enhanced HTTP Runner**: Unified sync/async HTTP client with user-friendly error messages
 - **Authentication System**: Multi-protocol support (OAuth 2.0, SAML, JWT, form-based)
 - **Access Control Testing**: Intelligent IDOR detection with pattern recognition
 - **Performance Engine**: Async/concurrent execution for high-throughput testing
