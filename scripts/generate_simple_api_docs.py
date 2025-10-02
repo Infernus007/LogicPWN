@@ -758,10 +758,10 @@ def generate_related_modules_section(module_name: str, category: str) -> str:
         ],
         "Reporting & Compliance": [
             ("reporter", "Core reporting functionality"),
-            ("reporter/compliance", "Indian law enforcement compliance"),
-            ("reporter/law-enforcement", "Law enforcement reports"),
+            ("reporter/indian-compliance", "Indian law enforcement compliance"),
+            ("reporter/indian-law-enforcement", "Law enforcement reports"),
             ("reporter/framework-mapper", "Compliance framework mapping"),
-            ("reporter/integration", "Integration utilities"),
+            ("reporter/indian-integration", "Integration utilities"),
         ],
         "Exploit Engine": [
             ("exploit-engine", "Core exploit engine functionality"),
@@ -1045,10 +1045,10 @@ def main():
         "logicpwn.core.logging.redactor",
         "logicpwn.core.integration_utils",
         "logicpwn.core.reporter",
-        "logicpwn.core.reporter.compliance",
-        "logicpwn.core.reporter.law_enforcement",
+        "logicpwn.core.reporter.indian_compliance",
+        "logicpwn.core.reporter.indian_law_enforcement",
         "logicpwn.core.reporter.framework_mapper",
-        "logicpwn.core.reporter.integration",
+        "logicpwn.core.reporter.indian_integration",
         "logicpwn.exceptions",
     ]
 
