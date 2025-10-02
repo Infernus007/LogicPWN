@@ -6,8 +6,8 @@ import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from logicpwn.core.logging import log_error, log_info, log_warning
+from logicpwn.core.runner import HttpRunner
 from logicpwn.core.runner.async_runner_core import AsyncRequestRunner
-from logicpwn.core.runner.runner import send_request
 from logicpwn.core.utils import check_indicators
 
 from .baseline import _check_unauthenticated_baseline
@@ -140,7 +140,10 @@ def _make_request_with_retry(
     """
     Make a request with retry logic.
     """
-    return send_request(session, request_config)
+    runner = HttpRunner()
+    runner.session = session
+    result = runner.send_request(**request_config)
+    return result.response
 
 
 def _test_single_id(

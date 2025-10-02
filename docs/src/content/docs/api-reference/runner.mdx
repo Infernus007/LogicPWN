@@ -1,9 +1,9 @@
 ---
 title: Runner
-description: HTTP request runner with rate limiting, retries, and SSL controls
+description: LogicPwn runner module with unified API and consolidated interfaces
 category: Test Runner
 sidebar:
-  order: 38
+  order: 4
 ---
 
 import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
@@ -11,309 +11,2336 @@ import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components
 **Category:** Test Runner
 **Navigation:** [API Reference](../)
 
-The Runner module provides HTTP request functionality with rate limiting, retries, SSL controls, and both sync/async support.
+LogicPwn runner module with unified API and consolidated interfaces.
+
+This module provides HTTP request functionality with:
+- Unified API that consolidates all similar interfaces
+- Fixed async timeout handling
+- User-friendly error messages with actionable suggestions
+- Simplified configuration options
+- Consistent sync/async support
+
+The unified API reduces confusion by providing a single interface
+```python
+for all HTTP request operations instead of multiple similar classes.
+```
 
 ## Import
 
 ```python
-from logicpwn.core.runner import HttpRunner, RequestConfig, RequestResult
+import logicpwn.core.runner
+# or
+from logicpwn.core.runner import *
 ```
 
-## HttpRunner
 
-Main class for HTTP requests with built-in rate limiting, retries, and SSL controls.
-
-### Constructor
-
-```python
-HttpRunner(config: Optional[RunnerConfig] = None)
-```
-
-### Methods
-
-#### Sync Methods
-
-```python
-# HTTP methods
-get(url: str, **kwargs) -> RequestResult
-post(url: str, **kwargs) -> RequestResult
-put(url: str, **kwargs) -> RequestResult
-delete(url: str, **kwargs) -> RequestResult
-patch(url: str, **kwargs) -> RequestResult
-head(url: str, **kwargs) -> RequestResult
-options(url: str, **kwargs) -> RequestResult
-
-# Generic request
-send_request(url: str, method: str = "GET", **kwargs) -> RequestResult
-
-# Batch requests
-batch(request_configs: List[RequestConfigDict]) -> List[RequestResult]
-batch_get(urls: List[str]) -> List[RequestResult]
-batch_post(urls: List[str], data: Any) -> List[RequestResult]
-```
-
-#### Async Methods
-
-```python
-# Async HTTP methods
-async get_async(url: str, **kwargs) -> RequestResult
-async post_async(url: str, **kwargs) -> RequestResult
-async put_async(url: str, **kwargs) -> RequestResult
-async delete_async(url: str, **kwargs) -> RequestResult
-async patch_async(url: str, **kwargs) -> RequestResult
-async head_async(url: str, **kwargs) -> RequestResult
-async options_async(url: str, **kwargs) -> RequestResult
-
-# Generic async request
-async send_request_async(url: str, method: str = "GET", **kwargs) -> RequestResult
-
-# Async batch requests
-async send_requests_batch_async(request_configs: List[RequestConfigDict]) -> List[RequestResult]
-```
-
-#### Streaming
-
-```python
-# Stream large responses
-async send_request_streaming(url: str, chunk_size: int = 8192) -> AsyncIterator[bytes]
-```
-
-### Parameters
-
-- `url`: Target URL
-- `method`: HTTP method (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)
-- `headers`: Request headers (dict)
-- `params`: Query parameters (dict)
-- `data`: Form data (dict, str, bytes)
-- `json_data`: JSON data (dict)
-- `raw_body`: Raw request body (str, bytes)
-- `timeout`: Request timeout (float)
-- `verify_ssl`: SSL verification (bool)
-- `disable_cache`: Disable response caching (bool)
-
-## RequestConfig
-
-Configuration for individual requests.
-
-```python
-RequestConfig(
-    url: str,
-    method: str = "GET",
-    headers: Optional[Dict[str, str]] = None,
-    params: Optional[Dict[str, Any]] = None,
-    data: Optional[Union[Dict[str, Any], str, bytes]] = None,
-    json_data: Optional[Dict[str, Any]] = None,
-    raw_body: Optional[Union[str, bytes]] = None,
-    timeout: Optional[float] = None,
-    verify_ssl: bool = True,
-    disable_cache: bool = False
-)
-```
-
-## RequestResult
-
-Result of an HTTP request.
-
-### Properties
-
-- `url`: Request URL
-- `method`: HTTP method
-- `status_code`: HTTP status code
-- `headers`: Response headers (dict)
-- `text`: Response text content
-- `json`: Parsed JSON content (if applicable)
-- `content`: Raw response content (bytes)
-- `duration`: Request duration (float)
-- `success`: Whether request was successful (bool)
-- `error`: Error message if failed (str)
-
-### Methods
-
-```python
-# Check if request was successful
-is_success() -> bool
-
-# Get response as JSON
-json() -> dict
-
-# Get response text
-text() -> str
-
-# Get response content
-content() -> bytes
-```
-
-## RunnerConfig
-
-Configuration for HttpRunner instance.
-
-```python
-RunnerConfig(
-    rate_limit: Optional[RateLimitConfig] = None,
-    retry: Optional[RetryConfig] = None,
-    ssl: Optional[SSLConfig] = None,
-    session: Optional[SessionConfig] = None,
-    enable_response_cache: bool = True
-)
-```
-
-## RateLimitConfig
-
-Rate limiting configuration.
-
-```python
-RateLimitConfig(
-    algorithm: RateLimitAlgorithm = RateLimitAlgorithm.SIMPLE,
-    requests_per_second: float = 1.0,
-    burst_size: Optional[int] = None,
-    window_size: Optional[int] = None
-)
-```
-
-## RetryConfig
-
-Retry configuration.
-
-```python
-RetryConfig(
-    max_attempts: int = 3,
-    base_delay: float = 1.0,
-    max_delay: float = 60.0,
-    exponential_base: float = 2.0,
-    jitter: bool = True,
-    retryable_status_codes: Set[int] = {500, 502, 503, 504, 429},
-    respect_retry_after: bool = True
-)
-```
-
-## SSLConfig
-
-SSL/TLS configuration.
-
-```python
-SSLConfig(
-    verification_level: SSLVerificationLevel = SSLVerificationLevel.STRICT,
-    min_tls_version: str = "TLSv1.2",
-    client_cert: Optional[str] = None,
-    client_key: Optional[str] = None,
-    ca_bundle: Optional[str] = None
-)
-```
-
-## RequestBuilder
-
-Fluent API for building request configurations.
-
-```python
-RequestBuilder(url: str)
-
-# Methods
-get() -> RequestBuilder
-post() -> RequestBuilder
-put() -> RequestBuilder
-delete() -> RequestBuilder
-patch() -> RequestBuilder
-head() -> RequestBuilder
-options() -> RequestBuilder
-
-header(name: str, value: str) -> RequestBuilder
-headers(headers: Dict[str, str]) -> RequestBuilder
-param(name: str, value: Any) -> RequestBuilder
-params(params: Dict[str, Any]) -> RequestBuilder
-data(data: Any) -> RequestBuilder
-json_data(json_data: Dict[str, Any]) -> RequestBuilder
-raw_body(body: Union[str, bytes]) -> RequestBuilder
-timeout(timeout: float) -> RequestBuilder
-verify_ssl(verify: bool) -> RequestBuilder
-disable_cache(disable: bool) -> RequestBuilder
-
-build() -> RequestConfig
-execute() -> RequestResult
-send() -> RequestResult
-async execute_async() -> RequestResult
-async send_async() -> RequestResult
-```
-
-## CommonRequests
-
-Pre-configured request builders.
-
-```python
-# Authenticated requests
-CommonRequests.authenticated_get(url: str, token: str, auth_type: str = "Bearer") -> RequestConfig
-CommonRequests.authenticated_post(url: str, token: str, data: Any, auth_type: str = "Bearer") -> RequestConfig
-
-# API requests
-CommonRequests.api_get(url: str, api_key: str) -> RequestConfig
-CommonRequests.api_post(url: str, api_key: str, data: Any) -> RequestConfig
-```
-
-## Examples
+## Quick Examples
 
 ### Basic Usage
 
 ```python
-from logicpwn.core.runner import HttpRunner
+from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
+import requests
 
-runner = HttpRunner()
-result = runner.get("https://httpbin.org/get")
-print(result.status_code)  # 200
+# Load and execute a simple exploit chain
+session = requests.Session()
+chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
+results = run_exploit_chain(session, chain)
+
+# Analyze results
+for result in results:
+    print(f"Step: {result.step_name}")
+    print(f"Status: {result.status}")
+    print(f"Time: {result.execution_time:.2f}s")
 ```
 
-### Async Usage
+### Real-World IDOR Testing
 
 ```python
-import asyncio
-from logicpwn.core.runner import HttpRunner
+from logicpwn.core.access import detect_idor_flaws
+from logicpwn.core.auth import AuthConfig, authenticate_session
 
-async def main():
-    async with HttpRunner() as runner:
-        result = await runner.get_async("https://httpbin.org/get")
-        print(result.status_code)
-
-asyncio.run(main())
-```
-
-### Configuration
-
-```python
-from logicpwn.core.runner import HttpRunner, RunnerConfig, RateLimitConfig, RetryConfig
-
-# Configure rate limiting and retries
-config = RunnerConfig(
-    rate_limit=RateLimitConfig(requests_per_second=2.0),
-    retry=RetryConfig(max_attempts=3)
+# Setup authentication
+auth_config = AuthConfig(
+    url="https://api.example.com/login",
+    credentials={"username": "user", "password": "pass"},
+    success_indicators=["access_token"]
 )
 
-runner = HttpRunner(config)
-result = runner.get("https://httpbin.org/get")
+session = authenticate_session(auth_config)
+
+# Test for IDOR vulnerabilities
+results = detect_idor_flaws(
+    session,
+    "https://api.example.com/users/{id}/profile",
+    test_ids=["1", "2", "3", "admin", "999"],
+    success_indicators=["user_data", "profile"],
+    failure_indicators=["unauthorized", "403"]
+)
 ```
 
-### Request Builder
+
+## Classes
+
+:::note[Available Classes]
+This module provides 23 class(es) for test runner.
+:::
+
+### AsyncRequestContext
+
+<Tabs>
+<TabItem label="Overview">
 
 ```python
-from logicpwn.core.runner import RequestBuilder
-
-config = (RequestBuilder("https://httpbin.org/post")
-    .post()
-    .json_data({"message": "Hello"})
-    .header("X-Trace", "demo")
-    .timeout(30)
-    .build())
-
-result = runner.send_request(**config)
+class AsyncRequestContext:
+    """
+    Context for async request execution
+    """
 ```
 
-### Batch Requests
+Context for async request execution.
+
+</TabItem>
+<TabItem label="Constructor">
 
 ```python
-# Multiple requests at once
-request_configs = [
-    {"url": "https://httpbin.org/get", "method": "GET"},
-    {"url": "https://httpbin.org/post", "method": "POST", "json_data": {"test": "data"}}
-]
-
-results = runner.batch(request_configs)
-for result in results:
-    print(f"Status: {result.status_code}")
+def __init__(self, request_id: str, url: str, method: str, headers: dict[str, str], params: Optional[dict[str, Any]] = None, body: Optional[Any] = None, timeout: Optional[int] = None, session_data: Optional[dict[str, Any]] = None, metadata: Optional[dict[str, Any]] = None) -> None
 ```
+
+Initialize a new instance of `AsyncRequestContext`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### AsyncRequestRunner
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AsyncRequestRunner:
+    """
+    High-performance async request runner with enhanced security and rate limiting
+    """
+```
+
+High-performance async request runner with enhanced security and rate limiting.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, max_concurrent: int = 10, rate_limit_config: Optional[logicpwn.core.runner.async_runner_core.RateLimitConfig] = None, security_config: Optional[logicpwn.core.runner.async_runner_core.SecurityConfig] = None, timeout: Optional[int] = None, rate_limit: Optional[float] = None, verify_ssl: bool = True)
+```
+
+Initialize a new instance of `AsyncRequestRunner`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>rate_limit</code></summary>
+
+Backward compatibility property for rate_limit.
+
+</details>
+
+<details>
+<summary><code>verify_ssl</code></summary>
+
+Backward compatibility property for verify_ssl.
+
+</details>
+
+#### Methods
+
+##### send_request
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def send_request(self, url: str, method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'] = 'GET', headers: Optional[dict[str, str]] = None, params: Optional[dict[str, Any]] = None, data: Union[dict[str, Any], str, bytes, NoneType] = None, json_data: Optional[dict[str, Any]] = None, raw_body: Optional[str] = None, timeout: Optional[float] = None) -> logicpwn.models.request_result.RequestResult
+```
+
+Send a single async HTTP request with rate limiting and security features.
+
+**Args:**
+- **url**: Target URL
+
+- **method**: HTTP method
+
+- **headers**: Request headers
+
+- **params**: Query parameters
+
+- **data**: Form data
+
+- **json_data**: JSON body
+
+- **raw_body**: Raw body content
+
+- **timeout**: Request timeout
+
+**Returns:**
+ RequestResult with response analysis
+
+**Usage Example:**
+```python
+result = await send_request(...)
+```
+
+##### send_requests_batch
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def send_requests_batch(self, request_configs: list[typing.Union[logicpwn.models.request_config.RequestConfig, dict[str, typing.Any]]], max_concurrent: Optional[int] = None) -> list[logicpwn.models.request_result.RequestResult]
+```
+
+Send multiple requests concurrently.
+**Args:**
+- **request_configs**: List of request configurations
+
+- **max_concurrent**: Override max concurrent requests
+**Returns:**
+ List of RequestResult objects
+
+**Usage Example:**
+```python
+result = await send_requests_batch(...)
+```
+
+
+---
+
+### AsyncSessionManager
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AsyncSessionManager:
+    """
+    Async session manager with enhanced security and lifecycle management
+    """
+```
+
+Async session manager with enhanced security and lifecycle management.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, auth_config: Optional[dict[str, Any]] = None, max_concurrent: int = 10, timeout: Optional[int] = None, verify_ssl: bool = True, min_tls_version: str = 'TLSv1.2', warn_on_ssl_disabled: bool = True)
+```
+
+Initialize a new instance of `AsyncSessionManager`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>session_closed</code></summary>
+
+Check if the session was properly closed.
+
+</details>
+
+#### Methods
+
+##### authenticate
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def authenticate(self) -> bool
+```
+
+Authenticate using the provided configuration.
+
+**Returns:**
+ True if authentication successful, False otherwise
+
+**Raises:**
+- **ValidationError**: If no authentication configuration provided
+
+**Usage Example:**
+```python
+result = await authenticate(...)
+```
+
+##### delete
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def delete(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+Documentation for `delete` is not available.
+
+**Usage Example:**
+```python
+result = await delete(...)
+```
+
+##### execute_exploit_chain
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def execute_exploit_chain(self, exploit_configs: list[dict[str, typing.Any]]) -> list[logicpwn.models.request_result.RequestResult]
+```
+
+Documentation for `execute_exploit_chain` is not available.
+
+**Usage Example:**
+```python
+result = await execute_exploit_chain(...)
+```
+
+##### get
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def get(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+Documentation for `get` is not available.
+
+**Usage Example:**
+```python
+result = await get(...)
+```
+
+##### post
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def post(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+Documentation for `post` is not available.
+
+**Usage Example:**
+```python
+result = await post(...)
+```
+
+##### put
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def put(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+Documentation for `put` is not available.
+
+**Usage Example:**
+```python
+result = await put(...)
+```
+
+
+---
+
+### CommonRequests
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CommonRequests:
+    """
+    Factory class for creating common request types
+    """
+```
+
+Factory class for creating common request types.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, *args, **kwargs)
+```
+
+Initialize a new instance of `CommonRequests`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### api_request
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def api_request(url: str, method: str = 'GET', data: Optional[dict[str, Any]] = None, api_key: Optional[str] = None, **kwargs) -> logicpwn.models.request_config.RequestConfig
+```
+
+Create a generic API request.
+
+##### authenticated_get
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def authenticated_get(url: str, token: str, auth_type: str = 'Bearer', **kwargs) -> logicpwn.models.request_config.RequestConfig
+```
+
+Create an authenticated GET request.
+
+##### authenticated_post_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def authenticated_post_json(url: str, data: dict[str, typing.Any], token: str, auth_type: str = 'Bearer', **kwargs) -> logicpwn.models.request_config.RequestConfig
+```
+
+Create an authenticated POST request with JSON data.
+
+##### execute
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def execute(self) -> 'RequestResult'
+```
+
+Execute the request using HttpRunner.
+
+##### execute_async
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def execute_async(self) -> 'RequestResult'
+```
+
+Execute the request asynchronously using HttpRunner.
+
+**Usage Example:**
+```python
+result = await execute_async(...)
+```
+
+##### get
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get(url: str, **kwargs) -> logicpwn.models.request_config.RequestConfig
+```
+
+Create a simple GET request.
+
+##### post_form
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def post_form(url: str, data: dict[str, typing.Any], **kwargs) -> logicpwn.models.request_config.RequestConfig
+```
+
+Create a POST request with form data.
+
+##### post_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def post_json(url: str, data: dict[str, typing.Any], **kwargs) -> logicpwn.models.request_config.RequestConfig
+```
+
+Create a POST request with JSON data.
+
+##### send
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def send(self) -> 'RequestResult'
+```
+
+Send the request (alias for execute for consistency with HttpRunner).
+
+##### send_async
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def send_async(self) -> 'RequestResult'
+```
+
+Send the request asynchronously (alias for execute_async).
+
+**Usage Example:**
+```python
+result = await send_async(...)
+```
+
+
+---
+
+### ConfigurationError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ConfigurationError (LogicPwnError):
+    """
+    Configuration errors
+    """
+```
+
+Configuration errors.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str, context: Optional[dict[str, Any]] = None, suggestion: Optional[str] = None) -> None
+```
+
+Initialize a new instance of `ConfigurationError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### HttpRunner
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class HttpRunner:
+    """
+    Enhanced HTTP request runner with consolidated API
+    """
+```
+
+Enhanced HTTP request runner with consolidated API.
+
+This runner provides a single, consistent interface for all HTTP operations:
+- Synchronous and asynchronous request execution
+- Session management with authentication support
+- Batch request processing
+- Advanced rate limiting and throttling
+- SSL/TLS certificate validation with security warnings
+- Comprehensive error handling and retry logic
+- Response analysis and vulnerability detection
+
+Usage:
+ # Basic usage
+ runner = HttpRunner()
+ result = runner.get("https://example.com")
+
+ # Async usage
+ async with runner:
+ result = await runner.get_async("https://example.com")
+
+ # Batch requests
+ results = await runner.batch([
+ {"url": "https://example.com/1", "method": "GET"},
+ {"url": "https://example.com/2", "method": "POST", "json_data": {"key": "value"}}
+ ])
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, config: Optional[logicpwn.core.runner.runner.RunnerConfig] = None) -> None
+```
+
+Initialize a new instance of `HttpRunner`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### batch
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def batch(self, requests: list[typing.Union[logicpwn.models.request_config.RequestConfig, dict[str, typing.Any]]], max_concurrent: Optional[int] = None, **kwargs: Any) -> list[logicpwn.models.request_result.RequestResult]
+```
+
+Send multiple requests concurrently.
+
+**Args:**
+- **requests**: List of request configurations
+
+- **max_concurrent**: Maximum concurrent requests
+
+- ****kwargs**: Additional parameters
+
+**Returns:**
+ List of RequestResult objects
+
+**Usage Example:**
+```python
+result = await batch(...)
+```
+
+##### batch_get
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def batch_get(self, urls: list[str], headers: Optional[dict[str, str]] = None, params: Optional[dict[str, Any]] = None, timeout: Optional[float] = None, max_concurrent: Optional[int] = None, **kwargs: Any) -> list[logicpwn.models.request_result.RequestResult]
+```
+
+Send multiple GET requests concurrently.
+
+**Usage Example:**
+```python
+result = await batch_get(...)
+```
+
+##### batch_post
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def batch_post(self, url_data_pairs: list[tuple[str, typing.Union[dict[str, typing.Any], str, bytes, NoneType], typing.Optional[dict[str, typing.Any]]]], headers: Optional[dict[str, str]] = None, timeout: Optional[float] = None, max_concurrent: Optional[int] = None, **kwargs: Any) -> list[logicpwn.models.request_result.RequestResult]
+```
+
+Send multiple POST requests concurrently.
+
+**Usage Example:**
+```python
+result = await batch_post(...)
+```
+
+##### close
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def close(self)
+```
+
+Explicitly close async session.
+
+**Usage Example:**
+```python
+result = await close(...)
+```
+
+##### delete
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def delete(self, url: str, headers: Optional[dict[str, str]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send DELETE request.
+
+##### delete_async
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def delete_async(self, url: str, headers: Optional[dict[str, str]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send async DELETE request.
+
+**Usage Example:**
+```python
+result = await delete_async(...)
+```
+
+##### get
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get(self, url: str, headers: Optional[dict[str, str]] = None, params: Optional[dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send GET request.
+
+##### get_async
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def get_async(self, url: str, headers: Optional[dict[str, str]] = None, params: Optional[dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send async GET request.
+
+**Usage Example:**
+```python
+result = await get_async(...)
+```
+
+##### head
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def head(self, url: str, headers: Optional[dict[str, str]] = None, params: Optional[dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send HEAD request.
+
+##### head_async
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def head_async(self, url: str, headers: Optional[dict[str, str]] = None, params: Optional[dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send async HEAD request.
+
+**Usage Example:**
+```python
+result = await head_async(...)
+```
+
+##### options
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def options(self, url: str, headers: Optional[dict[str, str]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send OPTIONS request.
+
+##### options_async
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def options_async(self, url: str, headers: Optional[dict[str, str]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send async OPTIONS request.
+
+**Usage Example:**
+```python
+result = await options_async(...)
+```
+
+##### patch
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def patch(self, url: str, data: Union[dict[str, Any], str, bytes, NoneType] = None, json_data: Optional[dict[str, Any]] = None, headers: Optional[dict[str, str]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send PATCH request.
+
+##### patch_async
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def patch_async(self, url: str, data: Union[dict[str, Any], str, bytes, NoneType] = None, json_data: Optional[dict[str, Any]] = None, headers: Optional[dict[str, str]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send async PATCH request.
+
+**Usage Example:**
+```python
+result = await patch_async(...)
+```
+
+##### post
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def post(self, url: str, data: Union[dict[str, Any], str, bytes, NoneType] = None, json_data: Optional[dict[str, Any]] = None, headers: Optional[dict[str, str]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send POST request.
+
+##### post_async
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def post_async(self, url: str, data: Union[dict[str, Any], str, bytes, NoneType] = None, json_data: Optional[dict[str, Any]] = None, headers: Optional[dict[str, str]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send async POST request.
+
+**Usage Example:**
+```python
+result = await post_async(...)
+```
+
+##### put
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def put(self, url: str, data: Union[dict[str, Any], str, bytes, NoneType] = None, json_data: Optional[dict[str, Any]] = None, headers: Optional[dict[str, str]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send PUT request.
+
+##### put_async
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def put_async(self, url: str, data: Union[dict[str, Any], str, bytes, NoneType] = None, json_data: Optional[dict[str, Any]] = None, headers: Optional[dict[str, str]] = None, timeout: Optional[float] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send async PUT request.
+
+**Usage Example:**
+```python
+result = await put_async(...)
+```
+
+##### wrapper
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wrapper(*args, **kwargs)
+```
+
+Documentation for `wrapper` is not available.
+
+##### send_request_async
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def send_request_async(self, url: str, method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'] = 'GET', headers: Optional[dict[str, str]] = None, params: Optional[dict[str, Any]] = None, data: Union[dict[str, Any], str, bytes, NoneType] = None, json_data: Optional[dict[str, Any]] = None, raw_body: Optional[str] = None, timeout: Optional[float] = None, disable_cache: bool = False, retry_config: Optional[logicpwn.core.runner.runner.RetryConfig] = None, rate_limit_config: Optional[logicpwn.core.runner.runner.RateLimitConfig] = None, on_success: Optional[Callable[[logicpwn.models.request_result.RequestResult], NoneType]] = None, on_error: Optional[Callable[[Exception], NoneType]] = None, **kwargs: Any) -> logicpwn.models.request_result.RequestResult
+```
+
+Send asynchronous HTTP request with retry logic.
+
+**Args:**
+- **url**: Target URL
+
+- **method**: HTTP method
+
+- **headers**: Request headers
+
+- **params**: Query parameters
+
+- **data**: Request data
+
+- **json_data**: JSON data
+
+- ****kwargs**: Additional request parameters
+
+**Returns:**
+ RequestResult object
+
+**Raises:**
+
+- **RuntimeError**: If async session not initialized
+
+- **ValidationError**: If request configuration is invalid
+
+- **NetworkError**: If network issues occur
+
+- **TimeoutError**: If request times out
+
+**Usage Example:**
+```python
+result = await send_request_async(...)
+```
+
+##### send_request_streaming
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def send_request_streaming(self, url: str, method: str = 'GET', headers: Optional[dict[str, str]] = None, params: Optional[dict[str, Any]] = None, data: Optional[Any] = None, json_data: Optional[dict[str, Any]] = None, chunk_size: int = 8192, **kwargs)
+```
+
+Send streaming HTTP request for large responses.
+
+**Args:**
+- **url**: Target URL
+
+- **method**: HTTP method
+
+- **headers**: Request headers
+
+- **params**: Query parameters
+
+- **data**: Request data
+
+- **json_data**: JSON data
+
+- **chunk_size**: Size of chunks to read
+
+- ****kwargs**: Additional request parameters
+
+**Yields:**
+
+- **bytes**: Response content chunks
+
+**Raises:**
+
+- **RuntimeError**: If async session not initialized
+
+- **ValidationError**: If request configuration is invalid
+
+- **NetworkError**: If network issues occur
+
+- **TimeoutError**: If request times out
+
+##### send_requests_batch
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def send_requests_batch(self, request_configs: list[typing.Union[logicpwn.models.request_config.RequestConfig, dict[str, typing.Any]]], max_concurrent: Optional[int] = None, on_success: Optional[Callable[[logicpwn.models.request_result.RequestResult], NoneType]] = None, on_error: Optional[Callable[[Exception], NoneType]] = None) -> list[logicpwn.models.request_result.RequestResult]
+```
+
+Send multiple requests concurrently.
+
+**Args:**
+- **requests**: List of request configurations
+
+- **max_concurrent**: Maximum concurrent requests
+
+**Returns:**
+ List of RequestResult objects or exceptions
+
+**Raises:**
+
+- **RuntimeError**: If async session not initialized
+
+**Usage Example:**
+```python
+result = await send_requests_batch(...)
+```
+
+##### validate_session_health
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_session_health(self) -> bool
+```
+
+Validate session is still healthy and responsive.
+
+**Returns:**
+ True if session is healthy, False otherwise
+
+##### validate_session_health_async
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def validate_session_health_async(self) -> bool
+```
+
+Validate async session is still healthy and responsive.
+
+**Returns:**
+ True if session is healthy, False otherwise
+
+**Usage Example:**
+```python
+result = await validate_session_health_async(...)
+```
+
+
+---
+
+### LogAction
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class LogAction (Enum):
+    """
+    Logging actions for structured logging
+    """
+```
+
+Logging actions for structured logging.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `LogAction`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### LogComponent
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class LogComponent (Enum):
+    """
+    Logging components for structured logging
+    """
+```
+
+Logging components for structured logging.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `LogComponent`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### LogicPwnError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class LogicPwnError (Exception):
+    """
+    Base exception for LogicPwn with enhanced error context
+    """
+```
+
+Base exception for LogicPwn with enhanced error context.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str, context: Optional[dict[str, Any]] = None, suggestion: Optional[str] = None) -> None
+```
+
+Initialize a new instance of `LogicPwnError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### NetworkError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class NetworkError (LogicPwnError):
+    """
+    Network-related errors
+    """
+```
+
+Network-related errors.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str, context: Optional[dict[str, Any]] = None, suggestion: Optional[str] = None) -> None
+```
+
+Initialize a new instance of `NetworkError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RateLimitAlgorithm
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RateLimitAlgorithm (Enum):
+    """
+    Available rate limiting algorithms
+    """
+```
+
+Available rate limiting algorithms.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `RateLimitAlgorithm`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RateLimitConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RateLimitConfig:
+    """
+    Rate limiting configuration
+    """
+```
+
+Rate limiting configuration.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, algorithm: logicpwn.core.runner.runner.RateLimitAlgorithm = <RateLimitAlgorithm.SIMPLE: 'simple'>, requests_per_second: float = 10.0, burst_size: int = 5, window_size: int = 60, adaptive: bool = False, response_time_threshold: float = 2.0, adaptive_min_rate: float = 1.0, adaptive_max_rate: float = 50.0, adaptive_increase_factor: float = 1.2, adaptive_decrease_factor: float = 0.8) -> None
+```
+
+Initialize a new instance of `RateLimitConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RequestBuilder
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RequestBuilder:
+    """
+    Builder class for constructing RequestConfig objects with fluent API
+    """
+```
+
+Builder class for constructing RequestConfig objects with fluent API.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, url: str)
+```
+
+Initialize a new instance of `RequestBuilder`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### auth_header
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def auth_header(self, token: str, auth_type: str = 'Bearer') -> 'RequestBuilder'
+```
+
+Add authorization header.
+
+##### build
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def build(self) -> logicpwn.models.request_config.RequestConfig
+```
+
+Build the final RequestConfig object.
+
+##### content_type
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def content_type(self, content_type: str) -> 'RequestBuilder'
+```
+
+Set Content-Type header.
+
+##### delete
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def delete(self) -> 'RequestBuilder'
+```
+
+Set method to DELETE.
+
+##### form_content
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def form_content(self) -> 'RequestBuilder'
+```
+
+Set Content-Type to application/x-www-form-urlencoded.
+
+##### form_data
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def form_data(self, data: dict[str, typing.Any]) -> 'RequestBuilder'
+```
+
+Set form data body.
+
+##### get
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get(self) -> 'RequestBuilder'
+```
+
+Set method to GET.
+
+##### head
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def head(self) -> 'RequestBuilder'
+```
+
+Set method to HEAD.
+
+##### header
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def header(self, key: str, value: str) -> 'RequestBuilder'
+```
+
+Add a single header.
+
+##### headers
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def headers(self, headers: dict[str, str]) -> 'RequestBuilder'
+```
+
+Add multiple headers.
+
+##### json_content
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def json_content(self) -> 'RequestBuilder'
+```
+
+Set Content-Type to application/json.
+
+##### json_data
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def json_data(self, data: dict[str, typing.Any]) -> 'RequestBuilder'
+```
+
+Set JSON data body.
+
+##### method
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def method(self, method: str) -> 'RequestBuilder'
+```
+
+Set HTTP method.
+
+##### param
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def param(self, key: str, value: Any) -> 'RequestBuilder'
+```
+
+Add a single query parameter.
+
+##### params
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def params(self, params: dict[str, typing.Any]) -> 'RequestBuilder'
+```
+
+Add multiple query parameters.
+
+##### patch
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def patch(self) -> 'RequestBuilder'
+```
+
+Set method to PATCH.
+
+##### post
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def post(self) -> 'RequestBuilder'
+```
+
+Set method to POST.
+
+##### put
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def put(self) -> 'RequestBuilder'
+```
+
+Set method to PUT.
+
+##### raw_body
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def raw_body(self, body: str) -> 'RequestBuilder'
+```
+
+Set raw body content.
+
+##### timeout
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def timeout(self, seconds: int) -> 'RequestBuilder'
+```
+
+Set request timeout.
+
+##### user_agent
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def user_agent(self, user_agent: str) -> 'RequestBuilder'
+```
+
+Set User-Agent header.
+
+##### verify_ssl
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def verify_ssl(self, verify: bool = True) -> 'RequestBuilder'
+```
+
+Set SSL verification.
+
+
+---
+
+### RequestExecutionError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RequestExecutionError (LogicPwnError):
+    """
+    Request execution errors
+    """
+```
+
+Request execution errors.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str, context: Optional[dict[str, Any]] = None, suggestion: Optional[str] = None) -> None
+```
+
+Initialize a new instance of `RequestExecutionError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### RetryConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RetryConfig:
+    """
+    Comprehensive retry configuration for request resilience
+    """
+```
+
+Comprehensive retry configuration for request resilience.
+
+Parameters
+----------
+max_attempts: int
+ Maximum attempts including the first try (default: 3).
+base_delay: float
+ Initial backoff delay in seconds before applying `exponential_base`.
+max_delay: float
+ Upper bound for any computed backoff delay.
+exponential_base: float
+ Exponential growth base (e.g., 2.0 for doubling each attempt).
+jitter: bool
+ If True, adds ±10% jitter to backoff to avoid thundering herd.
+retryable_status_codes: set[int]
+ HTTP status codes that should be retried (defaults include 429, 5xx).
+retryable_exceptions: tuple[type[Exception], ...]
+ Exception types that should trigger a retry.
+respect_retry_after: bool
+ If True, honors Retry-After header when present.
+backoff_multiplier: float
+ Multiplies the computed delay to stretch/shrink backoff windows.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, max_attempts: int = 3, base_delay: float = 1.0, max_delay: float = 60.0, exponential_base: float = 2.0, jitter: bool = True, retryable_status_codes: set[int] = <factory>, retryable_exceptions: tuple = (<class 'logicpwn.exceptions.request_exceptions.NetworkError'>, <class 'logicpwn.exceptions.request_exceptions.TimeoutError'>, <class 'logicpwn.exceptions.request_exceptions.RequestExecutionError'>), respect_retry_after: bool = True, backoff_multiplier: float = 1.0) -> None
+```
+
+Initialize a new instance of `RetryConfig`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### aggressive
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def aggressive() -> 'RetryConfig'
+```
+
+Return an aggressive retry policy preset for resilient idempotent calls.
+
+##### balanced
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def balanced() -> 'RetryConfig'
+```
+
+Return a balanced retry policy preset suitable for most workloads.
+
+##### conservative
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def conservative() -> 'RetryConfig'
+```
+
+Return a conservative retry policy preset.
+
+- Fewer attempts, shorter window. Suitable for non-idempotent operations.
+
+
+---
+
+### RetryManager
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RetryManager:
+    """
+    Comprehensive retry mechanism with exponential backoff and jitter
+    """
+```
+
+Comprehensive retry mechanism with exponential backoff and jitter.
+
+Provides intelligent retry logic with configurable backoff strategies,
+status code filtering, and exception handling.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, config: logicpwn.core.runner.runner.RetryConfig)
+```
+
+Initialize a new instance of `RetryManager`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### calculate_delay
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def calculate_delay(self, attempt: int, retry_after: Optional[str] = None) -> float
+```
+
+Calculate delay for next retry attempt.
+
+**Args:**
+- **attempt**: Current attempt number (0-based)
+
+- **retry_after**: Retry-After header value (if any)
+
+**Returns:**
+ Delay in seconds before next attempt
+
+##### should_retry
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def should_retry(self, attempt: int, exception: Optional[Exception] = None, status_code: Optional[int] = None) -> bool
+```
+
+Determine if a request should be retried.
+
+**Args:**
+- **attempt**: Current attempt number (0-based)
+
+- **exception**: Exception that occurred (if any)
+
+- **status_code**: HTTP status code (if any)
+
+**Returns:**
+ True if request should be retried, False otherwise
+
+##### wait_for_retry
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def wait_for_retry(self, attempt: int, retry_after: Optional[str] = None) -> None
+```
+
+Wait for the calculated delay before retry.
+
+**Args:**
+- **attempt**: Current attempt number (0-based)
+
+- **retry_after**: Retry-After header value (if any)
+
+**Usage Example:**
+```python
+result = await wait_for_retry(...)
+```
+
+##### wait_for_retry_sync
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wait_for_retry_sync(self, attempt: int, retry_after: Optional[str] = None) -> None
+```
+
+Synchronous wait for the calculated delay before retry.
+
+**Args:**
+- **attempt**: Current attempt number (0-based)
+
+- **retry_after**: Retry-After header value (if any)
+
+
+---
+
+### RunnerConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RunnerConfig:
+    """
+    Comprehensive configuration for HTTP runner
+    """
+```
+
+Comprehensive configuration for HTTP runner.
+
+Attributes
+----------
+rate_limit: RateLimitConfig
+ Rate limiting configuration (algorithm, RPS, burst/window/adaptive).
+ssl: SSLConfig
+ SSL/TLS verification and client authentication settings.
+session: SessionConfig
+ Connection/session tuning for async client.
+retry: RetryConfig
+ Retry/backoff strategy.
+user_agent: str
+ Default User-Agent for requests.
+```python
+default_headers: dict[str, str]
+ Headers merged into every request by default.
+enable_response_cache: bool
+ If True, cache 200-OK GET responses in the in-memory response cache.
+
+Backward compatibility
+----------------------
+```
+retry_attempts, retry_backoff are mapped to `retry` at runtime if provided.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, rate_limit: logicpwn.core.runner.runner.RateLimitConfig = <factory>, ssl: logicpwn.core.runner.runner.SSLConfig = <factory>, session: logicpwn.core.runner.runner.SessionConfig = <factory>, retry: logicpwn.core.runner.runner.RetryConfig = <factory>, user_agent: str = 'LogicPwn-Runner/2.0', default_headers: dict[str, str] = <factory>, enable_response_cache: bool = True, retry_attempts: int = 3, retry_backoff: float = 1.0) -> None
+```
+
+Initialize a new instance of `RunnerConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SSLConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SSLConfig:
+    """
+    SSL/TLS configuration
+    """
+```
+
+SSL/TLS configuration.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, verification_level: logicpwn.core.runner.runner.SSLVerificationLevel = <SSLVerificationLevel.STRICT: 'strict'>, custom_ca_bundle: Optional[str] = None, client_cert: Optional[str] = None, client_key: Optional[str] = None, min_tls_version: str = 'TLSv1.2', ciphers: Optional[str] = None) -> None
+```
+
+Initialize a new instance of `SSLConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SSLVerificationLevel
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SSLVerificationLevel (Enum):
+    """
+    SSL verification levels
+    """
+```
+
+SSL verification levels.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, *args, **kwds)
+```
+
+Initialize a new instance of `SSLVerificationLevel`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SessionConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SessionConfig:
+    """
+    Session management configuration
+    """
+```
+
+Session management configuration.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, max_connections: int = 100, max_connections_per_host: int = 30, connection_timeout: float = 10.0, read_timeout: float = 30.0, total_timeout: float = 60.0, keepalive_timeout: float = 30.0, enable_cleanup_closed: bool = True, force_close: bool = False, auto_decompress: bool = True, enable_http2: bool = True, http2_implementation: str = 'auto', http2_connection_window_size: int = 65536, http2_stream_window_size: int = 65536) -> None
+```
+
+Initialize a new instance of `SessionConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### StandardizedLogger
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class StandardizedLogger:
+    """
+    Standardized logger for LogicPwn runner module
+    """
+```
+
+Standardized logger for LogicPwn runner module.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, component: logicpwn.core.runner.standardized_logging.LogComponent)
+```
+
+Initialize a new instance of `StandardizedLogger`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### critical
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def critical(self, message: str, action: logicpwn.core.runner.standardized_logging.LogAction = <LogAction.ERROR: 'error'>, context: Optional[dict[str, Any]] = None, **kwargs: Any) -> None
+```
+
+Log critical message.
+
+##### debug
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def debug(self, message: str, context: Optional[dict[str, Any]] = None, **kwargs: Any) -> None
+```
+
+Log debug message.
+
+##### end_timer
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def end_timer(self, operation: str) -> float
+```
+
+End timing an operation and return duration.
+
+##### error
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def error(self, message: str, action: logicpwn.core.runner.standardized_logging.LogAction = <LogAction.ERROR: 'error'>, context: Optional[dict[str, Any]] = None, **kwargs: Any) -> None
+```
+
+Log error message.
+
+##### info
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def info(self, message: str, action: logicpwn.core.runner.standardized_logging.LogAction = <LogAction.INIT: 'init'>, context: Optional[dict[str, Any]] = None, **kwargs: Any) -> None
+```
+
+Log info message.
+
+##### log_error
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def log_error(self, error: Exception, action: logicpwn.core.runner.standardized_logging.LogAction = <LogAction.ERROR: 'error'>, context: Optional[dict[str, Any]] = None, **kwargs: Any) -> None
+```
+
+Log error with context.
+
+##### log_rate_limit
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def log_rate_limit(self, rate: float, algorithm: str, context: Optional[dict[str, Any]] = None) -> None
+```
+
+Log rate limiting.
+
+##### log_request
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def log_request(self, method: str, url: str, headers: Optional[dict[str, str]] = None, data: Optional[Any] = None, context: Optional[dict[str, Any]] = None) -> None
+```
+
+Log HTTP request.
+
+##### log_response
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def log_response(self, status_code: int, headers: dict[str, str], body: Any, duration: float, method: str, url: str, context: Optional[dict[str, Any]] = None) -> None
+```
+
+Log HTTP response.
+
+##### log_retry
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def log_retry(self, attempt: int, max_attempts: int, error: Exception, url: str, method: str, context: Optional[dict[str, Any]] = None) -> None
+```
+
+Log retry attempt.
+
+##### log_ssl
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def log_ssl(self, action: str, verify: bool, context: Optional[dict[str, Any]] = None) -> None
+```
+
+Log SSL operations.
+
+##### log_timeout
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def log_timeout(self, url: str, method: str, timeout_value: float, context: Optional[dict[str, Any]] = None) -> None
+```
+
+Log timeout error.
+
+##### start_timer
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def start_timer(self, operation: str) -> None
+```
+
+Start timing an operation.
+
+##### warning
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def warning(self, message: str, action: logicpwn.core.runner.standardized_logging.LogAction = <LogAction.ERROR: 'error'>, context: Optional[dict[str, Any]] = None, **kwargs: Any) -> None
+```
+
+Log warning message.
+
+
+---
+
+### TimeoutError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class TimeoutError (LogicPwnError):
+    """
+    Timeout errors
+    """
+```
+
+Timeout errors.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str, context: Optional[dict[str, Any]] = None, suggestion: Optional[str] = None) -> None
+```
+
+Initialize a new instance of `TimeoutError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### ValidationError
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class ValidationError (LogicPwnError):
+    """
+    Validation errors
+    """
+```
+
+Validation errors.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, message: str, context: Optional[dict[str, Any]] = None, suggestion: Optional[str] = None) -> None
+```
+
+Initialize a new instance of `ValidationError`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+## Functions
+
+:::note[Available Functions]
+This module provides 12 function(s) for direct use.
+:::
+
+### build_request
+
+:::note[Function]
+Module function
+:::
+
+```python
+def build_request(url: str) -> logicpwn.core.runner.request_builder.RequestBuilder
+```
+
+Start building a request with the given URL.
+
+### create_development_config
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_development_config() -> logicpwn.core.runner.runner.RunnerConfig
+```
+
+Create configuration for development.
+
+### create_secure_config
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_secure_config() -> logicpwn.core.runner.runner.RunnerConfig
+```
+
+Create configuration for maximum security.
+
+### create_testing_config
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_testing_config() -> logicpwn.core.runner.runner.RunnerConfig
+```
+
+Create configuration for testing environments.
+
+### get_logger
+
+:::note[Function]
+Module function
+:::
+
+```python
+def get_logger(component: logicpwn.core.runner.standardized_logging.LogComponent) -> logicpwn.core.runner.standardized_logging.StandardizedLogger
+```
+
+Get a standardized logger for a component.
+
+### log_error
+
+:::note[Function]
+Module function
+:::
+
+```python
+def log_error(error: Exception, context: Optional[dict[str, Any]] = None, **kwargs: Any) -> None
+```
+
+Log error with standardized format.
+
+### log_info
+
+:::note[Function]
+Module function
+:::
+
+```python
+def log_info(message: str, context: Optional[dict[str, Any]] = None, **kwargs: Any) -> None
+```
+
+Log info message with standardized format.
+
+### log_request
+
+:::note[Function]
+Module function
+:::
+
+```python
+def log_request(method: str, url: str, headers: Optional[dict[str, str]] = None, data: Optional[Any] = None, **kwargs: Any) -> None
+```
+
+Log request with standardized format.
+
+### log_response
+
+:::note[Function]
+Module function
+:::
+
+```python
+def log_response(status_code: int, headers: dict[str, str], body: Any, duration: float, **kwargs: Any) -> None
+```
+
+Log response with standardized format.
+
+### log_warning
+
+:::note[Function]
+Module function
+:::
+
+```python
+def log_warning(message: str, context: Optional[dict[str, Any]] = None, **kwargs: Any) -> None
+```
+
+Log warning with standardized format.
+
+### send_request_async
+
+:::note[Async Function]
+Asynchronous function
+:::
+
+```python
+async def send_request_async(url: str, method: str = 'GET', headers: Optional[dict[str, str]] = None, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+Send a single async HTTP request.
+**Args:**
+- **url**: Target URL
+
+- **method**: HTTP method
+
+- **headers**: Request headers
+
+- ****kwargs**: Additional request parameters
+**Returns:**
+ RequestResult with response analysis
+
+**Usage Example:**
+```python
+result = await send_request_async(...)
+```
+
+### send_requests_batch_async
+
+:::note[Async Function]
+Asynchronous function
+:::
+
+```python
+async def send_requests_batch_async(request_configs: list[typing.Union[dict[str, typing.Any], logicpwn.models.request_config.RequestConfig]], max_concurrent: int = 10) -> list[logicpwn.models.request_result.RequestResult]
+```
+
+Send multiple requests concurrently.
+**Args:**
+- **request_configs**: List of request configurations
+
+- **max_concurrent**: Maximum concurrent requests
+**Returns:**
+ List of RequestResult objects
+
+**Usage Example:**
+```python
+result = await send_requests_batch_async(...)
+```
+
+
+## Related Modules
+
+:::tip[Test Runner Modules]
+Explore other modules in the Test Runner category:
+
+- **[Runner › Async Runner](./runner/async-runner)** - Asynchronous test execution
+- **[Runner › Async Session Manager](./runner/async-session-manager)** - Session management
+:::
