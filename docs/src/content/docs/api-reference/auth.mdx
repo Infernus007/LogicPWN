@@ -3,7 +3,7 @@ title: Auth
 description: API documentation for the Auth module in LogicPwn framework
 category: Authentication
 sidebar:
-  order: 62
+  order: 45
 ---
 
 import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
@@ -12,10 +12,6 @@ import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components
 **Navigation:** [API Reference](../)
 
 API documentation for the `logicpwn.core.auth` module.
-
-:::note[Module Import Error]
-This module could not be imported during documentation generation. This may be due to missing dependencies or import errors. The module may still be available at runtime.
-:::
 
 ## Import
 
@@ -72,9 +68,4108 @@ results = detect_idor_flaws(
 ```
 
 
+## Classes
+
+:::note[Available Classes]
+This module provides 20 class(es) for authentication.
+:::
+
+### AdvancedAuthConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AdvancedAuthConfig (BaseModel):
+    """
+    Advanced authentication configuration with comprehensive features
+    """
+```
+
+Advanced authentication configuration with comprehensive features.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, **data: 'Any') -> 'None'
+```
+
+Initialize a new instance of `AdvancedAuthConfig`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>model_extra</code></summary>
+
+Get extra fields set during validation.
+
+**Returns:**
+ A dictionary of extra fields, or `None` if `config.extra` is not set to `"allow"`.
+
+</details>
+
+<details>
+<summary><code>model_fields_set</code></summary>
+
+Returns the set of fields that have been explicitly set on this model instance.
+
+**Returns:**
+ A set of strings representing the fields that have been set,
+ i.e. that were not filled from defaults.
+
+</details>
+
+#### Methods
+
+##### construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Documentation for `construct` is not available.
+
+##### copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None, exclude: 'AbstractSetIntStr | MappingIntStrAny | None' = None, update: 'Dict[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+Returns a copy of the model.
+
+!!! warning "Deprecated"
+ This method is now deprecated; use `model_copy` instead.
+
+If you need `include` or `exclude`, use:
+
+```python {test="skip" lint="skip"}
+data = self.model_dump(include=include, exclude=exclude, round_trip=True)
+data = {**data, **(update or {})}
+copied = self.model_validate(data)
+```
+
+**Args:**
+- **include**: Optional set or mapping specifying which fields to include in the copied model.
+
+- **exclude**: Optional set or mapping specifying which fields to exclude in the copied model.
+
+- **update**: Optional dictionary of field-value pairs to override field values in the copied model.
+
+- **deep**: If True, the values of fields that are Pydantic models will be deep-copied.
+
+**Returns:**
+ A copy of the model with included, excluded and updated fields as specified.
+
+##### dict
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def dict(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False) -> 'Dict[str, Any]'
+```
+
+Documentation for `dict` is not available.
+
+##### from_orm
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def from_orm(obj: 'Any') -> 'Self'
+```
+
+Documentation for `from_orm` is not available.
+
+##### json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def json(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, encoder: 'Callable[[Any], Any] | None' = PydanticUndefined, models_as_dict: 'bool' = PydanticUndefined, **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `json` is not available.
+
+##### model_construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Creates a new instance of the `Model` class with validated data.
+
+Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
+Default values are respected, but no other validation is performed.
+
+!!! note
+ `model_construct()` generally respects the `model_config.extra` setting on the provided model.
+ That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
+ and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
+ Because no validation is performed with a call to `model_construct()`, having `model_config.extra == 'forbid'` does not result in
+ an error if extra values are passed, but they will be ignored.
+
+**Args:**
+- **_fields_set**: A set of field names that were originally explicitly set during instantiation. If provided, this is directly used for the [`model_fields_set`][pydantic.BaseModel.model_fields_set] attribute. Otherwise, the field names from the `values` argument will be used.
+
+- **values**: Trusted or pre-validated data dictionary.
+
+**Returns:**
+ A new instance of the `Model` class with validated data.
+
+##### model_copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Returns a copy of the model.
+
+!!! note
+ The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
+ might have unexpected side effects if you store anything in it, on top of the model
+ fields (e.g. the value of [cached properties][functools.cached_property]).
+
+**Args:**
+- **update**: Values to change/add in the new model. Note: the data is not validated before creating the new model. You should trust this data.
+
+- **deep**: Set to `True` to make a deep copy of the model.
+
+**Returns:**
+ New model instance.
+
+##### model_dump
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
+```
+
+!!! abstract "Usage Documentation"
+
+Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
+
+**Args:**
+- **mode**: The mode in which `to_python` should run. If mode is 'json', the output will only contain JSON serializable types. If mode is 'python', the output may contain non-JSON-serializable Python objects.
+
+- **include**: A set of fields to include in the output.
+
+- **exclude**: A set of fields to exclude from the output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to use the field's alias in the dictionary key if defined.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A dictionary representation of the model.
+
+##### model_dump_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
+```
+
+!!! abstract "Usage Documentation"
+
+Generates a JSON representation of the model using Pydantic's `to_json` method.
+
+**Args:**
+- **indent**: Indentation to use in the JSON output. If None is passed, the output will be compact.
+
+- **include**: Field(s) to include in the JSON output.
+
+- **exclude**: Field(s) to exclude from the JSON output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to serialize using field aliases.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A JSON string representation of the model.
+
+##### model_json_schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_json_schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', schema_generator: 'type[GenerateJsonSchema]' = <class 'pydantic.json_schema.GenerateJsonSchema'>, mode: 'JsonSchemaMode' = 'validation') -> 'dict[str, Any]'
+```
+
+Generates a JSON schema for a model class.
+
+**Args:**
+- **by_alias**: Whether to use attribute aliases or not.
+
+- **ref_template**: The reference template.
+
+- **schema_generator**: To override the logic used to generate the JSON schema, as a subclass of `GenerateJsonSchema` with your desired modifications
+
+- **mode**: The mode in which to generate the schema.
+
+**Returns:**
+ The JSON schema for the given model class.
+
+##### model_parametrized_name
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_parametrized_name(params: 'tuple[type[Any], ...]') -> 'str'
+```
+
+Compute the class name for parametrizations of generic classes.
+
+This method can be overridden to achieve a custom naming scheme for generic BaseModels.
+
+**Args:**
+- **params**: Tuple of types of the class. Given a generic class `Model` with 2 type variables and a concrete model `Model[str, int]`, the value `(str, int)` would be passed to `params`.
+
+**Returns:**
+ String representing the new class where `params` are passed to `cls` as type variables.
+
+**Raises:**
+
+- **TypeError**: Raised when trying to generate concrete names for non-generic models.
+
+##### model_post_init
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_post_init(self, context: 'Any', /) -> 'None'
+```
+
+Override this method to perform additional initialization after `__init__` and `model_construct`.
+This is useful if you want to do some validation that requires the entire model to be initialized.
+
+##### model_rebuild
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_rebuild(*, force: 'bool' = False, raise_errors: 'bool' = True, _parent_namespace_depth: 'int' = 2, _types_namespace: 'MappingNamespace | None' = None) -> 'bool | None'
+```
+
+Try to rebuild the pydantic-core schema for the model.
+
+This may be necessary when one of the annotations is a ForwardRef which could not be resolved during
+the initial attempt to build the schema, and automatic rebuilding fails.
+
+**Args:**
+- **force**: Whether to force the rebuilding of the model schema, defaults to `False`.
+
+- **raise_errors**: Whether to raise errors, defaults to `True`.
+
+- **_parent_namespace_depth**: The depth level of the parent namespace, defaults to 2.
+
+- **_types_namespace**: The types namespace, defaults to `None`.
+
+**Returns:**
+ Returns `None` if the schema is already "complete" and rebuilding was not required.
+ If rebuilding _was_ required, returns `True` if rebuilding was successful, otherwise `False`.
+
+##### model_validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate(obj: 'Any', *, strict: 'bool | None' = None, from_attributes: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate a pydantic model instance.
+
+**Args:**
+- **obj**: The object to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **from_attributes**: Whether to extract data from object attributes.
+
+- **context**: Additional context to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Raises:**
+
+- **ValidationError**: If the object could not be validated.
+
+**Returns:**
+ The validated model instance.
+
+##### model_validate_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Validate the given JSON data against the Pydantic model.
+
+**Args:**
+- **json_data**: The JSON data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+**Raises:**
+
+- **ValidationError**: If `json_data` is not a JSON string or the object could not be validated.
+
+##### model_validate_strings
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_strings(obj: 'Any', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate the given object with string data against the Pydantic model.
+
+**Args:**
+- **obj**: The object containing string data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+##### parse_file
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_file(path: 'str | Path', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_file` is not available.
+
+##### parse_obj
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_obj(obj: 'Any') -> 'Self'
+```
+
+Documentation for `parse_obj` is not available.
+
+##### parse_raw
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_raw(b: 'str | bytes', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_raw` is not available.
+
+##### schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}') -> 'Dict[str, Any]'
+```
+
+Documentation for `schema` is not available.
+
+##### schema_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema_json(*, by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `schema_json` is not available.
+
+##### update_forward_refs
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def update_forward_refs(**localns: 'Any') -> 'None'
+```
+
+Documentation for `update_forward_refs` is not available.
+
+##### validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate(value: 'Any') -> 'Self'
+```
+
+Documentation for `validate` is not available.
+
+
+---
+
+### AttributeMapping
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AttributeMapping (BaseModel):
+    """
+    Attribute mapping configuration
+    """
+```
+
+Attribute mapping configuration.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, **data: 'Any') -> 'None'
+```
+
+Initialize a new instance of `AttributeMapping`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>model_extra</code></summary>
+
+Get extra fields set during validation.
+
+**Returns:**
+ A dictionary of extra fields, or `None` if `config.extra` is not set to `"allow"`.
+
+</details>
+
+<details>
+<summary><code>model_fields_set</code></summary>
+
+Returns the set of fields that have been explicitly set on this model instance.
+
+**Returns:**
+ A set of strings representing the fields that have been set,
+ i.e. that were not filled from defaults.
+
+</details>
+
+#### Methods
+
+##### construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Documentation for `construct` is not available.
+
+##### copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None, exclude: 'AbstractSetIntStr | MappingIntStrAny | None' = None, update: 'Dict[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+Returns a copy of the model.
+
+!!! warning "Deprecated"
+ This method is now deprecated; use `model_copy` instead.
+
+If you need `include` or `exclude`, use:
+
+```python {test="skip" lint="skip"}
+data = self.model_dump(include=include, exclude=exclude, round_trip=True)
+data = {**data, **(update or {})}
+copied = self.model_validate(data)
+```
+
+**Args:**
+- **include**: Optional set or mapping specifying which fields to include in the copied model.
+
+- **exclude**: Optional set or mapping specifying which fields to exclude in the copied model.
+
+- **update**: Optional dictionary of field-value pairs to override field values in the copied model.
+
+- **deep**: If True, the values of fields that are Pydantic models will be deep-copied.
+
+**Returns:**
+ A copy of the model with included, excluded and updated fields as specified.
+
+##### dict
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def dict(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False) -> 'Dict[str, Any]'
+```
+
+Documentation for `dict` is not available.
+
+##### extract_value
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def extract_value(self, data: dict[str, typing.Any], field_name: str) -> Any
+```
+
+Extract value from data using field mapping.
+
+##### from_orm
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def from_orm(obj: 'Any') -> 'Self'
+```
+
+Documentation for `from_orm` is not available.
+
+##### json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def json(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, encoder: 'Callable[[Any], Any] | None' = PydanticUndefined, models_as_dict: 'bool' = PydanticUndefined, **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `json` is not available.
+
+##### model_construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Creates a new instance of the `Model` class with validated data.
+
+Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
+Default values are respected, but no other validation is performed.
+
+!!! note
+ `model_construct()` generally respects the `model_config.extra` setting on the provided model.
+ That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
+ and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
+ Because no validation is performed with a call to `model_construct()`, having `model_config.extra == 'forbid'` does not result in
+ an error if extra values are passed, but they will be ignored.
+
+**Args:**
+- **_fields_set**: A set of field names that were originally explicitly set during instantiation. If provided, this is directly used for the [`model_fields_set`][pydantic.BaseModel.model_fields_set] attribute. Otherwise, the field names from the `values` argument will be used.
+
+- **values**: Trusted or pre-validated data dictionary.
+
+**Returns:**
+ A new instance of the `Model` class with validated data.
+
+##### model_copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Returns a copy of the model.
+
+!!! note
+ The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
+ might have unexpected side effects if you store anything in it, on top of the model
+ fields (e.g. the value of [cached properties][functools.cached_property]).
+
+**Args:**
+- **update**: Values to change/add in the new model. Note: the data is not validated before creating the new model. You should trust this data.
+
+- **deep**: Set to `True` to make a deep copy of the model.
+
+**Returns:**
+ New model instance.
+
+##### model_dump
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
+```
+
+!!! abstract "Usage Documentation"
+
+Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
+
+**Args:**
+- **mode**: The mode in which `to_python` should run. If mode is 'json', the output will only contain JSON serializable types. If mode is 'python', the output may contain non-JSON-serializable Python objects.
+
+- **include**: A set of fields to include in the output.
+
+- **exclude**: A set of fields to exclude from the output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to use the field's alias in the dictionary key if defined.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A dictionary representation of the model.
+
+##### model_dump_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
+```
+
+!!! abstract "Usage Documentation"
+
+Generates a JSON representation of the model using Pydantic's `to_json` method.
+
+**Args:**
+- **indent**: Indentation to use in the JSON output. If None is passed, the output will be compact.
+
+- **include**: Field(s) to include in the JSON output.
+
+- **exclude**: Field(s) to exclude from the JSON output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to serialize using field aliases.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A JSON string representation of the model.
+
+##### model_json_schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_json_schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', schema_generator: 'type[GenerateJsonSchema]' = <class 'pydantic.json_schema.GenerateJsonSchema'>, mode: 'JsonSchemaMode' = 'validation') -> 'dict[str, Any]'
+```
+
+Generates a JSON schema for a model class.
+
+**Args:**
+- **by_alias**: Whether to use attribute aliases or not.
+
+- **ref_template**: The reference template.
+
+- **schema_generator**: To override the logic used to generate the JSON schema, as a subclass of `GenerateJsonSchema` with your desired modifications
+
+- **mode**: The mode in which to generate the schema.
+
+**Returns:**
+ The JSON schema for the given model class.
+
+##### model_parametrized_name
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_parametrized_name(params: 'tuple[type[Any], ...]') -> 'str'
+```
+
+Compute the class name for parametrizations of generic classes.
+
+This method can be overridden to achieve a custom naming scheme for generic BaseModels.
+
+**Args:**
+- **params**: Tuple of types of the class. Given a generic class `Model` with 2 type variables and a concrete model `Model[str, int]`, the value `(str, int)` would be passed to `params`.
+
+**Returns:**
+ String representing the new class where `params` are passed to `cls` as type variables.
+
+**Raises:**
+
+- **TypeError**: Raised when trying to generate concrete names for non-generic models.
+
+##### model_post_init
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_post_init(self, context: 'Any', /) -> 'None'
+```
+
+Override this method to perform additional initialization after `__init__` and `model_construct`.
+This is useful if you want to do some validation that requires the entire model to be initialized.
+
+##### model_rebuild
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_rebuild(*, force: 'bool' = False, raise_errors: 'bool' = True, _parent_namespace_depth: 'int' = 2, _types_namespace: 'MappingNamespace | None' = None) -> 'bool | None'
+```
+
+Try to rebuild the pydantic-core schema for the model.
+
+This may be necessary when one of the annotations is a ForwardRef which could not be resolved during
+the initial attempt to build the schema, and automatic rebuilding fails.
+
+**Args:**
+- **force**: Whether to force the rebuilding of the model schema, defaults to `False`.
+
+- **raise_errors**: Whether to raise errors, defaults to `True`.
+
+- **_parent_namespace_depth**: The depth level of the parent namespace, defaults to 2.
+
+- **_types_namespace**: The types namespace, defaults to `None`.
+
+**Returns:**
+ Returns `None` if the schema is already "complete" and rebuilding was not required.
+ If rebuilding _was_ required, returns `True` if rebuilding was successful, otherwise `False`.
+
+##### model_validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate(obj: 'Any', *, strict: 'bool | None' = None, from_attributes: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate a pydantic model instance.
+
+**Args:**
+- **obj**: The object to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **from_attributes**: Whether to extract data from object attributes.
+
+- **context**: Additional context to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Raises:**
+
+- **ValidationError**: If the object could not be validated.
+
+**Returns:**
+ The validated model instance.
+
+##### model_validate_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Validate the given JSON data against the Pydantic model.
+
+**Args:**
+- **json_data**: The JSON data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+**Raises:**
+
+- **ValidationError**: If `json_data` is not a JSON string or the object could not be validated.
+
+##### model_validate_strings
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_strings(obj: 'Any', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate the given object with string data against the Pydantic model.
+
+**Args:**
+- **obj**: The object containing string data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+##### parse_file
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_file(path: 'str | Path', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_file` is not available.
+
+##### parse_obj
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_obj(obj: 'Any') -> 'Self'
+```
+
+Documentation for `parse_obj` is not available.
+
+##### parse_raw
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_raw(b: 'str | bytes', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_raw` is not available.
+
+##### schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}') -> 'Dict[str, Any]'
+```
+
+Documentation for `schema` is not available.
+
+##### schema_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema_json(*, by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `schema_json` is not available.
+
+##### update_forward_refs
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def update_forward_refs(**localns: 'Any') -> 'None'
+```
+
+Documentation for `update_forward_refs` is not available.
+
+##### validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate(value: 'Any') -> 'Self'
+```
+
+Documentation for `validate` is not available.
+
+
+---
+
+### AuthConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AuthConfig (BaseModel):
+    """
+    Enhanced authentication configuration with advanced HTTP client features
+    """
+```
+
+Enhanced authentication configuration with advanced HTTP client features
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, **data: 'Any') -> 'None'
+```
+
+Initialize a new instance of `AuthConfig`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>model_extra</code></summary>
+
+Get extra fields set during validation.
+
+**Returns:**
+ A dictionary of extra fields, or `None` if `config.extra` is not set to `"allow"`.
+
+</details>
+
+<details>
+<summary><code>model_fields_set</code></summary>
+
+Returns the set of fields that have been explicitly set on this model instance.
+
+**Returns:**
+ A set of strings representing the fields that have been set,
+ i.e. that were not filled from defaults.
+
+</details>
+
+#### Methods
+
+##### construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Documentation for `construct` is not available.
+
+##### copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None, exclude: 'AbstractSetIntStr | MappingIntStrAny | None' = None, update: 'Dict[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+Returns a copy of the model.
+
+!!! warning "Deprecated"
+ This method is now deprecated; use `model_copy` instead.
+
+If you need `include` or `exclude`, use:
+
+```python {test="skip" lint="skip"}
+data = self.model_dump(include=include, exclude=exclude, round_trip=True)
+data = {**data, **(update or {})}
+copied = self.model_validate(data)
+```
+
+**Args:**
+- **include**: Optional set or mapping specifying which fields to include in the copied model.
+
+- **exclude**: Optional set or mapping specifying which fields to exclude in the copied model.
+
+- **update**: Optional dictionary of field-value pairs to override field values in the copied model.
+
+- **deep**: If True, the values of fields that are Pydantic models will be deep-copied.
+
+**Returns:**
+ A copy of the model with included, excluded and updated fields as specified.
+
+##### dict
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def dict(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False) -> 'Dict[str, Any]'
+```
+
+Documentation for `dict` is not available.
+
+##### from_orm
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def from_orm(obj: 'Any') -> 'Self'
+```
+
+Documentation for `from_orm` is not available.
+
+##### json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def json(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, encoder: 'Callable[[Any], Any] | None' = PydanticUndefined, models_as_dict: 'bool' = PydanticUndefined, **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `json` is not available.
+
+##### model_construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Creates a new instance of the `Model` class with validated data.
+
+Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
+Default values are respected, but no other validation is performed.
+
+!!! note
+ `model_construct()` generally respects the `model_config.extra` setting on the provided model.
+ That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
+ and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
+ Because no validation is performed with a call to `model_construct()`, having `model_config.extra == 'forbid'` does not result in
+ an error if extra values are passed, but they will be ignored.
+
+**Args:**
+- **_fields_set**: A set of field names that were originally explicitly set during instantiation. If provided, this is directly used for the [`model_fields_set`][pydantic.BaseModel.model_fields_set] attribute. Otherwise, the field names from the `values` argument will be used.
+
+- **values**: Trusted or pre-validated data dictionary.
+
+**Returns:**
+ A new instance of the `Model` class with validated data.
+
+##### model_copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Returns a copy of the model.
+
+!!! note
+ The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
+ might have unexpected side effects if you store anything in it, on top of the model
+ fields (e.g. the value of [cached properties][functools.cached_property]).
+
+**Args:**
+- **update**: Values to change/add in the new model. Note: the data is not validated before creating the new model. You should trust this data.
+
+- **deep**: Set to `True` to make a deep copy of the model.
+
+**Returns:**
+ New model instance.
+
+##### model_dump
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
+```
+
+!!! abstract "Usage Documentation"
+
+Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
+
+**Args:**
+- **mode**: The mode in which `to_python` should run. If mode is 'json', the output will only contain JSON serializable types. If mode is 'python', the output may contain non-JSON-serializable Python objects.
+
+- **include**: A set of fields to include in the output.
+
+- **exclude**: A set of fields to exclude from the output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to use the field's alias in the dictionary key if defined.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A dictionary representation of the model.
+
+##### model_dump_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
+```
+
+!!! abstract "Usage Documentation"
+
+Generates a JSON representation of the model using Pydantic's `to_json` method.
+
+**Args:**
+- **indent**: Indentation to use in the JSON output. If None is passed, the output will be compact.
+
+- **include**: Field(s) to include in the JSON output.
+
+- **exclude**: Field(s) to exclude from the JSON output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to serialize using field aliases.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A JSON string representation of the model.
+
+##### model_json_schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_json_schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', schema_generator: 'type[GenerateJsonSchema]' = <class 'pydantic.json_schema.GenerateJsonSchema'>, mode: 'JsonSchemaMode' = 'validation') -> 'dict[str, Any]'
+```
+
+Generates a JSON schema for a model class.
+
+**Args:**
+- **by_alias**: Whether to use attribute aliases or not.
+
+- **ref_template**: The reference template.
+
+- **schema_generator**: To override the logic used to generate the JSON schema, as a subclass of `GenerateJsonSchema` with your desired modifications
+
+- **mode**: The mode in which to generate the schema.
+
+**Returns:**
+ The JSON schema for the given model class.
+
+##### model_parametrized_name
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_parametrized_name(params: 'tuple[type[Any], ...]') -> 'str'
+```
+
+Compute the class name for parametrizations of generic classes.
+
+This method can be overridden to achieve a custom naming scheme for generic BaseModels.
+
+**Args:**
+- **params**: Tuple of types of the class. Given a generic class `Model` with 2 type variables and a concrete model `Model[str, int]`, the value `(str, int)` would be passed to `params`.
+
+**Returns:**
+ String representing the new class where `params` are passed to `cls` as type variables.
+
+**Raises:**
+
+- **TypeError**: Raised when trying to generate concrete names for non-generic models.
+
+##### model_post_init
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_post_init(self, context: 'Any', /) -> 'None'
+```
+
+Override this method to perform additional initialization after `__init__` and `model_construct`.
+This is useful if you want to do some validation that requires the entire model to be initialized.
+
+##### model_rebuild
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_rebuild(*, force: 'bool' = False, raise_errors: 'bool' = True, _parent_namespace_depth: 'int' = 2, _types_namespace: 'MappingNamespace | None' = None) -> 'bool | None'
+```
+
+Try to rebuild the pydantic-core schema for the model.
+
+This may be necessary when one of the annotations is a ForwardRef which could not be resolved during
+the initial attempt to build the schema, and automatic rebuilding fails.
+
+**Args:**
+- **force**: Whether to force the rebuilding of the model schema, defaults to `False`.
+
+- **raise_errors**: Whether to raise errors, defaults to `True`.
+
+- **_parent_namespace_depth**: The depth level of the parent namespace, defaults to 2.
+
+- **_types_namespace**: The types namespace, defaults to `None`.
+
+**Returns:**
+ Returns `None` if the schema is already "complete" and rebuilding was not required.
+ If rebuilding _was_ required, returns `True` if rebuilding was successful, otherwise `False`.
+
+##### model_validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate(obj: 'Any', *, strict: 'bool | None' = None, from_attributes: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate a pydantic model instance.
+
+**Args:**
+- **obj**: The object to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **from_attributes**: Whether to extract data from object attributes.
+
+- **context**: Additional context to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Raises:**
+
+- **ValidationError**: If the object could not be validated.
+
+**Returns:**
+ The validated model instance.
+
+##### model_validate_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Validate the given JSON data against the Pydantic model.
+
+**Args:**
+- **json_data**: The JSON data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+**Raises:**
+
+- **ValidationError**: If `json_data` is not a JSON string or the object could not be validated.
+
+##### model_validate_strings
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_strings(obj: 'Any', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate the given object with string data against the Pydantic model.
+
+**Args:**
+- **obj**: The object containing string data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+##### parse_file
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_file(path: 'str | Path', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_file` is not available.
+
+##### parse_obj
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_obj(obj: 'Any') -> 'Self'
+```
+
+Documentation for `parse_obj` is not available.
+
+##### parse_raw
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_raw(b: 'str | bytes', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_raw` is not available.
+
+##### schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}') -> 'Dict[str, Any]'
+```
+
+Documentation for `schema` is not available.
+
+##### schema_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema_json(*, by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `schema_json` is not available.
+
+##### update_forward_refs
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def update_forward_refs(**localns: 'Any') -> 'None'
+```
+
+Documentation for `update_forward_refs` is not available.
+
+##### validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate(value: 'Any') -> 'Self'
+```
+
+Documentation for `validate` is not available.
+
+##### validate_credentials
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_credentials(v: dict[str, typing.Any]) -> dict[str, typing.Any]
+```
+
+Documentation for `validate_credentials` is not available.
+
+##### validate_method
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_method(v: str) -> str
+```
+
+Documentation for `validate_method` is not available.
+
+##### validate_url
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_url(v: str) -> str
+```
+
+Documentation for `validate_url` is not available.
+
+
+---
+
+### AuthFlow
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AuthFlow:
+    """
+    Authentication flow state for multi-step authentication
+    """
+```
+
+Authentication flow state for multi-step authentication.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, flow_id: str, flow_type: str, current_step: int, total_steps: int, state_data: dict[str, typing.Any], started_at: float, expires_at: float) -> None
+```
+
+Initialize a new instance of `AuthFlow`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>is_complete</code></summary>
+
+Property `is_complete` of type `<class 'bool'>`.
+
+</details>
+
+<details>
+<summary><code>is_expired</code></summary>
+
+Property `is_expired` of type `<class 'bool'>`.
+
+</details>
+
+
+---
+
+### AuthenticationSession
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class AuthenticationSession:
+    """
+    Authentication session from IdP
+    """
+```
+
+Authentication session from IdP.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, session_id: str, user_profile: logicpwn.core.auth.idp_integration.UserProfile, provider: str, access_token: Optional[str] = None, refresh_token: Optional[str] = None, id_token: Optional[str] = None, expires_at: Optional[float] = None, session_data: dict[str, typing.Any] = <factory>) -> None
+```
+
+Initialize a new instance of `AuthenticationSession`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>is_expired</code></summary>
+
+Check if session is expired.
+
+</details>
+
+
+---
+
+### Authenticator
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class Authenticator:
+    """
+    Advanced authenticator with comprehensive authentication capabilities
+    """
+```
+
+Advanced authenticator with comprehensive authentication capabilities.
+
+Features:
+- Intelligent redirect detection and handling
+- Multi-step authentication flows
+- JWT token management and validation
+- Session management with advanced security
+- Form-based authentication with CSRF protection
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, config: 'AdvancedAuthConfig', session: Optional[requests.sessions.Session] = None)
+```
+
+Initialize a new instance of `Authenticator`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### authenticate_intelligent
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def authenticate_intelligent(self, url: str, **kwargs) -> 'AuthenticationSession'
+```
+
+Intelligently detect authentication method and perform authentication.
+
+**Args:**
+- **url**: Authentication URL
+
+- ****kwargs**: Authentication parameters
+
+**Returns:**
+ AuthenticationSession
+
+##### cleanup_expired_flows
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def cleanup_expired_flows(self)
+```
+
+Clean up expired authentication flows.
+
+##### detect_redirect_type
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def detect_redirect_type(self, url: str, response: requests.models.Response) -> 'RedirectInfo'
+```
+
+Intelligently detect redirect type and extract parameters.
+
+**Args:**
+- **url**: Target URL
+
+- **response**: HTTP response
+
+**Returns:**
+ RedirectInfo with detected redirect information
+
+##### validate_jwt_token
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_jwt_token(self, token: str) -> dict
+```
+
+Validate JWT token using configured secret.
+
+**Args:**
+- **token**: JWT token string
+
+**Returns:**
+ JWT claims if valid
+
+
+---
+
+### CSRFConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class CSRFConfig:
+    """
+    Configuration for CSRF token handling
+    """
+```
+
+Configuration for CSRF token handling
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, enabled: bool = True, token_patterns: list[re.Pattern] = <factory>, auto_include: bool = True, refresh_on_failure: bool = True) -> None
+```
+
+Initialize a new instance of `CSRFConfig`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### IdPConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class IdPConfig (BaseModel):
+    """
+    Identity Provider configuration
+    """
+```
+
+Identity Provider configuration.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, **data: 'Any') -> 'None'
+```
+
+Initialize a new instance of `IdPConfig`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>model_extra</code></summary>
+
+Get extra fields set during validation.
+
+**Returns:**
+ A dictionary of extra fields, or `None` if `config.extra` is not set to `"allow"`.
+
+</details>
+
+<details>
+<summary><code>model_fields_set</code></summary>
+
+Returns the set of fields that have been explicitly set on this model instance.
+
+**Returns:**
+ A set of strings representing the fields that have been set,
+ i.e. that were not filled from defaults.
+
+</details>
+
+#### Methods
+
+##### construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Documentation for `construct` is not available.
+
+##### copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None, exclude: 'AbstractSetIntStr | MappingIntStrAny | None' = None, update: 'Dict[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+Returns a copy of the model.
+
+!!! warning "Deprecated"
+ This method is now deprecated; use `model_copy` instead.
+
+If you need `include` or `exclude`, use:
+
+```python {test="skip" lint="skip"}
+data = self.model_dump(include=include, exclude=exclude, round_trip=True)
+data = {**data, **(update or {})}
+copied = self.model_validate(data)
+```
+
+**Args:**
+- **include**: Optional set or mapping specifying which fields to include in the copied model.
+
+- **exclude**: Optional set or mapping specifying which fields to exclude in the copied model.
+
+- **update**: Optional dictionary of field-value pairs to override field values in the copied model.
+
+- **deep**: If True, the values of fields that are Pydantic models will be deep-copied.
+
+**Returns:**
+ A copy of the model with included, excluded and updated fields as specified.
+
+##### dict
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def dict(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False) -> 'Dict[str, Any]'
+```
+
+Documentation for `dict` is not available.
+
+##### from_orm
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def from_orm(obj: 'Any') -> 'Self'
+```
+
+Documentation for `from_orm` is not available.
+
+##### json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def json(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, encoder: 'Callable[[Any], Any] | None' = PydanticUndefined, models_as_dict: 'bool' = PydanticUndefined, **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `json` is not available.
+
+##### model_construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Creates a new instance of the `Model` class with validated data.
+
+Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
+Default values are respected, but no other validation is performed.
+
+!!! note
+ `model_construct()` generally respects the `model_config.extra` setting on the provided model.
+ That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
+ and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
+ Because no validation is performed with a call to `model_construct()`, having `model_config.extra == 'forbid'` does not result in
+ an error if extra values are passed, but they will be ignored.
+
+**Args:**
+- **_fields_set**: A set of field names that were originally explicitly set during instantiation. If provided, this is directly used for the [`model_fields_set`][pydantic.BaseModel.model_fields_set] attribute. Otherwise, the field names from the `values` argument will be used.
+
+- **values**: Trusted or pre-validated data dictionary.
+
+**Returns:**
+ A new instance of the `Model` class with validated data.
+
+##### model_copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Returns a copy of the model.
+
+!!! note
+ The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
+ might have unexpected side effects if you store anything in it, on top of the model
+ fields (e.g. the value of [cached properties][functools.cached_property]).
+
+**Args:**
+- **update**: Values to change/add in the new model. Note: the data is not validated before creating the new model. You should trust this data.
+
+- **deep**: Set to `True` to make a deep copy of the model.
+
+**Returns:**
+ New model instance.
+
+##### model_dump
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
+```
+
+!!! abstract "Usage Documentation"
+
+Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
+
+**Args:**
+- **mode**: The mode in which `to_python` should run. If mode is 'json', the output will only contain JSON serializable types. If mode is 'python', the output may contain non-JSON-serializable Python objects.
+
+- **include**: A set of fields to include in the output.
+
+- **exclude**: A set of fields to exclude from the output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to use the field's alias in the dictionary key if defined.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A dictionary representation of the model.
+
+##### model_dump_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
+```
+
+!!! abstract "Usage Documentation"
+
+Generates a JSON representation of the model using Pydantic's `to_json` method.
+
+**Args:**
+- **indent**: Indentation to use in the JSON output. If None is passed, the output will be compact.
+
+- **include**: Field(s) to include in the JSON output.
+
+- **exclude**: Field(s) to exclude from the JSON output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to serialize using field aliases.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A JSON string representation of the model.
+
+##### model_json_schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_json_schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', schema_generator: 'type[GenerateJsonSchema]' = <class 'pydantic.json_schema.GenerateJsonSchema'>, mode: 'JsonSchemaMode' = 'validation') -> 'dict[str, Any]'
+```
+
+Generates a JSON schema for a model class.
+
+**Args:**
+- **by_alias**: Whether to use attribute aliases or not.
+
+- **ref_template**: The reference template.
+
+- **schema_generator**: To override the logic used to generate the JSON schema, as a subclass of `GenerateJsonSchema` with your desired modifications
+
+- **mode**: The mode in which to generate the schema.
+
+**Returns:**
+ The JSON schema for the given model class.
+
+##### model_parametrized_name
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_parametrized_name(params: 'tuple[type[Any], ...]') -> 'str'
+```
+
+Compute the class name for parametrizations of generic classes.
+
+This method can be overridden to achieve a custom naming scheme for generic BaseModels.
+
+**Args:**
+- **params**: Tuple of types of the class. Given a generic class `Model` with 2 type variables and a concrete model `Model[str, int]`, the value `(str, int)` would be passed to `params`.
+
+**Returns:**
+ String representing the new class where `params` are passed to `cls` as type variables.
+
+**Raises:**
+
+- **TypeError**: Raised when trying to generate concrete names for non-generic models.
+
+##### model_post_init
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_post_init(self, context: 'Any', /) -> 'None'
+```
+
+Override this method to perform additional initialization after `__init__` and `model_construct`.
+This is useful if you want to do some validation that requires the entire model to be initialized.
+
+##### model_rebuild
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_rebuild(*, force: 'bool' = False, raise_errors: 'bool' = True, _parent_namespace_depth: 'int' = 2, _types_namespace: 'MappingNamespace | None' = None) -> 'bool | None'
+```
+
+Try to rebuild the pydantic-core schema for the model.
+
+This may be necessary when one of the annotations is a ForwardRef which could not be resolved during
+the initial attempt to build the schema, and automatic rebuilding fails.
+
+**Args:**
+- **force**: Whether to force the rebuilding of the model schema, defaults to `False`.
+
+- **raise_errors**: Whether to raise errors, defaults to `True`.
+
+- **_parent_namespace_depth**: The depth level of the parent namespace, defaults to 2.
+
+- **_types_namespace**: The types namespace, defaults to `None`.
+
+**Returns:**
+ Returns `None` if the schema is already "complete" and rebuilding was not required.
+ If rebuilding _was_ required, returns `True` if rebuilding was successful, otherwise `False`.
+
+##### model_validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate(obj: 'Any', *, strict: 'bool | None' = None, from_attributes: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate a pydantic model instance.
+
+**Args:**
+- **obj**: The object to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **from_attributes**: Whether to extract data from object attributes.
+
+- **context**: Additional context to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Raises:**
+
+- **ValidationError**: If the object could not be validated.
+
+**Returns:**
+ The validated model instance.
+
+##### model_validate_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Validate the given JSON data against the Pydantic model.
+
+**Args:**
+- **json_data**: The JSON data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+**Raises:**
+
+- **ValidationError**: If `json_data` is not a JSON string or the object could not be validated.
+
+##### model_validate_strings
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_strings(obj: 'Any', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate the given object with string data against the Pydantic model.
+
+**Args:**
+- **obj**: The object containing string data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+##### parse_file
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_file(path: 'str | Path', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_file` is not available.
+
+##### parse_obj
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_obj(obj: 'Any') -> 'Self'
+```
+
+Documentation for `parse_obj` is not available.
+
+##### parse_raw
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_raw(b: 'str | bytes', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_raw` is not available.
+
+##### schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}') -> 'Dict[str, Any]'
+```
+
+Documentation for `schema` is not available.
+
+##### schema_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema_json(*, by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `schema_json` is not available.
+
+##### update_forward_refs
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def update_forward_refs(**localns: 'Any') -> 'None'
+```
+
+Documentation for `update_forward_refs` is not available.
+
+##### validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate(value: 'Any') -> 'Self'
+```
+
+Documentation for `validate` is not available.
+
+##### validate_provider_type
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_provider_type(v: str) -> str
+```
+
+Documentation for `validate_provider_type` is not available.
+
+
+---
+
+### IdPManager
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class IdPManager:
+    """
+    Identity Provider manager for multi-IdP support
+    """
+```
+
+Identity Provider manager for multi-IdP support.
+
+Features:
+- Multiple IdP support
+- Dynamic provider selection
+- Session federation
+- Provider failover
+- Centralized user management
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, session: Optional[requests.sessions.Session] = None)
+```
+
+Initialize a new instance of `IdPManager`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### wrapper
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wrapper(*args, **kwargs)
+```
+
+Documentation for `wrapper` is not available.
+
+##### cleanup_expired_sessions
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def cleanup_expired_sessions(self)
+```
+
+Clean up expired sessions.
+
+##### get_provider
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_provider(self, provider_id: str) -> logicpwn.core.auth.idp_integration.BaseIdPProvider
+```
+
+Get provider by ID.
+
+##### get_session
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_session(self, session_id: str) -> Optional[logicpwn.core.auth.idp_integration.AuthenticationSession]
+```
+
+Get active session by ID.
+
+##### list_providers
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def list_providers(self) -> list[dict[str, str]]
+```
+
+List available providers.
+
+##### logout
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def logout(self, session_id: str) -> bool
+```
+
+Logout session.
+
+##### refresh_session
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def refresh_session(self, session_id: str) -> logicpwn.core.auth.idp_integration.AuthenticationSession
+```
+
+Refresh session.
+
+##### register_provider
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def register_provider(self, config: logicpwn.core.auth.idp_integration.IdPConfig) -> logicpwn.core.auth.idp_integration.BaseIdPProvider
+```
+
+Register identity provider.
+
+
+---
+
+### JWK
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class JWK:
+    """
+    JSON Web Key
+    """
+```
+
+JSON Web Key.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, kty: str, use: Optional[str] = None, alg: Optional[str] = None, kid: Optional[str] = None, n: Optional[str] = None, e: Optional[str] = None, crv: Optional[str] = None, x: Optional[str] = None, y: Optional[str] = None, k: Optional[str] = None) -> None
+```
+
+Initialize a new instance of `JWK`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### from_dict
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def from_dict(jwk_dict: dict[str, typing.Any]) -> 'JWK'
+```
+
+Create JWK from dictionary.
+
+##### to_public_key
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def to_public_key(self)
+```
+
+Convert JWK to cryptography public key.
+
+
+---
+
+### JWTClaims
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class JWTClaims:
+    """
+    JWT claims with validation
+    """
+```
+
+JWT claims with validation.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, iss: Optional[str] = None, sub: Optional[str] = None, aud: Union[str, list[str], NoneType] = None, exp: Optional[int] = None, nbf: Optional[int] = None, iat: Optional[int] = None, jti: Optional[str] = None, custom_claims: dict[str, typing.Any] = <factory>) -> None
+```
+
+Initialize a new instance of `JWTClaims`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>is_expired</code></summary>
+
+Check if token is expired.
+
+</details>
+
+<details>
+<summary><code>is_not_yet_valid</code></summary>
+
+Check if token is not yet valid.
+
+</details>
+
+<details>
+<summary><code>is_valid</code></summary>
+
+Check if token is currently valid.
+
+</details>
+
+#### Methods
+
+##### validate_audience
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_audience(self, expected_audience: Union[str, list[str]]) -> bool
+```
+
+Validate audience claim.
+
+##### validate_issuer
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate_issuer(self, expected_issuer: str) -> bool
+```
+
+Validate issuer claim.
+
+
+---
+
+### JWTConfig
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class JWTConfig (BaseModel):
+    """
+    JWT configuration
+    """
+```
+
+JWT configuration.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, /, **data: 'Any') -> 'None'
+```
+
+Initialize a new instance of `JWTConfig`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>model_extra</code></summary>
+
+Get extra fields set during validation.
+
+**Returns:**
+ A dictionary of extra fields, or `None` if `config.extra` is not set to `"allow"`.
+
+</details>
+
+<details>
+<summary><code>model_fields_set</code></summary>
+
+Returns the set of fields that have been explicitly set on this model instance.
+
+**Returns:**
+ A set of strings representing the fields that have been set,
+ i.e. that were not filled from defaults.
+
+</details>
+
+#### Methods
+
+##### construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Documentation for `construct` is not available.
+
+##### copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def copy(self, *, include: 'AbstractSetIntStr | MappingIntStrAny | None' = None, exclude: 'AbstractSetIntStr | MappingIntStrAny | None' = None, update: 'Dict[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+Returns a copy of the model.
+
+!!! warning "Deprecated"
+ This method is now deprecated; use `model_copy` instead.
+
+If you need `include` or `exclude`, use:
+
+```python {test="skip" lint="skip"}
+data = self.model_dump(include=include, exclude=exclude, round_trip=True)
+data = {**data, **(update or {})}
+copied = self.model_validate(data)
+```
+
+**Args:**
+- **include**: Optional set or mapping specifying which fields to include in the copied model.
+
+- **exclude**: Optional set or mapping specifying which fields to exclude in the copied model.
+
+- **update**: Optional dictionary of field-value pairs to override field values in the copied model.
+
+- **deep**: If True, the values of fields that are Pydantic models will be deep-copied.
+
+**Returns:**
+ A copy of the model with included, excluded and updated fields as specified.
+
+##### dict
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def dict(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False) -> 'Dict[str, Any]'
+```
+
+Documentation for `dict` is not available.
+
+##### from_orm
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def from_orm(obj: 'Any') -> 'Self'
+```
+
+Documentation for `from_orm` is not available.
+
+##### json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def json(self, *, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, by_alias: 'bool' = False, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, encoder: 'Callable[[Any], Any] | None' = PydanticUndefined, models_as_dict: 'bool' = PydanticUndefined, **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `json` is not available.
+
+##### model_construct
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_construct(_fields_set: 'set[str] | None' = None, **values: 'Any') -> 'Self'
+```
+
+Creates a new instance of the `Model` class with validated data.
+
+Creates a new model setting `__dict__` and `__pydantic_fields_set__` from trusted or pre-validated data.
+Default values are respected, but no other validation is performed.
+
+!!! note
+ `model_construct()` generally respects the `model_config.extra` setting on the provided model.
+ That is, if `model_config.extra == 'allow'`, then all extra passed values are added to the model instance's `__dict__`
+ and `__pydantic_extra__` fields. If `model_config.extra == 'ignore'` (the default), then all extra passed values are ignored.
+ Because no validation is performed with a call to `model_construct()`, having `model_config.extra == 'forbid'` does not result in
+ an error if extra values are passed, but they will be ignored.
+
+**Args:**
+- **_fields_set**: A set of field names that were originally explicitly set during instantiation. If provided, this is directly used for the [`model_fields_set`][pydantic.BaseModel.model_fields_set] attribute. Otherwise, the field names from the `values` argument will be used.
+
+- **values**: Trusted or pre-validated data dictionary.
+
+**Returns:**
+ A new instance of the `Model` class with validated data.
+
+##### model_copy
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_copy(self, *, update: 'Mapping[str, Any] | None' = None, deep: 'bool' = False) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Returns a copy of the model.
+
+!!! note
+ The underlying instance's [`__dict__`][object.__dict__] attribute is copied. This
+ might have unexpected side effects if you store anything in it, on top of the model
+ fields (e.g. the value of [cached properties][functools.cached_property]).
+
+**Args:**
+- **update**: Values to change/add in the new model. Note: the data is not validated before creating the new model. You should trust this data.
+
+- **deep**: Set to `True` to make a deep copy of the model.
+
+**Returns:**
+ New model instance.
+
+##### model_dump
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump(self, *, mode: "Literal['json', 'python'] | str" = 'python', include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'dict[str, Any]'
+```
+
+!!! abstract "Usage Documentation"
+
+Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.
+
+**Args:**
+- **mode**: The mode in which `to_python` should run. If mode is 'json', the output will only contain JSON serializable types. If mode is 'python', the output may contain non-JSON-serializable Python objects.
+
+- **include**: A set of fields to include in the output.
+
+- **exclude**: A set of fields to exclude from the output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to use the field's alias in the dictionary key if defined.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A dictionary representation of the model.
+
+##### model_dump_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_dump_json(self, *, indent: 'int | None' = None, include: 'IncEx | None' = None, exclude: 'IncEx | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, exclude_unset: 'bool' = False, exclude_defaults: 'bool' = False, exclude_none: 'bool' = False, round_trip: 'bool' = False, warnings: "bool | Literal['none', 'warn', 'error']" = True, fallback: 'Callable[[Any], Any] | None' = None, serialize_as_any: 'bool' = False) -> 'str'
+```
+
+!!! abstract "Usage Documentation"
+
+Generates a JSON representation of the model using Pydantic's `to_json` method.
+
+**Args:**
+- **indent**: Indentation to use in the JSON output. If None is passed, the output will be compact.
+
+- **include**: Field(s) to include in the JSON output.
+
+- **exclude**: Field(s) to exclude from the JSON output.
+
+- **context**: Additional context to pass to the serializer.
+
+- **by_alias**: Whether to serialize using field aliases.
+
+- **exclude_unset**: Whether to exclude fields that have not been explicitly set.
+
+- **exclude_defaults**: Whether to exclude fields that are set to their default value.
+
+- **exclude_none**: Whether to exclude fields that have a value of `None`.
+
+- **round_trip**: If True, dumped values should be valid as input for non-idempotent types such as Json[T].
+
+- **warnings**: How to handle serialization errors. False/"none" ignores them, True/"warn" logs errors, "error" raises a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError].
+
+- **fallback**: A function to call when an unknown value is encountered. If not provided, a [`PydanticSerializationError`][pydantic_core.PydanticSerializationError] error is raised.
+
+- **serialize_as_any**: Whether to serialize fields with duck-typing serialization behavior.
+
+**Returns:**
+ A JSON string representation of the model.
+
+##### model_json_schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_json_schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', schema_generator: 'type[GenerateJsonSchema]' = <class 'pydantic.json_schema.GenerateJsonSchema'>, mode: 'JsonSchemaMode' = 'validation') -> 'dict[str, Any]'
+```
+
+Generates a JSON schema for a model class.
+
+**Args:**
+- **by_alias**: Whether to use attribute aliases or not.
+
+- **ref_template**: The reference template.
+
+- **schema_generator**: To override the logic used to generate the JSON schema, as a subclass of `GenerateJsonSchema` with your desired modifications
+
+- **mode**: The mode in which to generate the schema.
+
+**Returns:**
+ The JSON schema for the given model class.
+
+##### model_parametrized_name
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_parametrized_name(params: 'tuple[type[Any], ...]') -> 'str'
+```
+
+Compute the class name for parametrizations of generic classes.
+
+This method can be overridden to achieve a custom naming scheme for generic BaseModels.
+
+**Args:**
+- **params**: Tuple of types of the class. Given a generic class `Model` with 2 type variables and a concrete model `Model[str, int]`, the value `(str, int)` would be passed to `params`.
+
+**Returns:**
+ String representing the new class where `params` are passed to `cls` as type variables.
+
+**Raises:**
+
+- **TypeError**: Raised when trying to generate concrete names for non-generic models.
+
+##### model_post_init
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_post_init(self, context: 'Any', /) -> 'None'
+```
+
+Override this method to perform additional initialization after `__init__` and `model_construct`.
+This is useful if you want to do some validation that requires the entire model to be initialized.
+
+##### model_rebuild
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_rebuild(*, force: 'bool' = False, raise_errors: 'bool' = True, _parent_namespace_depth: 'int' = 2, _types_namespace: 'MappingNamespace | None' = None) -> 'bool | None'
+```
+
+Try to rebuild the pydantic-core schema for the model.
+
+This may be necessary when one of the annotations is a ForwardRef which could not be resolved during
+the initial attempt to build the schema, and automatic rebuilding fails.
+
+**Args:**
+- **force**: Whether to force the rebuilding of the model schema, defaults to `False`.
+
+- **raise_errors**: Whether to raise errors, defaults to `True`.
+
+- **_parent_namespace_depth**: The depth level of the parent namespace, defaults to 2.
+
+- **_types_namespace**: The types namespace, defaults to `None`.
+
+**Returns:**
+ Returns `None` if the schema is already "complete" and rebuilding was not required.
+ If rebuilding _was_ required, returns `True` if rebuilding was successful, otherwise `False`.
+
+##### model_validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate(obj: 'Any', *, strict: 'bool | None' = None, from_attributes: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate a pydantic model instance.
+
+**Args:**
+- **obj**: The object to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **from_attributes**: Whether to extract data from object attributes.
+
+- **context**: Additional context to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Raises:**
+
+- **ValidationError**: If the object could not be validated.
+
+**Returns:**
+ The validated model instance.
+
+##### model_validate_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_json(json_data: 'str | bytes | bytearray', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+!!! abstract "Usage Documentation"
+
+Validate the given JSON data against the Pydantic model.
+
+**Args:**
+- **json_data**: The JSON data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+**Raises:**
+
+- **ValidationError**: If `json_data` is not a JSON string or the object could not be validated.
+
+##### model_validate_strings
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def model_validate_strings(obj: 'Any', *, strict: 'bool | None' = None, context: 'Any | None' = None, by_alias: 'bool | None' = None, by_name: 'bool | None' = None) -> 'Self'
+```
+
+Validate the given object with string data against the Pydantic model.
+
+**Args:**
+- **obj**: The object containing string data to validate.
+
+- **strict**: Whether to enforce types strictly.
+
+- **context**: Extra variables to pass to the validator.
+
+- **by_alias**: Whether to use the field's alias when validating against the provided input data.
+
+- **by_name**: Whether to use the field's name when validating against the provided input data.
+
+**Returns:**
+ The validated Pydantic model.
+
+##### parse_file
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_file(path: 'str | Path', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_file` is not available.
+
+##### parse_obj
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_obj(obj: 'Any') -> 'Self'
+```
+
+Documentation for `parse_obj` is not available.
+
+##### parse_raw
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def parse_raw(b: 'str | bytes', *, content_type: 'str | None' = None, encoding: 'str' = 'utf8', proto: 'DeprecatedParseProtocol | None' = None, allow_pickle: 'bool' = False) -> 'Self'
+```
+
+Documentation for `parse_raw` is not available.
+
+##### schema
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema(by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}') -> 'Dict[str, Any]'
+```
+
+Documentation for `schema` is not available.
+
+##### schema_json
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def schema_json(*, by_alias: 'bool' = True, ref_template: 'str' = '#/$defs/{model}', **dumps_kwargs: 'Any') -> 'str'
+```
+
+Documentation for `schema_json` is not available.
+
+##### update_forward_refs
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def update_forward_refs(**localns: 'Any') -> 'None'
+```
+
+Documentation for `update_forward_refs` is not available.
+
+##### validate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def validate(value: 'Any') -> 'Self'
+```
+
+Documentation for `validate` is not available.
+
+
+---
+
+### JWTHandler
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class JWTHandler:
+    """
+    JWT token handler with comprehensive validation and management
+    """
+```
+
+JWT token handler with comprehensive validation and management.
+
+Features:
+- JWT parsing and validation
+- Multiple signature algorithms (HS256, RS256, ES256)
+- JWK Set integration
+- Automatic token refresh
+- Custom claim validation
+- Token introspection
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, config: logicpwn.core.auth.jwt_handler.JWTConfig, session: Optional[requests.sessions.Session] = None)
+```
+
+Initialize a new instance of `JWTHandler`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### create_token
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def create_token(self, claims: dict[str, typing.Any], algorithm: str = 'HS256', key: Optional[Any] = None, expires_in: Optional[int] = None) -> str
+```
+
+Create JWT token with given claims.
+
+**Args:**
+- **claims**: Token claims
+
+- **algorithm**: Signature algorithm
+
+- **key**: Signing key
+
+- **expires_in**: Expiration time in seconds
+
+**Returns:**
+ JWT token string
+
+##### wrapper
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wrapper(*args, **kwargs)
+```
+
+Documentation for `wrapper` is not available.
+
+##### wrapper
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wrapper(*args, **kwargs)
+```
+
+Documentation for `wrapper` is not available.
+
+##### should_refresh_token
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def should_refresh_token(self, token: str) -> bool
+```
+
+Check if token should be refreshed.
+
+**Args:**
+- **token**: JWT token string
+
+**Returns:**
+ True if token should be refreshed
+
+##### wrapper
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wrapper(*args, **kwargs)
+```
+
+Documentation for `wrapper` is not available.
+
+##### wrapper
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wrapper(*args, **kwargs)
+```
+
+Documentation for `wrapper` is not available.
+
+
+---
+
+### JWTHeader
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class JWTHeader:
+    """
+    JWT header information
+    """
+```
+
+JWT header information.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, alg: str, typ: str = 'JWT', kid: Optional[str] = None, cty: Optional[str] = None, crit: Optional[list[str]] = None) -> None
+```
+
+Initialize a new instance of `JWTHeader`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### from_dict
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def from_dict(header_dict: dict[str, typing.Any]) -> 'JWTHeader'
+```
+
+Create header from dictionary.
+
+
+---
+
+### LogicPwnHTTPClient
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class LogicPwnHTTPClient:
+    """
+    Native HTTP client for LogicPwn authentication with advanced session management
+    """
+```
+
+Native HTTP client for LogicPwn authentication with advanced session management.
+
+Features:
+- Dynamic CSRF token handling
+- Session state persistence
+- Automatic authentication retry
+- Middleware integration
+- Caching with intelligent cache keys
+- Application-specific session validation
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, base_url: str = '', verify_ssl: bool = True, timeout: int = 30)
+```
+
+Initialize a new instance of `LogicPwnHTTPClient`.
+
+</TabItem>
+</Tabs>
+
+#### Properties
+
+<details>
+<summary><code>requests_session</code></summary>
+
+Get or create requests session for synchronous operations
+
+</details>
+
+#### Methods
+
+##### authenticate
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def authenticate(self, auth_config: logicpwn.core.auth.auth_models.AuthConfig) -> bool
+```
+
+Authenticate using the native HTTP client with advanced features
+
+##### close
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def close(self)
+```
+
+Clean up resources
+
+##### delete
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def delete(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+DELETE request
+
+##### extract_csrf_tokens
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def extract_csrf_tokens(self, html_content: str, csrf_config: logicpwn.core.auth.auth_models.CSRFConfig) -> dict[str, str]
+```
+
+Extract CSRF tokens from HTML content using configured patterns
+
+##### generate_session_cache_key
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def generate_session_cache_key(self, auth_config: logicpwn.core.auth.auth_models.AuthConfig) -> str
+```
+
+Generate cache key excluding dynamic tokens
+
+##### get
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+GET request
+
+##### get_aiohttp_session
+
+:::note[Method]
+Asynchronous method
+:::
+
+```python
+async def get_aiohttp_session(self) -> aiohttp.client.ClientSession
+```
+
+Get or create aiohttp session for async operations
+
+**Usage Example:**
+```python
+result = await get_aiohttp_session(...)
+```
+
+##### post
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def post(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+POST request
+
+##### put
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def put(self, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+PUT request
+
+##### request
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def request(self, method: str, url: str, **kwargs) -> logicpwn.models.request_result.RequestResult
+```
+
+Make an HTTP request using the native client with middleware integration
+
+
+---
+
+### OIDCProvider
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class OIDCProvider (BaseIdPProvider):
+    """
+    OpenID Connect identity provider
+    """
+```
+
+OpenID Connect identity provider.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, config: logicpwn.core.auth.idp_integration.IdPConfig, session: Optional[requests.sessions.Session] = None)
+```
+
+Initialize a new instance of `OIDCProvider`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### get_authorization_url
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_authorization_url(self, state: Optional[str] = None, **kwargs) -> tuple[str, str]
+```
+
+Get OIDC authorization URL.
+
+##### get_user_profile
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_user_profile(self, session: logicpwn.core.auth.idp_integration.AuthenticationSession) -> logicpwn.core.auth.idp_integration.UserProfile
+```
+
+Get current user profile.
+
+##### wrapper
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def wrapper(*args, **kwargs)
+```
+
+Documentation for `wrapper` is not available.
+
+##### logout
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def logout(self, session: logicpwn.core.auth.idp_integration.AuthenticationSession) -> bool
+```
+
+Logout OIDC session.
+
+##### refresh_session
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def refresh_session(self, session: logicpwn.core.auth.idp_integration.AuthenticationSession) -> logicpwn.core.auth.idp_integration.AuthenticationSession
+```
+
+Refresh OIDC session.
+
+
+---
+
+### RedirectInfo
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class RedirectInfo:
+    """
+    Information about authentication redirects
+    """
+```
+
+Information about authentication redirects.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, url: str, method: str = 'GET', parameters: dict[str, str] = <factory>, headers: dict[str, str] = <factory>, is_form_post: bool = False) -> None
+```
+
+Initialize a new instance of `RedirectInfo`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### SAMLIdPProvider
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SAMLIdPProvider (BaseIdPProvider):
+    """
+    SAML identity provider
+    """
+```
+
+SAML identity provider.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, config: logicpwn.core.auth.idp_integration.IdPConfig, session: Optional[requests.sessions.Session] = None)
+```
+
+Initialize a new instance of `SAMLIdPProvider`.
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+##### get_authorization_url
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_authorization_url(self, state: Optional[str] = None, **kwargs) -> tuple[str, str]
+```
+
+Get SAML authorization URL.
+
+##### get_user_profile
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def get_user_profile(self, session: logicpwn.core.auth.idp_integration.AuthenticationSession) -> logicpwn.core.auth.idp_integration.UserProfile
+```
+
+Get current user profile.
+
+##### handle_callback
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def handle_callback(self, callback_data: dict[str, typing.Any]) -> logicpwn.core.auth.idp_integration.AuthenticationSession
+```
+
+Handle SAML callback.
+
+##### logout
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def logout(self, session: logicpwn.core.auth.idp_integration.AuthenticationSession) -> bool
+```
+
+Logout SAML session.
+
+##### refresh_session
+
+:::note[Method]
+Instance method
+:::
+
+```python
+def refresh_session(self, session: logicpwn.core.auth.idp_integration.AuthenticationSession) -> logicpwn.core.auth.idp_integration.AuthenticationSession
+```
+
+SAML sessions typically don't support refresh.
+
+
+---
+
+### SessionState
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class SessionState:
+    """
+    Represents the state of an HTTP session
+    """
+```
+
+Represents the state of an HTTP session
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, cookies: dict[str, str] = <factory>, headers: dict[str, str] = <factory>, csrf_tokens: dict[str, str] = <factory>, auth_data: dict[str, typing.Any] = <factory>, last_auth_time: float = 0.0, is_authenticated: bool = False, base_url: str = '') -> None
+```
+
+Initialize a new instance of `SessionState`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+### UserProfile
+
+<Tabs>
+<TabItem label="Overview">
+
+```python
+class UserProfile:
+    """
+    Unified user profile from IdP
+    """
+```
+
+Unified user profile from IdP.
+
+</TabItem>
+<TabItem label="Constructor">
+
+```python
+def __init__(self, user_id: str, email: Optional[str] = None, username: Optional[str] = None, first_name: Optional[str] = None, last_name: Optional[str] = None, display_name: Optional[str] = None, avatar_url: Optional[str] = None, roles: list[str] = <factory>, groups: list[str] = <factory>, custom_attributes: dict[str, typing.Any] = <factory>, provider: Optional[str] = None, raw_profile: dict[str, typing.Any] = <factory>) -> None
+```
+
+Initialize a new instance of `UserProfile`.
+
+</TabItem>
+</Tabs>
+
+
+---
+
+## Functions
+
+:::note[Available Functions]
+This module provides 10 function(s) for direct use.
+:::
+
+### authenticate_session_advanced
+
+:::note[Function]
+Module function
+:::
+
+```python
+def authenticate_session_advanced(auth_config: Union[logicpwn.core.auth.auth_models.AuthConfig, dict[str, Any]], base_url: str = '') -> logicpwn.core.auth.http_client.LogicPwnHTTPClient
+```
+
+Create an authenticated HTTP client with advanced session management.
+
+This function provides enhanced authentication capabilities including:
+- Automatic CSRF token handling
+- Session state persistence and validation
+- Middleware integration
+- Intelligent caching
+- Retry mechanisms
+
+**Args:**
+- **auth_config**: Authentication configuration (AuthConfig object or dict)
+
+- **base_url**: Base URL for the HTTP client
+
+**Returns:**
+
+- **LogicPwnHTTPClient**: Authenticated HTTP client ready for requests
+
+**Raises:**
+
+- **AuthenticationError**: If authentication fails
+
+- **ValidationError**: If configuration is invalid
+
+**Example:**
+ ```python
+ from logicpwn.core.auth import authenticate_session_advanced, AuthConfig, CSRFConfig
+
+ # Basic usage
+ config = AuthConfig(
+ url="http://target.com/login.php",
+ credentials={"username": "admin", "password": "password"}
+ )
+ client = authenticate_session_advanced(config)
+
+ # Advanced usage with CSRF handling
+ csrf_config = CSRFConfig(
+ enabled=True,
+ auto_include=True,
+ refresh_on_failure=True
+ )
+
+ config = AuthConfig(
+ url="http://target.com/login.php",
+ credentials={"username": "admin", "password": "password"},
+ csrf_config=csrf_config,
+ session_validation_url="http://target.com/dashboard",
+ success_indicators=["Welcome", "Dashboard"],
+ failure_indicators=["Login failed", "Invalid credentials"]
+ )
+
+ client = authenticate_session_advanced(config, base_url="http://target.com")
+
+ # Use the client for authenticated requests
+ result = client.get("/protected/resource")
+ result = client.post("/api/data", data={"key": "value"})
+ ```
+
+### create_advanced_config
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_advanced_config(base_config: 'AuthConfig', **kwargs) -> 'AdvancedAuthConfig'
+```
+
+Create advanced authentication configuration.
+
+### create_authenticated_client
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_authenticated_client(auth_config: Union[logicpwn.core.auth.auth_models.AuthConfig, dict[str, Any]], base_url: str = '') -> logicpwn.core.auth.http_client.LogicPwnHTTPClient
+```
+
+Create an authenticated HTTP client
+
+### create_csrf_config
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_csrf_config(enabled: bool = True, auto_include: bool = True, refresh_on_failure: bool = True, custom_patterns: Optional[list[str]] = None) -> logicpwn.core.auth.auth_models.CSRFConfig
+```
+
+Create a CSRF configuration for advanced authentication.
+
+**Args:**
+- **enabled**: Whether CSRF token handling is enabled
+
+- **auto_include**: Automatically include tokens in subsequent requests
+
+- **refresh_on_failure**: Re-fetch tokens if authentication fails
+
+- **custom_patterns**: Additional regex patterns for token extraction
+
+**Returns:**
+
+- **CSRFConfig**: Configuration object for CSRF handling
+
+**Example:**
+ ```python
+ csrf_config = create_csrf_config(
+ enabled=True,
+ custom_patterns=[
+ r'name="custom_token".*?value="([^"]+)"',
+ r'<meta name="app-token" content="([^"]+)"'
+ ]
+ )
+ ```
+
+### create_google_idp_config
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_google_idp_config(client_id: str, client_secret: str, **kwargs) -> logicpwn.core.auth.idp_integration.IdPConfig
+```
+
+Create Google OIDC provider configuration.
+
+### create_jwt_config_from_well_known
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_jwt_config_from_well_known(issuer_url: str, audience: Optional[str] = None, **kwargs) -> logicpwn.core.auth.jwt_handler.JWTConfig
+```
+
+Create JWT configuration from OpenID Connect discovery document.
+
+**Args:**
+- **issuer_url**: OIDC issuer URL
+
+- **audience**: Expected audience
+
+- ****kwargs**: Additional JWTConfig parameters
+
+**Returns:**
+ JWTConfig with discovered endpoints
+
+### create_microsoft_idp_config
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_microsoft_idp_config(client_id: str, client_secret: str, tenant: str = 'common', **kwargs) -> logicpwn.core.auth.idp_integration.IdPConfig
+```
+
+Create Microsoft Azure AD provider configuration.
+
+### create_okta_idp_config
+
+:::note[Function]
+Module function
+:::
+
+```python
+def create_okta_idp_config(client_id: str, client_secret: str, okta_domain: str, **kwargs) -> logicpwn.core.auth.idp_integration.IdPConfig
+```
+
+Create Okta OIDC provider configuration.
+
+### logout_session
+
+:::note[Function]
+Module function
+:::
+
+```python
+def logout_session(session: requests.sessions.Session, logout_url: str) -> bool
+```
+
+Documentation for `logout_session` is not available.
+
+### validate_session
+
+:::note[Function]
+Module function
+:::
+
+```python
+def validate_session(session: requests.sessions.Session, test_url: str) -> bool
+```
+
+Validate that a session is still active and authenticated.
+
+**Args:**
+- **session**: The session to validate
+
+- **test_url**: URL to test session access (should be a protected resource)
+
+**Returns:**
+ True if session is valid and can access the test URL
+
+
 ## Related Modules
 
-:::card-grid
-#card-grid
-- **[API Reference](../)** - Complete API documentation
+:::tip[Authentication Modules]
+Explore other modules in the Authentication category:
+
+- **[Auth › Enhanced Auth](./auth/enhanced-auth)** - Advanced authentication features
+- **[Auth › Idp Integration](./auth/idp-integration)** - Identity provider integration
 :::

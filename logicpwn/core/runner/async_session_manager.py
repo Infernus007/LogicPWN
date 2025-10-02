@@ -16,13 +16,19 @@ from typing import Any, Optional
 import aiohttp
 
 from logicpwn.core.config.config_utils import get_timeout
-from logicpwn.core.logging import log_error, log_info, log_warning
 from logicpwn.exceptions import (
     NetworkError,
     RequestExecutionError,
     ValidationError,
 )
 from logicpwn.models.request_result import RequestResult
+
+# Import standardized logging and type definitions
+from .standardized_logging import (
+    log_error,
+    log_info,
+    log_warning,
+)
 
 
 class AsyncSessionManager:
@@ -106,7 +112,11 @@ class AsyncSessionManager:
             enable_cleanup_closed=True,
         )
 
-        timeout_config = aiohttp.ClientTimeout(total=self.timeout)
+        # Fixed timeout configuration with proper breakdown
+        total, connect, read = self.timeout, self.timeout * 0.3, self.timeout * 0.7
+        timeout_config = aiohttp.ClientTimeout(
+            total=total, connect=connect, sock_read=read
+        )
 
         # Set secure default headers
         default_headers = {
@@ -259,33 +269,65 @@ class AsyncSessionManager:
             "cookies": cookies,
             **{k: v for k, v in kwargs.items() if k not in ["headers", "cookies"]},
         }
-        async with self.session.request(**request_kwargs) as response:
-            self.cookies.update(response.cookies)
-            content = await response.read()
-            text = content.decode("utf-8", errors="ignore")
-            try:
-                if "application/json" in response.headers.get("content-type", ""):
-                    body = await response.json()
-                else:
-                    body = text
-            except Exception:
+        try:
+            async with self.session.request(**request_kwargs) as response:
+                self.cookies.update(response.cookies)
+
+                # Read response content safely with timeout handling
+                try:
+                    content = await response.read()
+                    text = content.decode("utf-8", errors="ignore")
+                except UnicodeDecodeError:
+                    text = content.decode("latin-1", errors="ignore")
+                except Exception as e:
+                    logger.warning(f"Failed to read response content: {e}")
+                    content = b""
+                    text = ""
+
+                # Parse response body safely
                 body = text
-            return RequestResult.from_response(
-                url=url,
-                method=method,
-                response=type(
-                    "MockResponse",
-                    (),
-                    {
-                        "status_code": response.status,
-                        "headers": dict(response.headers),
-                        "text": text,
-                        "content": content,
-                        "json": lambda: body if isinstance(body, dict) else None,
-                    },
-                )(),
-                duration=0.0,
+                try:
+                    if "application/json" in response.headers.get("content-type", ""):
+                        body = await response.json()
+                except (aiohttp.ContentTypeError, ValueError, TypeError):
+                    # JSON parsing failed, keep as text
+                    body = text
+                except Exception as e:
+                    logger.warning(f"Unexpected error parsing response body: {e}")
+                    body = text
+
+                return RequestResult.from_response(
+                    url=url,
+                    method=method,
+                    response=type(
+                        "MockResponse",
+                        (),
+                        {
+                            "status_code": response.status,
+                            "headers": dict(response.headers),
+                            "text": text,
+                            "content": content,
+                            "json": lambda: body if isinstance(body, dict) else None,
+                        },
+                    )(),
+                    duration=0.0,
+                )
+        except asyncio.TimeoutError:
+            error_msg = (
+                f"⏰ Session request to {url} timed out after {self.timeout} seconds"
             )
+            suggestion = "💡 Try increasing the timeout value or check if the server is responding."
+            raise TimeoutError(f"{error_msg}\n\n{suggestion}")
+        except aiohttp.ClientError as e:
+            error_msg = f"🌐 Session network error for {url}"
+            suggestion = (
+                "💡 Check your network connection and verify the URL is correct."
+            )
+            raise NetworkError(f"{error_msg}: {str(e)}\n\n{suggestion}")
+        except Exception as e:
+            error_msg = f"❌ Session request execution failed for {url}"
+            suggestion = "💡 Check your request parameters and try again."
+            raise RequestExecutionError(f"{error_msg}: {str(e)}\n\n{suggestion}")
 
     async def execute_exploit_chain(
         self, exploit_configs: list[dict[str, Any]]

@@ -20,7 +20,7 @@ Key Features:
 
 Example Usage:
     from logicpwn.core.auth import authenticate_session
-    from logicpwn.core.runner import send_request, send_request_advanced
+    from logicpwn.core.runner import HttpRunner
     from logicpwn.core.runner import send_request_async, AsyncRequestRunner
     from logicpwn.models import RequestResult
 
@@ -74,10 +74,9 @@ from logicpwn.core.performance import (
 from logicpwn.core.runner import (
     AsyncRequestRunner,
     AsyncSessionManager,
+    HttpRunner,
     RequestConfig,
     async_session_manager,
-    send_request,
-    send_request_advanced,
     send_request_async,
     send_requests_batch_async,
 )
@@ -114,8 +113,7 @@ __all__ = [
     "logout_session",
     "AuthConfig",
     # Request Execution
-    "send_request",
-    "send_request_advanced",
+    "HttpRunner",
     "RequestConfig",
     # Response Validation
     # REMOVED: "validate_response",

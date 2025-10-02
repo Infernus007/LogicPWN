@@ -1,13 +1,12 @@
 """
-Core async request runner logic for LogicPwn with enhanced security features.
+Core async request runner logic for LogicPwn with fixed timeout handling.
 
-Security Features:
-- SSL/TLS certificate validation with warnings for disabled verification
-- Enhanced rate limiting with token bucket and sliding window algorithms
-- Improved session management lifecycle
-- HTTP/2 support evaluation
-- Simplified configuration management
-- Decomposed methods for better maintainability
+This module provides:
+- Fixed async timeout handling with proper aiohttp timeout configuration
+- User-friendly error messages with actionable suggestions
+- Simplified configuration with preset modes
+- Proper session lifecycle management
+- Enhanced security features
 """
 
 import asyncio
@@ -15,26 +14,39 @@ import ssl
 import time
 import warnings
 from dataclasses import dataclass
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import aiohttp
 from loguru import logger
 
 from logicpwn.core.config.config_utils import get_timeout
-from logicpwn.core.logging import (
-    log_error,
-    log_info,
-    log_request,
-    log_response,
-)
 from logicpwn.exceptions import (
     NetworkError,
     RequestExecutionError,
     TimeoutError,
     ValidationError,
 )
-from logicpwn.models.request_config import RequestConfig
 from logicpwn.models.request_result import RequestResult
+
+# Import standardized logging and type definitions
+from .standardized_logging import (
+    log_error,
+    log_info,
+    log_request,
+    log_response,
+)
+from .type_definitions import (
+    URL,
+    Data,
+    Headers,
+    JSONData,
+    Method,
+    Params,
+    RawBody,
+    RequestConfigList,
+    RequestResultList,
+    Timeout,
+)
 
 
 def _validate_body_types(
@@ -304,7 +316,11 @@ class AsyncRequestRunner:
             enable_cleanup_closed=True,
         )
 
-        timeout_config = aiohttp.ClientTimeout(total=self.timeout)
+        # Get timeout configuration with proper breakdown
+        total, connect, read = self.timeout, self.timeout * 0.3, self.timeout * 0.7
+        timeout_config = aiohttp.ClientTimeout(
+            total=total, connect=connect, sock_read=read
+        )
 
         # HTTP/2 support evaluation (aiohttp supports HTTP/2 with h2 library)
         headers = {
@@ -342,14 +358,14 @@ class AsyncRequestRunner:
 
     async def send_request(
         self,
-        url: str,
-        method: str = "GET",
-        headers: Optional[dict[str, str]] = None,
-        params: Optional[dict[str, Any]] = None,
-        data: Optional[dict[str, Any]] = None,
-        json_data: Optional[dict[str, Any]] = None,
-        raw_body: Optional[str] = None,
-        timeout: Optional[int] = None,
+        url: URL,
+        method: Method = "GET",
+        headers: Optional[Headers] = None,
+        params: Optional[Params] = None,
+        data: Optional[Data] = None,
+        json_data: Optional[JSONData] = None,
+        raw_body: Optional[RawBody] = None,
+        timeout: Optional[Timeout] = None,
     ) -> RequestResult:
         """
         Send a single async HTTP request with rate limiting and security features.
@@ -388,9 +404,9 @@ class AsyncRequestRunner:
 
     async def send_requests_batch(
         self,
-        request_configs: list[Union[dict[str, Any], RequestConfig]],
+        request_configs: RequestConfigList,
         max_concurrent: Optional[int] = None,
-    ) -> list[RequestResult]:
+    ) -> RequestResultList:
         """
         Send multiple requests concurrently.
         Args:
@@ -436,12 +452,28 @@ class AsyncRequestRunner:
 
         start_time = time.time()
         try:
-            # Prepare request data
+            # Prepare request data with proper timeout configuration
+            request_timeout = timeout or self.timeout
+            if request_timeout != self.timeout:
+                # Use request-specific timeout with proper breakdown
+                total, connect, read = (
+                    request_timeout,
+                    request_timeout * 0.3,
+                    request_timeout * 0.7,
+                )
+                timeout_config = aiohttp.ClientTimeout(
+                    total=total, connect=connect, sock_read=read
+                )
+            else:
+                # Use session timeout (already configured)
+                timeout_config = None
+
             request_kwargs = {
                 "headers": headers,
                 "params": params,
-                "timeout": aiohttp.ClientTimeout(total=timeout or self.timeout),
             }
+            if timeout_config:
+                request_kwargs["timeout"] = timeout_config
             if data:
                 request_kwargs["data"] = data
             elif json_data:
@@ -510,39 +542,90 @@ class AsyncRequestRunner:
                 return result
         except asyncio.TimeoutError:
             duration = time.time() - start_time
+            timeout_value = timeout or self.timeout
+            error_msg = f"⏰ Request to {url} timed out after {timeout_value} seconds"
+            suggestion = f"💡 Try increasing the timeout value (current: {timeout_value}s) or check if the server is responding."
+
             log_error(
-                TimeoutError(f"Request timeout after {timeout or self.timeout}s"),
-                {"url": url, "method": method, "duration": duration},
+                TimeoutError(f"Request timeout after {timeout_value}s"),
+                {
+                    "url": url,
+                    "method": method,
+                    "duration": duration,
+                    "timeout": timeout_value,
+                },
             )
             return RequestResult.from_exception(
                 url=url,
                 method=method,
-                exception=TimeoutError(
-                    f"Request timeout after {timeout or self.timeout}s"
-                ),
+                exception=TimeoutError(f"{error_msg}\n\n{suggestion}"),
                 duration=duration,
             )
         except aiohttp.ClientError as e:
             duration = time.time() - start_time
+            error_type = type(e).__name__
+
+            if isinstance(e, aiohttp.ClientConnectorError):
+                error_msg = f"🌐 Cannot connect to {url}"
+                suggestion = "💡 Check if the URL is correct and the server is running. Verify network connectivity."
+            elif isinstance(e, aiohttp.ClientTimeout):
+                error_msg = f"⏰ Request to {url} timed out"
+                suggestion = "💡 The server took too long to respond. Try increasing the timeout value."
+            elif isinstance(e, aiohttp.ClientResponseError):
+                error_msg = f"🚫 Server returned error for {url}"
+                suggestion = (
+                    "💡 Check the server status and verify the request parameters."
+                )
+            else:
+                error_msg = f"🌐 Network error occurred: {str(e)}"
+                suggestion = "💡 Check your network connection and try again."
+
             log_error(
                 NetworkError(f"Network error: {str(e)}"),
-                {"url": url, "method": method, "duration": duration},
+                {
+                    "url": url,
+                    "method": method,
+                    "duration": duration,
+                    "error_type": error_type,
+                },
             )
             return RequestResult.from_exception(
                 url=url,
                 method=method,
-                exception=NetworkError(f"Network error: {str(e)}"),
+                exception=NetworkError(f"{error_msg}\n\n{suggestion}"),
                 duration=duration,
             )
         except Exception as e:
             duration = time.time() - start_time
+            error_type = type(e).__name__
+
+            if "SSL" in str(e):
+                error_msg = f"🔒 SSL certificate issue for {url}"
+                suggestion = "💡 SSL certificate problem. Check certificate or disable SSL verification for testing."
+            elif "JSON" in str(e):
+                error_msg = f"📄 JSON parsing error for {url}"
+                suggestion = "💡 Invalid JSON data. Check your request body format."
+            elif "encoding" in str(e).lower():
+                error_msg = f"🔤 Character encoding issue for {url}"
+                suggestion = (
+                    "💡 Character encoding problem. Check your request data encoding."
+                )
+            else:
+                error_msg = f"❌ Request execution failed for {url}: {str(e)}"
+                suggestion = "💡 Check your request parameters and try again."
+
             log_error(
                 RequestExecutionError(f"Request execution error: {str(e)}"),
-                {"url": url, "method": method, "duration": duration},
+                {
+                    "url": url,
+                    "method": method,
+                    "duration": duration,
+                    "error_type": error_type,
+                },
             )
             return RequestResult.from_exception(
                 url=url,
                 method=method,
-                exception=RequestExecutionError(f"Request execution error: {str(e)}"),
+                exception=RequestExecutionError(f"{error_msg}\n\n{suggestion}"),
                 duration=duration,
             )

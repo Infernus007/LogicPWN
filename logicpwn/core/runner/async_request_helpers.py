@@ -48,9 +48,6 @@ async def send_requests_batch_async(
         return await runner.send_requests_batch(request_configs)
 
 
-from contextlib import asynccontextmanager
-
-
 @asynccontextmanager
 async def async_session_manager(
     auth_config: Optional[dict[str, Any]] = None, max_concurrent: int = 10

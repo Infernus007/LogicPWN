@@ -225,6 +225,28 @@ class CommonRequests:
 
         return builder.build()
 
+    def execute(self) -> "RequestResult":
+        """Execute the request using HttpRunner."""
+        from logicpwn.core.runner import HttpRunner
+
+        runner = HttpRunner()
+        return runner.send_request(**self.config)
+
+    def send(self) -> "RequestResult":
+        """Send the request (alias for execute for consistency with HttpRunner)."""
+        return self.execute()
+
+    async def execute_async(self) -> "RequestResult":
+        """Execute the request asynchronously using HttpRunner."""
+        from logicpwn.core.runner import HttpRunner
+
+        async with HttpRunner() as runner:
+            return await runner.send_request_async(**self.config)
+
+    async def send_async(self) -> "RequestResult":
+        """Send the request asynchronously (alias for execute_async)."""
+        return await self.execute_async()
+
 
 # Convenience functions for quick request building
 def build_request(url: str) -> RequestBuilder:

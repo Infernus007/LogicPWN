@@ -1,18 +1,5 @@
 """
-LogicPWN Reporfrom .auth_managfrom .security_middleware import (
-    ReportSecurityMiddleware,
-    SecurityPolicy,
-    AuditLogger,
-    require_authentication,
-    validate_input,
-)ort (
-    ReportAuthManager,
-    User,
-    Permission,
-    Role,
-    AuthenticationError,
-    AuthorizationError,
-)e - Enhanced for Indian Law Enforcement
+LogicPWN Reporter - Enhanced for Indian Law Enforcement
 
 This module provides comprehensive reporting capabilities for LogicPWN
 penetration testing results, with specialized support for Indian law

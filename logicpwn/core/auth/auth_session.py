@@ -974,12 +974,14 @@ def authenticate_session(
         session = authenticate_session(config)
 
         # Use session with runner module
-        from logicpwn.core.runner import send_request_advanced
-        result = send_request_advanced(
-            session=session,
-            url="http://target.com/protected/page",
-            method="GET"
-        )
+        from logicpwn.core.runner import HttpRunner
+
+        # Create HttpRunner with the authenticated session
+        runner = HttpRunner()
+        runner.session = session
+
+        # Make authenticated requests
+        result = runner.get("http://target.com/protected/page")
         ```
 
         With success/failure indicators:

@@ -1,9 +1,9 @@
 ---
 title: Runner
-description: API documentation for the Runner module in LogicPwn framework
+description: HTTP request runner with rate limiting, retries, and SSL controls
 category: Test Runner
 sidebar:
-  order: 62
+  order: 38
 ---
 
 import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
@@ -11,70 +11,309 @@ import { Code, Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components
 **Category:** Test Runner
 **Navigation:** [API Reference](../)
 
-API documentation for the `logicpwn.core.runner` module.
-
-:::note[Module Import Error]
-This module could not be imported during documentation generation. This may be due to missing dependencies or import errors. The module may still be available at runtime.
-:::
+The Runner module provides HTTP request functionality with rate limiting, retries, SSL controls, and both sync/async support.
 
 ## Import
 
 ```python
-import logicpwn.core.runner
-# or
-from logicpwn.core.runner import *
+from logicpwn.core.runner import HttpRunner, RequestConfig, RequestResult
 ```
 
+## HttpRunner
 
-## Quick Examples
+Main class for HTTP requests with built-in rate limiting, retries, and SSL controls.
+
+### Constructor
+
+```python
+HttpRunner(config: Optional[RunnerConfig] = None)
+```
+
+### Methods
+
+#### Sync Methods
+
+```python
+# HTTP methods
+get(url: str, **kwargs) -> RequestResult
+post(url: str, **kwargs) -> RequestResult
+put(url: str, **kwargs) -> RequestResult
+delete(url: str, **kwargs) -> RequestResult
+patch(url: str, **kwargs) -> RequestResult
+head(url: str, **kwargs) -> RequestResult
+options(url: str, **kwargs) -> RequestResult
+
+# Generic request
+send_request(url: str, method: str = "GET", **kwargs) -> RequestResult
+
+# Batch requests
+batch(request_configs: List[RequestConfigDict]) -> List[RequestResult]
+batch_get(urls: List[str]) -> List[RequestResult]
+batch_post(urls: List[str], data: Any) -> List[RequestResult]
+```
+
+#### Async Methods
+
+```python
+# Async HTTP methods
+async get_async(url: str, **kwargs) -> RequestResult
+async post_async(url: str, **kwargs) -> RequestResult
+async put_async(url: str, **kwargs) -> RequestResult
+async delete_async(url: str, **kwargs) -> RequestResult
+async patch_async(url: str, **kwargs) -> RequestResult
+async head_async(url: str, **kwargs) -> RequestResult
+async options_async(url: str, **kwargs) -> RequestResult
+
+# Generic async request
+async send_request_async(url: str, method: str = "GET", **kwargs) -> RequestResult
+
+# Async batch requests
+async send_requests_batch_async(request_configs: List[RequestConfigDict]) -> List[RequestResult]
+```
+
+#### Streaming
+
+```python
+# Stream large responses
+async send_request_streaming(url: str, chunk_size: int = 8192) -> AsyncIterator[bytes]
+```
+
+### Parameters
+
+- `url`: Target URL
+- `method`: HTTP method (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)
+- `headers`: Request headers (dict)
+- `params`: Query parameters (dict)
+- `data`: Form data (dict, str, bytes)
+- `json_data`: JSON data (dict)
+- `raw_body`: Raw request body (str, bytes)
+- `timeout`: Request timeout (float)
+- `verify_ssl`: SSL verification (bool)
+- `disable_cache`: Disable response caching (bool)
+
+## RequestConfig
+
+Configuration for individual requests.
+
+```python
+RequestConfig(
+    url: str,
+    method: str = "GET",
+    headers: Optional[Dict[str, str]] = None,
+    params: Optional[Dict[str, Any]] = None,
+    data: Optional[Union[Dict[str, Any], str, bytes]] = None,
+    json_data: Optional[Dict[str, Any]] = None,
+    raw_body: Optional[Union[str, bytes]] = None,
+    timeout: Optional[float] = None,
+    verify_ssl: bool = True,
+    disable_cache: bool = False
+)
+```
+
+## RequestResult
+
+Result of an HTTP request.
+
+### Properties
+
+- `url`: Request URL
+- `method`: HTTP method
+- `status_code`: HTTP status code
+- `headers`: Response headers (dict)
+- `text`: Response text content
+- `json`: Parsed JSON content (if applicable)
+- `content`: Raw response content (bytes)
+- `duration`: Request duration (float)
+- `success`: Whether request was successful (bool)
+- `error`: Error message if failed (str)
+
+### Methods
+
+```python
+# Check if request was successful
+is_success() -> bool
+
+# Get response as JSON
+json() -> dict
+
+# Get response text
+text() -> str
+
+# Get response content
+content() -> bytes
+```
+
+## RunnerConfig
+
+Configuration for HttpRunner instance.
+
+```python
+RunnerConfig(
+    rate_limit: Optional[RateLimitConfig] = None,
+    retry: Optional[RetryConfig] = None,
+    ssl: Optional[SSLConfig] = None,
+    session: Optional[SessionConfig] = None,
+    enable_response_cache: bool = True
+)
+```
+
+## RateLimitConfig
+
+Rate limiting configuration.
+
+```python
+RateLimitConfig(
+    algorithm: RateLimitAlgorithm = RateLimitAlgorithm.SIMPLE,
+    requests_per_second: float = 1.0,
+    burst_size: Optional[int] = None,
+    window_size: Optional[int] = None
+)
+```
+
+## RetryConfig
+
+Retry configuration.
+
+```python
+RetryConfig(
+    max_attempts: int = 3,
+    base_delay: float = 1.0,
+    max_delay: float = 60.0,
+    exponential_base: float = 2.0,
+    jitter: bool = True,
+    retryable_status_codes: Set[int] = {500, 502, 503, 504, 429},
+    respect_retry_after: bool = True
+)
+```
+
+## SSLConfig
+
+SSL/TLS configuration.
+
+```python
+SSLConfig(
+    verification_level: SSLVerificationLevel = SSLVerificationLevel.STRICT,
+    min_tls_version: str = "TLSv1.2",
+    client_cert: Optional[str] = None,
+    client_key: Optional[str] = None,
+    ca_bundle: Optional[str] = None
+)
+```
+
+## RequestBuilder
+
+Fluent API for building request configurations.
+
+```python
+RequestBuilder(url: str)
+
+# Methods
+get() -> RequestBuilder
+post() -> RequestBuilder
+put() -> RequestBuilder
+delete() -> RequestBuilder
+patch() -> RequestBuilder
+head() -> RequestBuilder
+options() -> RequestBuilder
+
+header(name: str, value: str) -> RequestBuilder
+headers(headers: Dict[str, str]) -> RequestBuilder
+param(name: str, value: Any) -> RequestBuilder
+params(params: Dict[str, Any]) -> RequestBuilder
+data(data: Any) -> RequestBuilder
+json_data(json_data: Dict[str, Any]) -> RequestBuilder
+raw_body(body: Union[str, bytes]) -> RequestBuilder
+timeout(timeout: float) -> RequestBuilder
+verify_ssl(verify: bool) -> RequestBuilder
+disable_cache(disable: bool) -> RequestBuilder
+
+build() -> RequestConfig
+execute() -> RequestResult
+send() -> RequestResult
+async execute_async() -> RequestResult
+async send_async() -> RequestResult
+```
+
+## CommonRequests
+
+Pre-configured request builders.
+
+```python
+# Authenticated requests
+CommonRequests.authenticated_get(url: str, token: str, auth_type: str = "Bearer") -> RequestConfig
+CommonRequests.authenticated_post(url: str, token: str, data: Any, auth_type: str = "Bearer") -> RequestConfig
+
+# API requests
+CommonRequests.api_get(url: str, api_key: str) -> RequestConfig
+CommonRequests.api_post(url: str, api_key: str, data: Any) -> RequestConfig
+```
+
+## Examples
 
 ### Basic Usage
 
 ```python
-from logicpwn.core.exploit_engine import load_exploit_chain_from_file, run_exploit_chain
-import requests
+from logicpwn.core.runner import HttpRunner
 
-# Load and execute a simple exploit chain
-session = requests.Session()
-chain = load_exploit_chain_from_file("examples/simple_exploit_corrected.yaml")
-results = run_exploit_chain(session, chain)
-
-# Analyze results
-for result in results:
-    print(f"Step: {result.step_name}")
-    print(f"Status: {result.status}")
-    print(f"Time: {result.execution_time:.2f}s")
+runner = HttpRunner()
+result = runner.get("https://httpbin.org/get")
+print(result.status_code)  # 200
 ```
 
-### Real-World IDOR Testing
+### Async Usage
 
 ```python
-from logicpwn.core.access import detect_idor_flaws
-from logicpwn.core.auth import AuthConfig, authenticate_session
+import asyncio
+from logicpwn.core.runner import HttpRunner
 
-# Setup authentication
-auth_config = AuthConfig(
-    url="https://api.example.com/login",
-    credentials={"username": "user", "password": "pass"},
-    success_indicators=["access_token"]
-)
+async def main():
+    async with HttpRunner() as runner:
+        result = await runner.get_async("https://httpbin.org/get")
+        print(result.status_code)
 
-session = authenticate_session(auth_config)
-
-# Test for IDOR vulnerabilities
-results = detect_idor_flaws(
-    session,
-    "https://api.example.com/users/{id}/profile",
-    test_ids=["1", "2", "3", "admin", "999"],
-    success_indicators=["user_data", "profile"],
-    failure_indicators=["unauthorized", "403"]
-)
+asyncio.run(main())
 ```
 
+### Configuration
 
-## Related Modules
+```python
+from logicpwn.core.runner import HttpRunner, RunnerConfig, RateLimitConfig, RetryConfig
 
-:::card-grid
-#card-grid
-- **[API Reference](../)** - Complete API documentation
-:::
+# Configure rate limiting and retries
+config = RunnerConfig(
+    rate_limit=RateLimitConfig(requests_per_second=2.0),
+    retry=RetryConfig(max_attempts=3)
+)
+
+runner = HttpRunner(config)
+result = runner.get("https://httpbin.org/get")
+```
+
+### Request Builder
+
+```python
+from logicpwn.core.runner import RequestBuilder
+
+config = (RequestBuilder("https://httpbin.org/post")
+    .post()
+    .json_data({"message": "Hello"})
+    .header("X-Trace", "demo")
+    .timeout(30)
+    .build())
+
+result = runner.send_request(**config)
+```
+
+### Batch Requests
+
+```python
+# Multiple requests at once
+request_configs = [
+    {"url": "https://httpbin.org/get", "method": "GET"},
+    {"url": "https://httpbin.org/post", "method": "POST", "json_data": {"test": "data"}}
+]
+
+results = runner.batch(request_configs)
+for result in results:
+    print(f"Status: {result.status_code}")
+```

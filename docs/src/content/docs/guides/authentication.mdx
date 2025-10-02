@@ -1,215 +1,110 @@
 ---
-title: Authentication & Session Management
-description: Comprehensive guide to authentication and session management in LogicPWN
+title: Authentication
+description: Handle login, sessions, and CSRF tokens automatically
 category: Guides
 sidebar:
   order: 5
 ---
+
 import { Card, CardGrid, Steps, TabItem, Tabs } from '@astrojs/starlight/components';
-
-## Overview
-
-LogicPWN provides comprehensive authentication capabilities including session persistence, CSRF handling, and multi-step authentication flows. This guide covers implemented authentication features and best practices.
-
-<Card title="Key Features" icon="star">
-- Automatic CSRF token extraction and handling
-- Session persistence and validation
-- Multi-step authentication flows
-- Planned: Identity provider integration (OAuth, SAML)
-- JWT token management
-- Enhanced security controls
-- Intelligent caching with token exclusion
-</Card>
 
 ## Quick Start
 
-<Steps>
-1. **Basic Authentication**
-
-   ```python
-   from logicpwn.core.auth import authenticate_session, AuthConfig
-
-   config = AuthConfig(
-       url="https://target.com/login",
-       method="POST",
-       credentials={"username": "admin", "password": "password"}
-   )
-
-   session = authenticate_session(config)
-   ```
-
-2. **Advanced Authentication with CSRF**
-
-   ```python
-   config = AuthConfig(
-       url="https://dvwa.local/login.php",
-       method="POST",
-       credentials={
-           "username": "admin",
-           "password": "password",
-           "Login": "Login"
-           # user_token will be automatically extracted
-       },
-       success_indicators=["Welcome to DVWA"],
-       failure_indicators=["Login failed"]
-   )
-
-   session = authenticate_session(config)
-   ```
-
-3. **Use Authenticated Session**
-
-   ```python
-   from logicpwn.core.runner import send_request_advanced
-
-   result = send_request_advanced(
-       session=session,
-       url="https://target.com/protected/page",
-       method="GET"
-   )
-   ```
-</Steps>
-
-## Authentication Configuration
-
-### Basic Configuration
+LogicPWN handles authentication automatically, including CSRF tokens and session management.
 
 ```python
-from logicpwn.core.auth import AuthConfig
+from logicpwn.core.auth import authenticate_session, AuthConfig
 
-# Simple authentication
+# Basic authentication
 config = AuthConfig(
-    url="https://example.com/login",
+    url="https://target.com/login",
     method="POST",
-    credentials={
-        "username": "user",
-        "password": "password"
-    }
+    credentials={"username": "admin", "password": "password"}
 )
+
+session = authenticate_session(config)
 ```
 
-### Advanced Configuration
-
-```python
-# Advanced authentication with comprehensive features
-config = AuthConfig(
-    url="https://target.com/login.php",
-    method="POST",
-    credentials={
-        "username": "admin",
-        "password": "password",
-        "Login": "Login"
-    },
-    timeout=30,
-    verify_ssl=False,
-    headers={"User-Agent": "LogicPWN/1.0"},
-    success_indicators=["Welcome", "Dashboard", "Success"],
-    failure_indicators=["Login failed", "Invalid", "Error"],
-    csrf_config={
-        "token_name": "user_token",
-        "extract_from": "form"
-    }
-)
-```
-
-## CSRF Token Handling
-
-LogicPWN automatically handles CSRF tokens for major frameworks:
-
-### Supported Frameworks
+## Using Authenticated Sessions
 
 <Tabs>
-<TabItem label="DVWA">
+<TabItem label="With HttpRunner">
 ```python
-config = AuthConfig(
-    url="http://dvwa.local/login.php",
-    method="POST",
-    credentials={
-        "username": "admin",
-        "password": "password",
-        "Login": "Login"
-        # user_token automatically extracted
-    }
-)
+from logicpwn.core.runner import HttpRunner
+
+# Use authenticated session with HttpRunner
+runner = HttpRunner()
+runner.session = session
+
+# Make authenticated requests
+result = runner.get("https://target.com/protected")
 ```
 </TabItem>
-
-<TabItem label="Rails">
+<TabItem label="Direct Session">
 ```python
-config = AuthConfig(
-    url="https://app.com/sessions",
-    method="POST",
-    credentials={
-        "user[email]": "user@example.com",
-        "user[password]": "password"
-        # authenticity_token automatically extracted
-    }
-)
-```
-</TabItem>
-
-<TabItem label="Laravel">
-```python
-config = AuthConfig(
-    url="https://app.com/login",
-    method="POST",
-    credentials={
-        "email": "user@example.com",
-        "password": "password"
-        # _token automatically extracted
-    }
-)
-```
-</TabItem>
-
-<TabItem label="Django">
-```python
-config = AuthConfig(
-    url="https://app.com/login/",
-    method="POST",
-    credentials={
-        "username": "user",
-        "password": "password"
-        # csrfmiddlewaretoken automatically extracted
-    }
-)
+# Use session directly
+response = session.get("https://target.com/protected")
+print(response.status_code)
 ```
 </TabItem>
 </Tabs>
 
-### Custom CSRF Configuration
+## CSRF Token Handling
+
+LogicPWN automatically extracts and handles CSRF tokens:
 
 ```python
+# DVWA example with automatic CSRF token extraction
+config = AuthConfig(
+    url="https://dvwa.local/login.php",
+    method="POST",
+    credentials={
+        "username": "admin",
+        "password": "password",
+        "Login": "Login"
+        # user_token will be automatically extracted and added
+    },
+    success_indicators=["Welcome to DVWA"],
+    failure_indicators=["Login failed"]
+)
+
+session = authenticate_session(config)
+```
+
+## Advanced Configuration
+
+```python
+# Comprehensive authentication setup
 config = AuthConfig(
     url="https://target.com/login",
     method="POST",
-    credentials={"username": "user", "password": "password"},
+    credentials={
+        "username": "admin",
+        "password": "password"
+    },
+    # Success/failure detection
+    success_indicators=["Welcome", "Dashboard", "Logout"],
+    failure_indicators=["Login failed", "Invalid credentials"],
+
+    # Request settings
+    timeout=30,
+    verify_ssl=True,
+    headers={"User-Agent": "LogicPWN/1.0"},
+
+    # CSRF handling
     csrf_config={
-        "token_name": "custom_token",
-        "extract_from": "meta",  # or "form", "input"
-        "token_selector": "meta[name='csrf-token']"
+        "enabled": True,
+        "token_patterns": [
+            r'name="([^"]*token[^"]*)"\s+value="([^"]+)"',
+            r'<meta\s+name="csrf-token"\s+content="([^"]+)"'
+        ]
     }
 )
-```
 
-## Session Management
-
-### Session Persistence
-
-```python
-# Sessions are automatically cached and validated
 session = authenticate_session(config)
-
-# Session will be reused if still valid
-session2 = authenticate_session(config)  # Uses cached session
-
-# Force new authentication
-from logicpwn.core.cache import session_cache
-session_cache.clear_all()
-session = authenticate_session(config)  # New authentication
 ```
 
-### Session Validation
+## Session Validation
 
 ```python
 from logicpwn.core.auth import validate_session
@@ -218,372 +113,104 @@ from logicpwn.core.auth import validate_session
 if validate_session(session, "https://target.com/protected"):
     print("Session is valid")
 else:
-    print("Session expired, re-authenticating")
-    session = authenticate_session(config)
+    print("Session expired, re-authenticate")
 ```
 
-### Manual Session Management
+## Common Patterns
 
+<CardGrid>
+<Card title="DVWA Authentication" icon="shield">
 ```python
-from logicpwn.core.auth import logout_session
-
-# Use session for requests
-response = session.get("https://target.com/api/data")
-
-# Logout when done
-logout_session(session)
-```
-
-## Multi-Step Authentication
-
-### Complex Authentication Flows
-
-```python
-from logicpwn.core.auth import Authenticator, AdvancedAuthConfig
-
-# Configure multi-step authentication
-advanced_config = AdvancedAuthConfig(
-    base_config=AuthConfig(
-        url="https://target.com/login",
-        method="POST",
-        credentials={"username": "user", "password": "password"}
-    ),
-    additional_steps=[
-        {
-            "name": "2FA",
-            "url": "https://target.com/2fa",
-            "method": "POST",
-            "credentials": {"code": "123456"},
-            "condition": lambda response: "2FA" in response.text
-        }
-    ]
+# DVWA with CSRF token handling
+config = AuthConfig(
+    url="http://dvwa.local/login.php",
+    method="POST",
+    credentials={
+        "username": "admin",
+        "password": "password",
+        "Login": "Login"
+    },
+    success_indicators=["Welcome to DVWA"],
+    failure_indicators=["Login failed"]
 )
-
-authenticator = Authenticator(advanced_config)
-session = authenticator.authenticate_intelligent("https://target.com/login")
 ```
+</Card>
 
-### Conditional Authentication Steps
-
+<Card title="Multi-Step Login" icon="key">
 ```python
-# Authentication with conditional steps
+# Multi-step authentication flow
 config = AuthConfig(
     url="https://target.com/login",
     method="POST",
-    credentials={"username": "user", "password": "password"},
-    additional_steps=[
-        {
-            "name": "Email Verification",
-            "url": "https://target.com/verify-email",
-            "method": "POST",
-            "credentials": {"token": "verification_token"},
-            "condition": lambda response: "verify" in response.text
-        }
-    ]
+    credentials={"username": "user", "password": "pass"},
+    # Handle redirects and multi-step flows
+    follow_redirects=True,
+    max_redirects=5
 )
 ```
+</Card>
 
-## Identity Provider Integration (Planned)
-
-The framework includes groundwork for identity provider (IdP) management in `logicpwn/core/auth/idp_integration.py`, but full OAuth and SAML flows are not yet implemented. This section will be updated once those features are released.
-
-Current status:
-- IdP configuration models and manager: available
-- OAuth 2.0 provider flows: planned
-- SAML provider flows: planned
-- Example usage and guides: will be added upon implementation
+<Card title="Session Persistence" icon="save">
+```python
+# Sessions are automatically cached and reused
+# Subsequent calls with same credentials use cached session
+session = authenticate_session(config)  # Uses cache if available
+```
+</Card>
+</CardGrid>
 
 ## JWT Token Management
 
-### JWT Authentication
-
 ```python
-from logicpwn.core.auth import JWTConfig, JWTHandler
+from logicpwn.core.auth import JWTHandler, JWTConfig
 
-# Configure JWT
+# JWT token handling
 jwt_config = JWTConfig(
     secret_key="your-secret-key",
-    algorithm="HS256",
-    expiration_time=3600
+    algorithm="HS256"
 )
 
 jwt_handler = JWTHandler(jwt_config)
 
-# Create JWT token
+# Create token
 token = jwt_handler.create_token({"user_id": "123", "role": "admin"})
 
-# Validate JWT token
-payload = jwt_handler.validate_token(token)
+# Verify token
+claims = jwt_handler.verify_token(token)
+print(claims["user_id"])  # 123
 ```
 
-### JWT with Session
+## Identity Provider Integration
 
 ```python
-# Use JWT with session authentication
-config = AuthConfig(
-    url="https://target.com/login",
-    method="POST",
-    credentials={"username": "user", "password": "password"},
-    jwt_config=jwt_config
+from logicpwn.core.auth import IdPManager, IdPConfig
+
+# OAuth/SAML integration
+idp_config = IdPConfig(
+    provider_type="oauth",
+    client_id="your-client-id",
+    client_secret="your-client-secret",
+    authorization_url="https://provider.com/oauth/authorize",
+    token_url="https://provider.com/oauth/token"
 )
 
-session = authenticate_session(config)
-# JWT token automatically managed
-```
-
-## Advanced Authentication Features
-
-### Intelligent Authentication
-
-```python
-from logicpwn.core.auth import Authenticator
-
-authenticator = Authenticator(config)
-
-# Intelligent authentication with fallback
-session = authenticator.authenticate_intelligent(
-    "https://target.com/login",
-    fallback_methods=["basic"]  # OAuth/SAML not implemented yet
-)
-```
-
-### Authentication with Custom Headers
-
-```python
-config = AuthConfig(
-    url="https://target.com/login",
-    method="POST",
-    credentials={"username": "user", "password": "password"},
-    headers={
-        "X-API-Key": "your-api-key",
-        "X-Client-Version": "1.0",
-        "User-Agent": "LogicPWN/1.0"
-    }
-)
-```
-
-### Authentication with Custom Timeout
-
-```python
-config = AuthConfig(
-    url="https://target.com/login",
-    method="POST",
-    credentials={"username": "user", "password": "password"},
-    timeout=60,  # 60 seconds timeout
-    verify_ssl=False  # Skip SSL verification
-)
-```
-
-## Error Handling
-
-### Authentication Error Handling
-
-```python
-from logicpwn.exceptions import AuthenticationError
-
-try:
-    session = authenticate_session(config)
-except AuthenticationError as e:
-    print(f"Authentication failed: {e}")
-    # Handle authentication failure
-except Exception as e:
-    print(f"Unexpected error: {e}")
-    # Handle other errors
-```
-
-### Retry Logic
-
-```python
-import time
-from tenacity import retry, stop_after_attempt, wait_exponential
-
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=4, max=10)
-)
-def authenticate_with_retry(config):
-    return authenticate_session(config)
-
-# Will retry up to 3 times with exponential backoff
-session = authenticate_with_retry(config)
+idp_manager = IdPManager(idp_config)
+auth_session = idp_manager.authenticate()
 ```
 
 ## Best Practices
 
-<CardGrid stagger>
-<Card title="Use Success/Failure Indicators" icon="approve-check">
-Always specify success and failure indicators to ensure authentication worked correctly.
-</Card>
-
-<Card title="Handle CSRF Tokens" icon="approve-check">
-Let LogicPWN automatically handle CSRF tokens for better compatibility.
-</Card>
-
-<Card title="Validate Sessions" icon="search">
-Regularly validate sessions to ensure they're still active.
-</Card>
-
-	<Card title="Use Appropriate Timeouts" icon="clock">
-Set reasonable timeouts to avoid hanging requests.
-</Card>
-</CardGrid>
-
-### 1. Success/Failure Indicators
-
-```python
-# Good: Clear indicators
-config = AuthConfig(
-    url="https://target.com/login",
-    method="POST",
-    credentials={"username": "user", "password": "password"},
-    success_indicators=["Welcome", "Dashboard", "Success"],
-    failure_indicators=["Login failed", "Invalid", "Error"]
-)
-
-# Bad: No indicators
-config = AuthConfig(
-    url="https://target.com/login",
-    method="POST",
-    credentials={"username": "user", "password": "password"}
-)
-```
-
-### 2. Session Management
-
-```python
-# Good: Validate session before use
-if validate_session(session, "https://target.com/protected"):
-    response = session.get("https://target.com/api/data")
-else:
-    session = authenticate_session(config)
-
-# Bad: Assume session is valid
-response = session.get("https://target.com/api/data")
-```
-
-### 3. Error Handling
-
-```python
-# Good: Comprehensive error handling
-try:
-    session = authenticate_session(config)
-    response = session.get("https://target.com/api/data")
-except AuthenticationError:
-    print("Authentication failed")
-except requests.RequestException as e:
-    print(f"Request failed: {e}")
-except Exception as e:
-    print(f"Unexpected error: {e}")
-```
-
-## Integration Examples
-
-### With Access Detection
-
-```python
-from logicpwn.core.access import detect_idor_flaws
-from logicpwn.core.auth import authenticate_session, AuthConfig
-
-# Authenticate first
-auth_config = AuthConfig(
-    url="https://target.com/login",
-    method="POST",
-    credentials={"username": "user", "password": "password"}
-)
-session = authenticate_session(auth_config)
-
-# Use authenticated session for access detection
-results = await detect_idor_flaws(
-    runner=runner,
-    base_url="https://target.com",
-    auth_config=auth_config,
-    test_endpoints=["/api/users/1", "/api/users/2"]
-)
-```
-
-### With Exploit Engine
-
-```python
-from logicpwn.core.exploit_engine import ExploitEngine, ExploitChain
-
-# Create authenticated session
-session = authenticate_session(config)
-
-# Use session in exploit chain
-chain = ExploitChain(name="Authenticated Exploit")
-chain.add_step(
-    name="Authenticated Request",
-    method="GET",
-    url="https://target.com/protected",
-    session=session
-)
-
-engine = ExploitEngine(runner)
-results = await engine.execute_chain(chain)
-```
+1. **Use success/failure indicators** to verify authentication
+2. **Enable CSRF protection** for applications that require it
+3. **Set appropriate timeouts** for slow authentication endpoints
+4. **Validate sessions** before making protected requests
+5. **Handle authentication errors** gracefully
+6. **Use session caching** to avoid repeated logins
 
 ## Troubleshooting
 
-### Common Issues
-
-**Authentication Failures**: Check credentials and success indicators:
-```python
-# Debug authentication
-config = AuthConfig(
-    url="https://target.com/login",
-    method="POST",
-    credentials={"username": "user", "password": "password"},
-    success_indicators=["Welcome"],  # Make sure this matches
-    failure_indicators=["Login failed"]
-)
-```
-
-**CSRF Token Issues**: Verify token extraction:
-```python
-# Check if CSRF token is being extracted
-config = AuthConfig(
-    url="https://target.com/login",
-    method="POST",
-    credentials={"username": "user", "password": "password"},
-    csrf_config={
-        "token_name": "csrf_token",  # Verify token name
-        "extract_from": "form"      # Verify extraction method
-    }
-)
-```
-
-**Session Expiration**: Implement session validation:
-```python
-# Check session before use
-if not validate_session(session, "https://target.com/protected"):
-    session = authenticate_session(config)
-```
-
-## Related Guides
-
-<CardGrid stagger>
-<Card title="Access Detection" icon="search" link="/guides/access-detection/">
-Learn about IDOR vulnerability detection with authenticated sessions.
-</Card>
-
-<Card title="Async Runner" icon="rocket" link="/guides/async-runner/">
-Explore high-performance request handling with authentication.
-</Card>
-
-<Card title="Exploit Engine" icon="approve-check" link="/guides/exploit-engine/">
-Discover advanced exploit chain execution with authentication.
-</Card>
-
-<Card title="API Reference" icon="book" link="/api-reference/">
-Browse the complete API documentation for authentication modules.
-</Card>
-</CardGrid>
-
-## Next Steps
-
-Now that you understand authentication in LogicPWN, you can:
-
-1. **Integrate with Access Detection** for authenticated security testing
-2. **Use with Exploit Engine** for complex authenticated attack scenarios
-3. **Track Identity Provider Integration** roadmap for enterprise authentication
-4. **Check out examples** in the `/examples` directory for real-world implementations
+- **Authentication fails**: Check credentials and success indicators
+- **CSRF errors**: Ensure CSRF patterns match your application
+- **Session expires**: Implement session validation and re-authentication
+- **Redirect loops**: Adjust `max_redirects` setting
+- **SSL errors**: Set `verify_ssl=False` for testing (not recommended for production)

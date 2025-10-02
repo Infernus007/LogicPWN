@@ -1,6 +1,6 @@
 ---
-title: Runner Module
-description: Unified sync/async HTTP runner with rate limiting, SSL/TLS hardening, retries, and streaming.
+title: HTTP Runner
+description: Send HTTP requests with rate limiting, retries, and SSL controls
 category: Guides
 sidebar:
   order: 2
@@ -8,230 +8,211 @@ sidebar:
 
 import { Card, CardGrid, Steps, TabItem, Tabs } from '@astrojs/starlight/components';
 
-## Overview
-The Runner module provides a unified interface for sending HTTP requests synchronously or asynchronously with:
-- Rate limiting (simple, token bucket, sliding window, adaptive)
-- SSL/TLS verification controls with strong defaults and explicit warnings
-- Retries with exponential backoff and jitter
-- Response streaming for large payloads
-- Logging, basic caching for successful GETs, and performance timing
-
-This guide reflects the current, verified implementation and usage patterns.
-
-## Key Classes
-- `HttpRunner`: Unified sync/async HTTP runner
-- `RunnerConfig`: Top-level runner configuration
-- `RateLimitConfig`: Rate limiting options
-- `SSLConfig`: SSL/TLS controls (min TLS version, client certs, relaxed/disabled modes)
-- `RetryConfig`: Retry strategy configuration
-- `RequestBuilder` and `CommonRequests`: Convenience builders for request configs
-
-## Installation
-Make sure you can import the package from your project root or install it in your environment. When running examples directly from the repo, you can set `PYTHONPATH` to the repository root.
-
-```bash
-PYTHONPATH=$(pwd) python3 examples/runner_enhanced_example.py
-```
-
 ## Quick Start
-Synchronous request with secure defaults:
-```python
-from logicpwn.core.runner import HttpRunner, RunnerConfig
 
-runner = HttpRunner(RunnerConfig())
-result = runner.send_request("https://example.com", method="GET")
-print(result.status_code)
+The `HttpRunner` provides a unified interface for HTTP requests with built-in rate limiting, retries, and SSL controls.
+
+```python
+from logicpwn.core.runner import HttpRunner
+
+# Basic usage
+runner = HttpRunner()
+result = runner.get("https://httpbin.org/get")
+print(result.status_code)  # 200
 ```
 
-Asynchronous request with context manager:
+## Async Usage
+
 ```python
 import asyncio
-from logicpwn.core.runner import HttpRunner, RunnerConfig
+from logicpwn.core.runner import HttpRunner
 
 async def main():
-    async with HttpRunner(RunnerConfig()) as runner:
-        result = await runner.send_request_async("https://httpbin.org/get")
+    async with HttpRunner() as runner:
+        result = await runner.get_async("https://httpbin.org/get")
         print(result.status_code)
 
 asyncio.run(main())
 ```
 
-## Rate Limiting
-Supported algorithms:
-- Simple (fixed interval)
-- Token Bucket (with `burst_size`)
-- Sliding Window
-- Adaptive (responds to observed response times)
+## HTTP Methods
 
-Example (token bucket):
+<Tabs>
+<TabItem label="Sync">
+```python
+runner = HttpRunner()
+
+# GET request
+result = runner.get("https://httpbin.org/get")
+
+# POST with JSON
+result = runner.post("https://httpbin.org/post",
+                    json_data={"key": "value"})
+
+# PUT request
+result = runner.put("https://httpbin.org/put",
+                   data="content")
+
+# DELETE request
+result = runner.delete("https://httpbin.org/delete")
+```
+</TabItem>
+<TabItem label="Async">
+```python
+async with HttpRunner() as runner:
+    # GET request
+    result = await runner.get_async("https://httpbin.org/get")
+
+    # POST with JSON
+    result = await runner.post_async("https://httpbin.org/post",
+                                    json_data={"key": "value"})
+
+    # PUT request
+    result = await runner.put_async("https://httpbin.org/put",
+                                   data="content")
+
+    # DELETE request
+    result = await runner.delete_async("https://httpbin.org/delete")
+```
+</TabItem>
+</Tabs>
+
+## Configuration
+
+### Rate Limiting
+
 ```python
 from logicpwn.core.runner import HttpRunner, RunnerConfig, RateLimitConfig, RateLimitAlgorithm
 
-rate = RateLimitConfig(
+# Token bucket rate limiting
+rate_limit = RateLimitConfig(
     algorithm=RateLimitAlgorithm.TOKEN_BUCKET,
     requests_per_second=2.0,
-    burst_size=3,
+    burst_size=5
 )
-runner = HttpRunner(RunnerConfig(rate_limit=rate))
+
+runner = HttpRunner(RunnerConfig(rate_limit=rate_limit))
 ```
 
-## SSL/TLS Hardening
-`SSLConfig` supports:
-- `verification_level`: `STRICT`, `RELAXED`, `DISABLED`
-- `min_tls_version`: "TLSv1.2" or "TLSv1.3"
-- Optional `client_cert`, `client_key`, and custom CA bundle
-
-Notes:
-- Relaxed or disabled verification emits explicit warnings. Only disable verification in controlled testing.
-- HTTP/2 support: When `enable_http2=True` and `httpx` is available, true HTTP/2 is used. Otherwise falls back to HTTP/1.1 with aiohttp.
-
-```python
-from logicpwn.core.runner import HttpRunner, RunnerConfig, SSLConfig, SSLVerificationLevel
-
-ssl = SSLConfig(
-    verification_level=SSLVerificationLevel.STRICT,
-    min_tls_version="TLSv1.3",
-)
-runner = HttpRunner(RunnerConfig(ssl=ssl))
-```
-
-## Retries with Exponential Backoff
-`RetryConfig` controls resilience behavior:
-- `max_attempts`, `base_delay`, `max_delay`, `exponential_base`, `jitter`
-- `retryable_status_codes`: e.g. `{500, 502, 503, 504, 429}`
-- `respect_retry_after`: optionally use `Retry-After` header when present
+### Retry Configuration
 
 ```python
 from logicpwn.core.runner import HttpRunner, RunnerConfig, RetryConfig
 
+# Configure retries
 retry = RetryConfig(
     max_attempts=3,
     base_delay=1.0,
     exponential_base=2.0,
-    jitter=True,
-    retryable_status_codes={500, 502, 503, 504, 429},
+    retryable_status_codes={500, 502, 503, 504, 429}
 )
+
 runner = HttpRunner(RunnerConfig(retry=retry))
 ```
 
-Presets are available:
-```python
-retry = RetryConfig.balanced()      # default-friendly
-# Or:
-retry = RetryConfig.conservative()  # fewer attempts, shorter window
-retry = RetryConfig.aggressive()    # more attempts for idempotent calls
-```
+### SSL/TLS Settings
 
-Per-request override:
 ```python
-runner.send_request(
-  "https://httpbin.org/get",
-  retry_config=RetryConfig.conservative(),
+from logicpwn.core.runner import HttpRunner, RunnerConfig, SSLConfig, SSLVerificationLevel
+
+# Strict SSL verification
+ssl = SSLConfig(
+    verification_level=SSLVerificationLevel.STRICT,
+    min_tls_version="TLSv1.3"
 )
+
+runner = HttpRunner(RunnerConfig(ssl=ssl))
 ```
 
-Backward compatibility: legacy `retry_attempts` and `retry_backoff` on `RunnerConfig` are automatically mapped to the new `RetryConfig` at runtime.
+## Batch Requests
 
-## Streaming Large Responses (Async)
-For large payloads, stream to avoid high memory usage:
 ```python
-import asyncio
-from logicpwn.core.runner import HttpRunner, RunnerConfig
+# Multiple requests at once
+request_configs = [
+    {"url": "https://httpbin.org/get", "method": "GET"},
+    {"url": "https://httpbin.org/post", "method": "POST", "json_data": {"test": "data"}},
+    {"url": "https://httpbin.org/put", "method": "PUT"}
+]
 
-async def stream(url: str):
-    async with HttpRunner(RunnerConfig()) as runner:
-        total = 0
-        async for chunk in runner.send_request_streaming(url, chunk_size=1024):
-            total += len(chunk)
-        print(f"streamed: {total} bytes")
-
-asyncio.run(stream("https://httpbin.org/bytes/10000"))
+results = runner.batch(request_configs)
+for result in results:
+    print(f"Status: {result.status_code}")
 ```
 
-## Request Builders
-Use `RequestBuilder` and `CommonRequests` for fluent, validated config construction:
-```python
-from logicpwn.core.runner import RequestBuilder, CommonRequests
+## Request Builder
 
-cfg = (
-    RequestBuilder("https://httpbin.org/post")
+```python
+from logicpwn.core.runner import RequestBuilder
+
+# Fluent request building
+config = (RequestBuilder("https://httpbin.org/post")
     .post()
     .json_data({"message": "Hello"})
     .header("X-Trace", "demo")
     .timeout(30)
-    .verify_ssl(True)
-    .build()
-)
+    .build())
 
-auth_get = CommonRequests.authenticated_get(
-    "https://httpbin.org/get", token="demo-token", auth_type="Bearer"
-)
+result = runner.send_request(**config)
 ```
 
-## HTTP/2 Support
-True HTTP/2 support is available when `httpx` is installed:
+## Common Patterns
 
+<CardGrid>
+<Card title="Authentication" icon="key">
 ```python
-# Install httpx for HTTP/2 support
-pip install httpx
+# Use with authenticated session
+from logicpwn.core.auth import authenticate_session, AuthConfig
 
-# Configure for HTTP/2
-config = RunnerConfig(
-    session=SessionConfig(
-        enable_http2=True,
-        http2_implementation="httpx"  # or "auto" to detect httpx
-    )
+# Authenticate first
+auth_config = AuthConfig(
+    url="https://target.com/login",
+    method="POST",
+    credentials={"username": "admin", "password": "password"}
 )
+session = authenticate_session(auth_config)
+
+# Use with runner
+runner = HttpRunner()
+runner.session = session
+result = runner.get("https://target.com/protected")
 ```
+</Card>
 
-## Behavior Notes (Verified)
-- GET requests with status 200 are cached via the response cache.
-- Global toggle: `RunnerConfig.enable_response_cache` (default: True).
-- Per-request bypass: `disable_cache=True` on `send_request`.
-- Retry logic applies to selected exceptions and status codes; non-retryable errors surface immediately.
-- `Retry-After` header is honored when `respect_retry_after=True`.
-- Session health helpers:
-  - `validate_session_health()` returns False until a session is initialized by a prior request, and may still return False depending on environment/network.
-  - `validate_session_health_async()` behaves similarly for async sessions.
-- HTTP/2: When `httpx` is available, true HTTP/2 is used. Otherwise falls back to HTTP/1.1 with aiohttp.
-
-## Rate Limiting Overrides
-You can override rate limiting per request without mutating the runner:
+<Card title="Error Handling" icon="warning">
 ```python
-from logicpwn.core.runner import RateLimitConfig, RateLimitAlgorithm
-
-result = runner.send_request(
-  "https://httpbin.org/get",
-  rate_limit_config=RateLimitConfig(
-    algorithm=RateLimitAlgorithm.SLIDING_WINDOW,
-    requests_per_second=5.0,
-    window_size=10,
-  ),
-)
+try:
+    result = runner.get("https://httpbin.org/status/500")
+    if result.status_code >= 400:
+        print(f"HTTP Error: {result.status_code}")
+except Exception as e:
+    print(f"Request failed: {e}")
 ```
+</Card>
 
-Thread-safety note: `SimpleRateLimiter.acquire()` uses a threading lock for mixed-thread sync usage; prefer not to share a single `HttpRunner` across threads unless intended.
-
-## End-to-End Example
-A complete, working demo resides at `examples/runner_enhanced_example.py`. It showcases:
-- Retry mechanism
-- Rate limiting
-- Session health checks
-- SSL/TLS configuration
-- Streaming
-- Async usage
-
-Run it from the repo root:
-```bash
-PYTHONPATH=$(pwd) python3 examples/runner_enhanced_example.py
+<Card title="Streaming" icon="download">
+```python
+# Stream large responses
+async with HttpRunner() as runner:
+    total = 0
+    async for chunk in runner.send_request_streaming("https://httpbin.org/bytes/10000"):
+        total += len(chunk)
+    print(f"Streamed: {total} bytes")
 ```
+</Card>
+</CardGrid>
+
+## Best Practices
+
+1. **Use context managers** for async operations
+2. **Configure rate limiting** to avoid overwhelming servers
+3. **Set appropriate timeouts** for your use case
+4. **Handle errors gracefully** with try/catch blocks
+5. **Use batch requests** for multiple operations
+6. **Enable SSL verification** in production
 
 ## Troubleshooting
-- If imports fail when running examples, set `PYTHONPATH` to the repo root.
-- If you disable SSL verification, you’ll see warnings; this is expected and intended to prevent misuse in production.
-- High 5xx/429 rates will trigger retries; adjust `RetryConfig` to tune behavior.
 
-## Roadmap
-- Optional first-class HTTP/2 client integration where available
-- Additional retry policies (e.g., per-method defaults, idempotency-aware)
-- Pluggable circuit breaker middleware (composable with runner)
+- **Import errors**: Set `PYTHONPATH` to project root
+- **SSL warnings**: Expected when verification is disabled
+- **Rate limiting**: Adjust `requests_per_second` if getting throttled
+- **Timeouts**: Increase timeout values for slow networks

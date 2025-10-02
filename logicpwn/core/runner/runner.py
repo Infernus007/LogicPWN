@@ -48,7 +48,10 @@ import uuid
 import warnings
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import (
+    Any,
+    Optional,
+)
 
 import aiohttp
 import requests
@@ -62,7 +65,6 @@ except ImportError:
 
 from logicpwn.core.cache import response_cache
 from logicpwn.core.config.config_utils import get_timeout
-from logicpwn.core.logging import log_error, log_info, log_request, log_response
 from logicpwn.core.performance import monitor_performance
 from logicpwn.exceptions import (
     NetworkError,
@@ -72,6 +74,32 @@ from logicpwn.exceptions import (
 )
 from logicpwn.models.request_config import RequestConfig
 from logicpwn.models.request_result import RequestMetadata, RequestResult
+
+# Import standardized logging and type definitions
+from .standardized_logging import (
+    LogAction,
+    LogComponent,
+    StandardizedLogger,
+    get_logger,
+    log_error,
+    log_info,
+    log_request,
+    log_response,
+)
+from .type_definitions import (
+    URL,
+    Data,
+    ErrorCallback,
+    Headers,
+    JSONData,
+    Method,
+    Params,
+    RawBody,
+    RequestCallback,
+    RequestConfigList,
+    RequestResultList,
+    Timeout,
+)
 
 
 class RateLimitAlgorithm(Enum):
@@ -632,39 +660,58 @@ class RetryManager:
 
 class HttpRunner:
     """
-    Unified HTTP request runner with sync/async capabilities.
+    Enhanced HTTP request runner with consolidated API.
 
-    Provides comprehensive HTTP request execution with:
+    This runner provides a single, consistent interface for all HTTP operations:
     - Synchronous and asynchronous request execution
+    - Session management with authentication support
+    - Batch request processing
     - Advanced rate limiting and throttling
     - SSL/TLS certificate validation with security warnings
-    - Session management with authentication support
     - Comprehensive error handling and retry logic
     - Response analysis and vulnerability detection
+
+    Usage:
+        # Basic usage
+        runner = HttpRunner()
+        result = runner.get("https://example.com")
+
+        # Async usage
+        async with runner:
+            result = await runner.get_async("https://example.com")
+
+        # Batch requests
+        results = await runner.batch([
+            {"url": "https://example.com/1", "method": "GET"},
+            {"url": "https://example.com/2", "method": "POST", "json_data": {"key": "value"}}
+        ])
     """
 
-    def __init__(self, config: Optional[RunnerConfig] = None):
+    def __init__(self, config: Optional[RunnerConfig] = None) -> None:
         """
         Initialize HTTP runner with configuration.
 
         Args:
             config: Runner configuration. If None, uses default configuration.
         """
-        self.config = config or RunnerConfig()
+        self.config: RunnerConfig = config or RunnerConfig()
         self.session: Optional[requests.Session] = None
         self.async_session: Optional[aiohttp.ClientSession] = None
         self.connector: Optional[aiohttp.TCPConnector] = None
         self.rate_limiter = self._create_rate_limiter()
         self.retry_manager = RetryManager(self.config.retry)
-        self._closed = False
+        self._closed: bool = False
+
+        # Initialize standardized logger
+        self.logger: StandardizedLogger = get_logger(LogComponent.RUNNER)
 
         # Warn at construction time if SSL verification is disabled
         if self.config.ssl.verification_level == SSLVerificationLevel.DISABLED:
-            warnings.warn(
+            self.logger.warning(
                 "SSL verification is disabled. This allows man-in-the-middle attacks. "
                 "Only use this in controlled testing environments.",
-                UserWarning,
-                stacklevel=2,
+                LogAction.SSL_VERIFY,
+                {"verification_level": self.config.ssl.verification_level.value},
             )
 
         # Backward compatibility: migrate old retry settings
@@ -672,6 +719,345 @@ class HttpRunner:
             self.config.retry.max_attempts = self.config.retry_attempts
         if hasattr(self.config, "retry_backoff") and self.config.retry_backoff != 1.0:
             self.config.retry.base_delay = self.config.retry_backoff
+
+        self.logger.info(
+            "HTTP runner initialized",
+            LogAction.INIT,
+            {
+                "max_concurrent": self.config.session.max_connections,
+                "ssl_verification": self.config.ssl.verification_level.value,
+                "rate_limiting": self.config.rate_limit.algorithm.value,
+                "retry_attempts": self.config.retry.max_attempts,
+            },
+        )
+
+    # Convenient HTTP methods for better API consistency
+    def get(
+        self,
+        url: URL,
+        headers: Optional[Headers] = None,
+        params: Optional[Params] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send GET request."""
+        return self.send_request(
+            url=url,
+            method="GET",
+            headers=headers,
+            params=params,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    def post(
+        self,
+        url: URL,
+        data: Optional[Data] = None,
+        json_data: Optional[JSONData] = None,
+        headers: Optional[Headers] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send POST request."""
+        return self.send_request(
+            url=url,
+            method="POST",
+            headers=headers,
+            data=data,
+            json_data=json_data,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    def put(
+        self,
+        url: URL,
+        data: Optional[Data] = None,
+        json_data: Optional[JSONData] = None,
+        headers: Optional[Headers] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send PUT request."""
+        return self.send_request(
+            url=url,
+            method="PUT",
+            headers=headers,
+            data=data,
+            json_data=json_data,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    def delete(
+        self,
+        url: URL,
+        headers: Optional[Headers] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send DELETE request."""
+        return self.send_request(
+            url=url,
+            method="DELETE",
+            headers=headers,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    def patch(
+        self,
+        url: URL,
+        data: Optional[Data] = None,
+        json_data: Optional[JSONData] = None,
+        headers: Optional[Headers] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send PATCH request."""
+        return self.send_request(
+            url=url,
+            method="PATCH",
+            headers=headers,
+            data=data,
+            json_data=json_data,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    def head(
+        self,
+        url: URL,
+        headers: Optional[Headers] = None,
+        params: Optional[Params] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send HEAD request."""
+        return self.send_request(
+            url=url,
+            method="HEAD",
+            headers=headers,
+            params=params,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    def options(
+        self,
+        url: URL,
+        headers: Optional[Headers] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send OPTIONS request."""
+        return self.send_request(
+            url=url,
+            method="OPTIONS",
+            headers=headers,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    # Async convenience methods
+    async def get_async(
+        self,
+        url: URL,
+        headers: Optional[Headers] = None,
+        params: Optional[Params] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send async GET request."""
+        return await self.send_request_async(
+            url=url,
+            method="GET",
+            headers=headers,
+            params=params,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    async def post_async(
+        self,
+        url: URL,
+        data: Optional[Data] = None,
+        json_data: Optional[JSONData] = None,
+        headers: Optional[Headers] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send async POST request."""
+        return await self.send_request_async(
+            url=url,
+            method="POST",
+            headers=headers,
+            data=data,
+            json_data=json_data,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    async def put_async(
+        self,
+        url: URL,
+        data: Optional[Data] = None,
+        json_data: Optional[JSONData] = None,
+        headers: Optional[Headers] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send async PUT request."""
+        return await self.send_request_async(
+            url=url,
+            method="PUT",
+            headers=headers,
+            data=data,
+            json_data=json_data,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    async def delete_async(
+        self,
+        url: URL,
+        headers: Optional[Headers] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send async DELETE request."""
+        return await self.send_request_async(
+            url=url,
+            method="DELETE",
+            headers=headers,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    async def patch_async(
+        self,
+        url: URL,
+        data: Optional[Data] = None,
+        json_data: Optional[JSONData] = None,
+        headers: Optional[Headers] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send async PATCH request."""
+        return await self.send_request_async(
+            url=url,
+            method="PATCH",
+            headers=headers,
+            data=data,
+            json_data=json_data,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    async def head_async(
+        self,
+        url: URL,
+        headers: Optional[Headers] = None,
+        params: Optional[Params] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send async HEAD request."""
+        return await self.send_request_async(
+            url=url,
+            method="HEAD",
+            headers=headers,
+            params=params,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    async def options_async(
+        self,
+        url: URL,
+        headers: Optional[Headers] = None,
+        timeout: Optional[Timeout] = None,
+        **kwargs: Any,
+    ) -> RequestResult:
+        """Send async OPTIONS request."""
+        return await self.send_request_async(
+            url=url,
+            method="OPTIONS",
+            headers=headers,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    # Batch processing methods
+    async def batch(
+        self,
+        requests: RequestConfigList,
+        max_concurrent: Optional[int] = None,
+        **kwargs: Any,
+    ) -> RequestResultList:
+        """
+        Send multiple requests concurrently.
+
+        Args:
+            requests: List of request configurations
+            max_concurrent: Maximum concurrent requests
+            **kwargs: Additional parameters
+
+        Returns:
+            List of RequestResult objects
+        """
+        return await self.send_requests_batch(
+            request_configs=requests,
+            max_concurrent=max_concurrent,
+            **kwargs,
+        )
+
+    async def batch_get(
+        self,
+        urls: list[URL],
+        headers: Optional[Headers] = None,
+        params: Optional[Params] = None,
+        timeout: Optional[Timeout] = None,
+        max_concurrent: Optional[int] = None,
+        **kwargs: Any,
+    ) -> RequestResultList:
+        """Send multiple GET requests concurrently."""
+        requests = [
+            {
+                "url": url,
+                "method": "GET",
+                "headers": headers,
+                "params": params,
+                "timeout": timeout,
+                **kwargs,
+            }
+            for url in urls
+        ]
+        return await self.batch(requests, max_concurrent=max_concurrent)
+
+    async def batch_post(
+        self,
+        url_data_pairs: list[tuple[URL, Optional[Data], Optional[JSONData]]],
+        headers: Optional[Headers] = None,
+        timeout: Optional[Timeout] = None,
+        max_concurrent: Optional[int] = None,
+        **kwargs: Any,
+    ) -> RequestResultList:
+        """Send multiple POST requests concurrently."""
+        requests = [
+            {
+                "url": url,
+                "method": "POST",
+                "headers": headers,
+                "data": data,
+                "json_data": json_data,
+                "timeout": timeout,
+                **kwargs,
+            }
+            for url, data, json_data in url_data_pairs
+        ]
+        return await self.batch(requests, max_concurrent=max_concurrent)
 
     def _create_rate_limiter(self):
         """Create rate limiter based on configuration."""
@@ -743,19 +1129,21 @@ class HttpRunner:
     @monitor_performance("sync_request_execution")
     def send_request(
         self,
-        url: str,
-        method: str = "GET",
-        headers: Optional[dict[str, str]] = None,
-        params: Optional[dict[str, Any]] = None,
-        data: Optional[Any] = None,
-        json_data: Optional[dict[str, Any]] = None,
-        raw_body: Optional[str] = None,
-        timeout: Optional[int] = None,
+        url: URL,
+        method: Method = "GET",
+        headers: Optional[Headers] = None,
+        params: Optional[Params] = None,
+        data: Optional[Data] = None,
+        json_data: Optional[JSONData] = None,
+        raw_body: Optional[RawBody] = None,
+        timeout: Optional[Timeout] = None,
         verify_ssl: bool = True,
         session: Optional[requests.Session] = None,
         disable_cache: bool = False,
         retry_config: Optional[RetryConfig] = None,
         rate_limit_config: Optional[RateLimitConfig] = None,
+        on_success: Optional[RequestCallback] = None,
+        on_error: Optional[ErrorCallback] = None,
     ) -> RequestResult:
         """Send a synchronous HTTP request with retry and rate limiting.
 
@@ -869,16 +1257,26 @@ class HttpRunner:
 
         # If we get here, all retries failed
         if isinstance(last_exception, requests.exceptions.Timeout):
-            raise TimeoutError(
-                f"Request timeout after {self.config.retry.max_attempts} attempts"
-            ) from last_exception
+            error_msg = (
+                f"⏰ Request timed out after {self.config.retry.max_attempts} attempts"
+            )
+            suggestion = "💡 Try increasing the timeout value or check if the server is responding."
+            raise TimeoutError(f"{error_msg}\n\n{suggestion}") from last_exception
         elif isinstance(last_exception, requests.exceptions.ConnectionError):
+            error_msg = (
+                f"🌐 Connection error after {self.config.retry.max_attempts} attempts"
+            )
+            suggestion = (
+                "💡 Check your network connection and verify the URL is correct."
+            )
             raise NetworkError(
-                f"Connection error after {self.config.retry.max_attempts} attempts: {str(last_exception)}"
+                f"{error_msg}: {str(last_exception)}\n\n{suggestion}"
             ) from last_exception
         else:
+            error_msg = f"❌ Request execution error after {self.config.retry.max_attempts} attempts"
+            suggestion = "💡 Check your request parameters and try again."
             raise RequestExecutionError(
-                f"Request execution error after {self.config.retry.max_attempts} attempts: {str(last_exception)}"
+                f"{error_msg}: {str(last_exception)}\n\n{suggestion}"
             ) from last_exception
 
     def _execute_sync_request(
@@ -1008,7 +1406,9 @@ class HttpRunner:
             status_code=response.status_code,
             headers=dict(response.headers),
             body=response.text[:500] if response.text else None,
-            response_time=duration,
+            duration=duration,
+            method=method,
+            url=self._sanitize_url(url),
         )
 
         # Cache GET responses
@@ -1089,6 +1489,7 @@ class HttpRunner:
 
         self.connector = aiohttp.TCPConnector(**connector_kwargs)
 
+        # Fixed timeout configuration with proper breakdown
         timeout = aiohttp.ClientTimeout(
             total=self.config.session.total_timeout,
             connect=self.config.session.connection_timeout,
@@ -1191,16 +1592,20 @@ class HttpRunner:
 
     async def send_request_async(
         self,
-        url: str,
-        method: str = "GET",
-        headers: Optional[dict[str, str]] = None,
-        params: Optional[dict[str, Any]] = None,
-        data: Optional[Any] = None,
-        json_data: Optional[dict[str, Any]] = None,
+        url: URL,
+        method: Method = "GET",
+        headers: Optional[Headers] = None,
+        params: Optional[Params] = None,
+        data: Optional[Data] = None,
+        json_data: Optional[JSONData] = None,
+        raw_body: Optional[RawBody] = None,
+        timeout: Optional[Timeout] = None,
         disable_cache: bool = False,
         retry_config: Optional[RetryConfig] = None,
         rate_limit_config: Optional[RateLimitConfig] = None,
-        **kwargs,
+        on_success: Optional[RequestCallback] = None,
+        on_error: Optional[ErrorCallback] = None,
+        **kwargs: Any,
     ) -> RequestResult:
         """
         Send asynchronous HTTP request with retry logic.
@@ -1231,64 +1636,79 @@ class HttpRunner:
         # Optionally override retry and rate limit per-request
         original_retry_manager = self.retry_manager
         original_rate_limiter = self.rate_limiter
-        if retry_config is not None:
-            self.retry_manager = RetryManager(retry_config)
-        if rate_limit_config is not None:
-            temp_runner_config = RunnerConfig(
-                rate_limit=rate_limit_config,
-                ssl=self.config.ssl,
-                session=self.config.session,
-                retry=self.config.retry,
-                user_agent=self.config.user_agent,
-                default_headers=self.config.default_headers,
-                enable_response_cache=self.config.enable_response_cache,
-            )
-            self.rate_limiter = HttpRunner(temp_runner_config)._create_rate_limiter()
 
-        # Execute with retry logic
-        last_exception = None
-        effective_attempts = self.retry_manager.config.max_attempts
-        for attempt in range(effective_attempts):
-            try:
-                return await self._execute_async_request(
-                    url=url,
-                    method=method,
-                    headers=headers,
-                    params=params,
-                    data=data,
-                    json_data=json_data,
-                    attempt=attempt,
-                    disable_cache=disable_cache,
-                    **kwargs,
+        try:
+            if retry_config is not None:
+                self.retry_manager = RetryManager(retry_config)
+            if rate_limit_config is not None:
+                temp_runner_config = RunnerConfig(
+                    rate_limit=rate_limit_config,
+                    ssl=self.config.ssl,
+                    session=self.config.session,
+                    retry=self.config.retry,
+                    user_agent=self.config.user_agent,
+                    default_headers=self.config.default_headers,
+                    enable_response_cache=self.config.enable_response_cache,
                 )
-            except Exception as e:
-                last_exception = e
+                self.rate_limiter = HttpRunner(
+                    temp_runner_config
+                )._create_rate_limiter()
 
-                # Check if we should retry
-                if not self.retry_manager.should_retry(attempt, exception=e):
-                    break
+            # Execute with retry logic
+            last_exception = None
+            effective_attempts = self.retry_manager.config.max_attempts
 
-                # Wait before retry (except on last attempt)
-                if attempt < effective_attempts - 1:
-                    await self.retry_manager.wait_for_retry(attempt)
+            for attempt in range(effective_attempts):
+                try:
+                    return await self._execute_async_request(
+                        url=url,
+                        method=method,
+                        headers=headers,
+                        params=params,
+                        data=data,
+                        json_data=json_data,
+                        attempt=attempt,
+                        disable_cache=disable_cache,
+                        **kwargs,
+                    )
+                except Exception as e:
+                    last_exception = e
 
-        # If we get here, all retries failed
-        # Restore original managers before raising
-        self.retry_manager = original_retry_manager
-        self.rate_limiter = original_rate_limiter
+                    # Check if we should retry
+                    if not self.retry_manager.should_retry(attempt, exception=e):
+                        break
 
-        if isinstance(last_exception, asyncio.TimeoutError):
-            raise TimeoutError(
-                f"Request timeout after {self.config.retry.max_attempts} attempts"
-            ) from last_exception
-        elif isinstance(last_exception, aiohttp.ClientError):
-            raise NetworkError(
-                f"Client error after {self.config.retry.max_attempts} attempts: {str(last_exception)}"
-            ) from last_exception
-        else:
-            raise RequestExecutionError(
-                f"Request execution error after {self.config.retry.max_attempts} attempts: {str(last_exception)}"
-            ) from last_exception
+                    # Wait before retry (except on last attempt)
+                    if attempt < effective_attempts - 1:
+                        await self.retry_manager.wait_for_retry(attempt)
+
+            # If we get here, all retries failed
+            # Handle the final exception
+            if isinstance(last_exception, asyncio.TimeoutError):
+                error_msg = (
+                    f"⏰ Async request timed out after {effective_attempts} attempts"
+                )
+                suggestion = "💡 Try increasing the timeout value or check if the server is responding."
+                raise TimeoutError(f"{error_msg}\n\n{suggestion}") from last_exception
+            elif isinstance(last_exception, aiohttp.ClientError):
+                error_msg = f"🌐 Network error after {effective_attempts} attempts"
+                suggestion = (
+                    "💡 Check your network connection and verify the URL is correct."
+                )
+                raise NetworkError(
+                    f"{error_msg}: {str(last_exception)}\n\n{suggestion}"
+                ) from last_exception
+            else:
+                error_msg = f"❌ Async request execution error after {effective_attempts} attempts"
+                suggestion = "💡 Check your request parameters and try again."
+                raise RequestExecutionError(
+                    f"{error_msg}: {str(last_exception)}\n\n{suggestion}"
+                ) from last_exception
+
+        finally:
+            # Always restore original managers
+            self.retry_manager = original_retry_manager
+            self.rate_limiter = original_rate_limiter
 
     async def _execute_async_request(
         self,
@@ -1367,7 +1787,8 @@ class HttpRunner:
                     attempt, status_code=response.status_code
                 ):
                     retry_after = response.headers.get("Retry-After")
-                    if attempt < effective_attempts - 1:
+                    max_attempts = self.retry_manager.config.max_attempts
+                    if attempt < max_attempts - 1:
                         await self.retry_manager.wait_for_retry(attempt, retry_after)
                     raise RequestExecutionError(
                         f"Retryable status code: {response.status_code}"
@@ -1398,7 +1819,8 @@ class HttpRunner:
                 ):
                     retry_after = response.headers.get("Retry-After")
                     # Respect Retry-After in async path
-                    if attempt < effective_attempts - 1:
+                    max_attempts = self.retry_manager.config.max_attempts
+                    if attempt < max_attempts - 1:
                         await self.retry_manager.wait_for_retry(attempt, retry_after)
                     raise RequestExecutionError(
                         f"Retryable status code: {response.status}"
@@ -1471,9 +1893,11 @@ class HttpRunner:
 
     async def send_requests_batch(
         self,
-        requests: list[dict[str, Any]],
+        request_configs: RequestConfigList,
         max_concurrent: Optional[int] = None,
-    ) -> list[Union[RequestResult, BaseException]]:
+        on_success: Optional[RequestCallback] = None,
+        on_error: Optional[ErrorCallback] = None,
+    ) -> RequestResultList:
         """
         Send multiple requests concurrently.
 
@@ -1734,68 +2158,3 @@ def _execute_request(session, config):
         )
 
     return session.request(**kwargs)
-
-
-def send_request(session, config):
-    """Legacy compatibility function for send_request."""
-    runner = HttpRunner()
-
-    if hasattr(config, "url"):
-        # RequestConfig object
-        return runner.send_request(
-            url=config.url,
-            method=config.method,
-            headers=config.headers,
-            params=config.params,
-            data=config.data,
-            json_data=config.json_data,
-            raw_body=config.raw_body,
-            timeout=config.timeout,
-            verify_ssl=config.verify_ssl,
-            session=session,
-        )
-    elif isinstance(config, dict):
-        # Dictionary config
-        return runner.send_request(
-            url=config["url"],
-            method=config.get("method", "GET"),
-            headers=config.get("headers"),
-            params=config.get("params"),
-            data=config.get("data"),
-            json_data=config.get("json_data"),
-            raw_body=config.get("raw_body"),
-            timeout=config.get("timeout"),
-            verify_ssl=config.get("verify_ssl", True),
-            session=session,
-        )
-    else:
-        # Invalid config type
-        raise ValueError(
-            f"Configuration must be dict or RequestConfig, got {type(config)}"
-        )
-
-
-def send_request_advanced(**kwargs):
-    """Legacy compatibility function for send_request_advanced."""
-    runner = HttpRunner()
-    return runner.send_request(**kwargs)
-
-
-def validate_config(config):
-    """Legacy compatibility function for validate_config."""
-    # Simplified validation for now
-    return True
-
-
-def prepare_request_kwargs(config):
-    """Legacy compatibility function for prepare_request_kwargs."""
-    return {
-        "method": config.method,
-        "url": config.url,
-        "headers": config.headers,
-        "params": config.params,
-        "data": config.data,
-        "json": config.json_data,
-        "timeout": config.timeout,
-        "verify": config.verify_ssl,
-    }
