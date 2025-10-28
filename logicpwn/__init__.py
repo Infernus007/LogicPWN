@@ -1,52 +1,50 @@
 """
-LogicPwn - Business Logic Exploitation & Exploit Chaining Automation Tool.
+LogicPWN - Business Logic Vulnerability Testing Framework
 
-This package provides a comprehensive suite of security testing tools
-with a modular design for advanced business logic exploitation and
-multi-step attack automation. Built for penetration testing, security
-research, and automated vulnerability assessment.
+A powerful, easy-to-use framework for testing business logic vulnerabilities in web applications.
 
-Key Features:
-- Advanced authentication with session persistence
-- Exploit chaining workflows
-- Modular architecture for easy extension
-- Enterprise-grade error handling and logging
-- Comprehensive testing and validation
-- Centralized configuration management
-- Sensitive data redaction and secure logging
-- Middleware system for extensibility
-- Advanced response analysis and security detection
-- High-performance async request execution
+Quick Start:
+    >>> from logicpwn import SecurityTester, quick_idor_test
+    >>>
+    >>> # One-line IDOR test
+    >>> results = quick_idor_test(
+    ...     "https://api.example.com",
+    ...     "/api/users/{id}",
+    ...     [1, 2, 3, "admin"]
+    ... )
+    >>> print(results['summary'])
+    >>>
+    >>> # Class-based testing with authentication
+    >>> with SecurityTester("https://api.example.com") as tester:
+    ...     tester.authenticate("admin", "password123")
+    ...     results = tester.test_idor("/api/users/{id}", [1, 2, 3])
+    ...     print(results['summary'])
 
-Example Usage:
-    from logicpwn.core.auth import authenticate_session
-    from logicpwn.core.runner import HttpRunner
-    from logicpwn.core.runner import send_request_async, AsyncRequestRunner
-    from logicpwn.models import RequestResult
-
-    # Synchronous authentication for exploit chaining
-    session = authenticate_session(auth_config)
-
-    # Chain exploits with persistent session
-    response = session.get("https://target.com/admin/panel")
-    response = session.post("https://target.com/api/users", data=payload)
-
-    # Use advanced request runner with middleware
-    result = send_request_advanced(url="https://target.com/api/data", method="POST")
-    if result.has_vulnerabilities():
-        print("Security issues detected!")
-
-    # High-performance async requests
-    async with AsyncRequestRunner() as runner:
-        results = await runner.send_requests_batch(request_configs)
+Documentation: https://logicpwn.github.io
+Repository: https://github.com/Infernus007/LogicPWN
 """
 
+__version__ = "0.4.0"
+__author__ = "LogicPwn Team"
+
+# === Access Control Testing ===
+from logicpwn.core.access import (
+    EnhancedAccessTester,
+    detect_idor_flaws,
+    detect_idor_flaws_async,
+)
+
+# === Core Authentication ===
 from logicpwn.core.auth import (
     AuthConfig,
+    CSRFConfig,
+    JWTHandler,
     authenticate_session,
     logout_session,
     validate_session,
 )
+
+# === Caching ===
 from logicpwn.core.cache import (
     clear_all_caches,
     config_cache,
@@ -54,7 +52,23 @@ from logicpwn.core.cache import (
     response_cache,
     session_cache,
 )
-from logicpwn.core.config.config_utils import get_max_retries, get_timeout
+
+# === Configuration ===
+from logicpwn.core.config.config_utils import (
+    get_max_retries,
+    get_timeout,
+)
+
+# === Exploit Engine ===
+from logicpwn.core.exploit_engine import (
+    ExploitChain,
+    ExploitStep,
+    async_run_exploit_chain,
+    load_exploit_chain_from_file,
+    run_exploit_chain,
+)
+
+# === Logging ===
 from logicpwn.core.logging import (
     log_debug,
     log_error,
@@ -63,6 +77,8 @@ from logicpwn.core.logging import (
     log_response,
     log_warning,
 )
+
+# === Performance & Monitoring ===
 from logicpwn.core.performance import (
     MemoryProfiler,
     PerformanceBenchmark,
@@ -71,15 +87,19 @@ from logicpwn.core.performance import (
     monitor_performance,
     performance_context,
 )
+
+# === HTTP Runner ===
 from logicpwn.core.runner import (
     AsyncRequestRunner,
     AsyncSessionManager,
     HttpRunner,
-    RequestConfig,
+    RunnerConfig,
     async_session_manager,
     send_request_async,
     send_requests_batch_async,
 )
+
+# === Stress Testing ===
 from logicpwn.core.stress import (
     StressTestConfig,
     StressTester,
@@ -87,79 +107,153 @@ from logicpwn.core.stress import (
     run_exploit_chain_stress_test,
     run_quick_stress_test,
 )
+
+# === Utilities ===
 from logicpwn.core.utils import (
     check_indicators,
     prepare_request_kwargs,
     validate_config,
 )
 
-from .exceptions import (
-    AuthenticationError,
+# === Response Validation ===
+from logicpwn.core.validator import (
+    ValidationConfig,
+    ValidationResult,
+    validate_response,
+    validate_with_preset,
+)
+
+# === Legacy Exceptions (for backwards compatibility) ===
+from logicpwn.exceptions import (
     LoginFailedException,
     NetworkError,
-    SessionError,
     TimeoutError,
     ValidationError,
 )
-from .models import RequestConfig, RequestMetadata, RequestResult, SecurityAnalysis
 
-__version__ = "0.2.0"
-__author__ = "LogicPwn Team"
+# === Enhanced Exceptions ===
+from logicpwn.exceptions.enhanced_exceptions import (
+    AuthenticationError,
+    ConfigurationError,
+    ExploitChainError,
+    IDORTestError,
+    LogicPwnError,
+    SessionError,
+)
 
+# === Models ===
+from logicpwn.models import (
+    RequestConfig,
+    RequestMetadata,
+    RequestResult,
+    SecurityAnalysis,
+)
+
+# === High-Level Convenience APIs (RECOMMENDED STARTING POINT) ===
+from logicpwn.quickstart import (
+    SecurityTester,
+    quick_auth_test,
+    quick_exploit_chain,
+    quick_idor_test,
+)
+
+# === Result Objects ===
+from logicpwn.results import (
+    ExploitChainResult,
+    SecurityTestResult,
+)
+
+# === Public API ===
 __all__ = [
-    # Authentication
+    # === Quick Start APIs (RECOMMENDED) ===
+    "SecurityTester",
+    "quick_idor_test",
+    "quick_auth_test",
+    "quick_exploit_chain",
+    # === Authentication ===
     "authenticate_session",
     "validate_session",
     "logout_session",
     "AuthConfig",
-    # Request Execution
+    "CSRFConfig",
+    "JWTHandler",
+    # === Testing Functions ===
+    "detect_idor_flaws",
+    "detect_idor_flaws_async",
+    "run_exploit_chain",
+    "async_run_exploit_chain",
+    "load_exploit_chain_from_file",
+    # === Core Classes ===
     "HttpRunner",
-    "RequestConfig",
-    # Response Validation
-    # REMOVED: "validate_response",
-    # REMOVED: "extract_from_response",
-    # REMOVED: "validate_json_response",
-    # REMOVED: "validate_html_response",
-    # REMOVED: "chain_validations",
-    # REMOVED: "ValidationResult",
-    # REMOVED: "ValidationConfig",
-    # REMOVED: "ValidationType",
-    # REMOVED: "VulnerabilityPatterns",
-    # Async Execution
+    "RunnerConfig",
     "AsyncRequestRunner",
     "AsyncSessionManager",
+    "EnhancedAccessTester",
+    "ExploitChain",
+    "ExploitStep",
+    # === Async Functions ===
     "send_request_async",
     "send_requests_batch_async",
     "async_session_manager",
-    # Performance & Caching
+    # === Validation ===
+    "validate_response",
+    "validate_with_preset",
+    "ValidationConfig",
+    "ValidationResult",
+    # === Result Objects ===
+    "SecurityTestResult",
+    "ExploitChainResult",
+    # === Models ===
+    "RequestConfig",
+    "RequestResult",
+    "RequestMetadata",
+    "SecurityAnalysis",
+    # === Enhanced Exceptions ===
+    "LogicPwnError",
+    "AuthenticationError",
+    "IDORTestError",
+    "ExploitChainError",
+    "ConfigurationError",
+    "SessionError",
+    # === Legacy Exceptions ===
+    "LoginFailedException",
+    "NetworkError",
+    "TimeoutError",
+    "ValidationError",
+    # === Performance & Monitoring ===
     "PerformanceMonitor",
     "PerformanceBenchmark",
     "MemoryProfiler",
     "monitor_performance",
     "performance_context",
     "get_performance_summary",
+    # === Caching ===
     "response_cache",
     "session_cache",
     "config_cache",
     "get_cache_stats",
     "clear_all_caches",
-    # Stress Testing
+    # === Stress Testing ===
     "StressTester",
     "StressTestConfig",
     "StressTestMetrics",
     "run_quick_stress_test",
     "run_exploit_chain_stress_test",
-    # Utilities
-    "check_indicators",
-    "prepare_request_kwargs",
-    "validate_config",
-    "config",
+    # === Configuration ===
     "get_timeout",
     "get_max_retries",
+    # === Logging ===
     "log_info",
     "log_warning",
     "log_error",
     "log_debug",
     "log_request",
     "log_response",
+    # === Utilities ===
+    "check_indicators",
+    "prepare_request_kwargs",
+    "validate_config",
+    # === Version ===
+    "__version__",
+    "__author__",
 ]
